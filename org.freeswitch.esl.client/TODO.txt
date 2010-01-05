@@ -2,15 +2,20 @@
 As at 2010.01.03
 
 Features still to be implemented
- * More testing of the outbound socket client
- * Send event command
- * Send message command for inbound client
- * Refactor the api of the inbound client into the abstract handler so it is also available in outbound handlers
+ * More testing of the outbound socket client template code
+ * Implement Send event command
+ * Testing of SendMsg command 
+ * Refactor the api of the inbound client into the abstract handler so it is also available in outbound handlers as well
  * Per event(s) listener
  * Provide XML event handling - not sure if this is useful since the raw event is not exposed, although it could be if needed.
- * 'myevent' event subscription - not a priority here, easy if required.
+ * Implement 'myevent' event subscription for inbound - not a priority here, easy if required.
  * Provide timeout protection on the client.sendSyncApiCommand().  It will currently block for ever.
  * Working examples in an example project (started).
+ 
+Distribution
+ * Basic usage docs
+ * Package jar, javadocs, source and dependencies (slf4j, netty) for people to trial without having to build.
+ * Cut a release, look at usage of tags in FS svn repo.
  
 Quality items
  * Ask FS dev team for any ESL event generation test strategies/suites.
