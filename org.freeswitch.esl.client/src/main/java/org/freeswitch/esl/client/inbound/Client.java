@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.freeswitch.esl.client.IEslEventListener;
 import org.freeswitch.esl.client.internal.IEslProtocolListener;
 import org.freeswitch.esl.client.transport.CommandResponse;
+import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -344,6 +345,22 @@ public class Client
         return new CommandResponse( sb.toString(), response );
     }
 
+    /**
+     * Send a {@link SendMsg} command to FreeSWITCH.  This client requires that the {@link SendMsg}
+     * has a call UUID parameter.
+     *  
+     * @param sendMsg a {@link SendMsg} with call UUID
+     * @return a {@link CommandResponse} with the server's response.
+     */
+    public CommandResponse sendMessage( SendMsg sendMsg )
+    {
+        checkConnected();
+        InboundClientHandler handler = (InboundClientHandler)channel.getPipeline().getLast();
+        EslMessage response = handler.sendSyncMultiLineCommand( channel, sendMsg.getMsgLines() );
+        
+        return new CommandResponse( sendMsg.toString(), response );
+    }
+    
     /**
      * Enable log output.
      * 
