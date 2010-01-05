@@ -55,6 +55,16 @@
         </configuration>
       </plugin>
       
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes> 
+            <exclude>**/ClientTest.java</exclude>            
+            <exclude>**/SocketClientTest.java</exclude>            
+          </excludes>
+        </configuration>
+      </plugin>
+      
     </plugins>
     
   </build>
@@ -89,4 +99,16 @@
     </dependency>
     
   </dependencies>
+  
+  <repositories>
+    <!--  for netty dependency -->
+    <repository>
+      <id>repository.jboss.org</id>
+      <url>http://repository.jboss.org/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+   
 </project>

@@ -9,12 +9,15 @@ Features still to be implemented
  * Per event(s) listener
  * Provide XML event handling - not sure if this is useful since the raw event is not exposed, although it could be if needed.
  * Implement 'myevent' event subscription for inbound - not a priority here, easy if required.
- * Provide timeout protection on the client.sendSyncApiCommand().  It will currently block for ever.
+ * Provide timeout protection on the client.sendSyncApiCommand().  It will currently block for ever if get no response from server.
  * Working examples in an example project (started).
- 
+ * Add OSGi example 
+ * Chase down the apparent issue with Netty when using executor in pipeline (wierd).
+  
 Distribution
  * Basic usage docs
  * Package jar, javadocs, source and dependencies (slf4j, netty) for people to trial without having to build.
+ * Find out how (if ok) to put binary distribution on files.freeswitch.org
  * Cut a release, look at usage of tags in FS svn repo.
  
 Quality items
