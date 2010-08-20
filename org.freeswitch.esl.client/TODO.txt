@@ -1,7 +1,7 @@
-
-As at 2010.01.03
+As at 2010.08.18
 
 Features still to be implemented
+ * Blocker: Fix the event parser to properly use Content-Length header, reports of misshandling missing \n 
  * More testing of the outbound socket client template code
  * Implement Send event command
  * Testing of SendMsg command 
