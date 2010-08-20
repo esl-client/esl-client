@@ -2,6 +2,7 @@ As at 2010.08.18
 
 Features still to be implemented
  * Blocker: Fix the event parser to properly use Content-Length header, reports of misshandling missing \n 
+ * Problem using latest netty release in an OSGi container
  * More testing of the outbound socket client template code
  * Implement Send event command
  * Testing of SendMsg command 
@@ -18,7 +19,7 @@ Distribution
  * Basic usage docs
  * Package jar, javadocs, source and dependencies (slf4j, netty) for people to trial without having to build.
  * Find out how (if ok) to put binary distribution on files.freeswitch.org
- * Cut a release, look at usage of tags in FS svn repo.
+ * Cut a release, look at usage of tags in FS git repo.
  
 Quality items
  * Ask FS dev team for any ESL event generation test strategies/suites.
