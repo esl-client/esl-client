@@ -46,7 +46,6 @@ public class EslMessage
     private final List<String> body = new ArrayList<String>();
     
     private Integer contentLength = null;
-    private int receivedContentLength = 0;
 
     /**
      * All the received message headers in a map keyed by {@link EslHeaders.Name}. The string mapped value 
@@ -152,23 +151,7 @@ public class EslMessage
         {
             return;
         }
-        receivedContentLength += ( line.length() + 1 );
-        // ignore empty lines (signals the end of a body section)
-        if ( line.length() > 0 )
-        {
-            body.add( line );
-        }
-    }
-
-    /**
-     * Used by the {@link EslMessageDecoder}
-     * 
-     * @return true if receivedContentLength < contentLength
-     */
-    boolean waitingForContent()
-    {
-        log.debug( "received [{}], expecting [{}]", receivedContentLength, getContentLength() );
-        return receivedContentLength < getContentLength();
+        body.add( line );
     }
 
     @Override

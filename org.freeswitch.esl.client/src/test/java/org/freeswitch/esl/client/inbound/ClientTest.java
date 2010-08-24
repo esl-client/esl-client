@@ -15,11 +15,14 @@
  */
 package org.freeswitch.esl.client.inbound;
 
+import java.util.Map.Entry;
+
 import org.freeswitch.esl.client.IEslEventListener;
 import org.freeswitch.esl.client.inbound.Client;
 import org.freeswitch.esl.client.inbound.InboundConnectionFailure;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
+import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +31,9 @@ public class ClientTest
 {
     private final Logger log = LoggerFactory.getLogger( this.getClass() );
 
-    private String host = "localhost";
+    private String host = "freeswitch-test";
     private int port = 8021;
-    private String password = "ClueCon"; 
+    private String password = "foo22"; //"ClueCon"; 
         
     @Test
     public void do_connect() throws InterruptedException
@@ -70,7 +73,8 @@ public class ClientTest
         client.addEventFilter( "Event-Name", "heartbeat" );
         client.addEventFilter( "Event-Name", "channel_create" );
         client.addEventFilter( "Event-Name", "background_job" );
-//        client.sendSyncCommand( "echo", "Foo foo bar" );
+        client.sendSyncApiCommand( "echo", "Foo foo bar" );
+
 //        client.sendSyncCommand( "originate", "sofia/internal/101@192.168.100.201! sofia/internal/102@192.168.100.201!" );
         
 //        client.sendSyncApiCommand( "sofia status", "" );
@@ -83,6 +87,7 @@ public class ClientTest
         EslMessage response = client.sendSyncApiCommand( "sofia status", "" );
         log.info( "sofia status = [{}]", response.getBodyLines().get( 3 ) );
         
+        // wait to see the heartbeat events arrive
         Thread.sleep( 25000 );
         client.close();
     }
@@ -107,7 +112,7 @@ public class ClientTest
         log.info( "Client connecting .." );
         try
         {
-            client.connect( "127.0.0.1", 8021, password, 2 );
+            client.connect( host, port, password, 2 );
         }
         catch ( InboundConnectionFailure e )
         {
@@ -115,5 +120,35 @@ public class ClientTest
             return;
         }
         log.info( "Client connected .." );
+        
+        client.close();
+    }
+    
+    @Test
+    public void sofia_contact()
+    {
+        Client client = new Client();
+        try
+        {
+            client.connect( host, port, password, 2 );
+        }
+        catch ( InboundConnectionFailure e )
+        {
+            log.error( "Connect failed", e );
+            return;
+        }
+        
+        EslMessage response = client.sendSyncApiCommand( "sofia_contact", "internal/102@192.168.100.201" );
+
+        log.info( "Response to 'sofia_contact': [{}]", response );
+        for ( Entry<Name, String> header : response.getHeaders().entrySet() )
+        {
+            log.info( " * header [{}]", header );
+        }
+        for ( String bodyLine : response.getBodyLines() )
+        {
+            log.info( " * body [{}]", bodyLine );
+        }
+        client.close();
     }
 }
