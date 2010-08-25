@@ -43,13 +43,16 @@
 <!--            <Import-Package>*</Import-Package>-->
             <Export-Package>
               org.freeswitch.esl.client,
+              org.freeswitch.esl.client.inbound,
+              org.freeswitch.esl.client.outbound,
+              org.freeswitch.esl.client.transport,
               org.freeswitch.esl.client.transport.event,
               org.freeswitch.esl.client.transport.message,
             </Export-Package>
             <!--  the debug package is a temporary hack  -->
             <Private-Package>
               org.freeswitch.esl.client.internal,
-              org.freeswitch.esl.client.debug
+              org.freeswitch.esl.client.internal.debug
             </Private-Package>
           </instructions>
         </configuration>
