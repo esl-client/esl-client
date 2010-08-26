@@ -26,17 +26,16 @@ import org.jboss.netty.handler.execution.ExecutionHandler;
 /**
  * Specialised {@link AbstractEslClientHandler} that implements the base connecction logic for an 
  * 'Outbound' FreeSWITCH Event Socket connection.  The responsibilities for this class are:
- * </p>
- * * To send a 'connect' command when the FreeSWITCH server first establishes a new connection with
+ * <ul><li>
+ * To send a 'connect' command when the FreeSWITCH server first establishes a new connection with
  * the socket client in Outbound mode.  This will result in an incoming {@link EslMessage} that is
  * transformed into an {@link EslEvent} that sub classes can handle.
- * </p>
+ * </ul>
  * Note: implementation requirement is that an {@link ExecutionHandler} is placed in the processing 
  * pipeline prior to this handler. This will ensure that each incoming message is processed in its
  * own thread (although still guaranteed to be processed in the order of receipt).
  * 
  * @author  david varnes
- * @version $Id$
  */
 @ChannelPipelineCoverage( "one" )
 public abstract class AbstractOutboundClientHandler extends AbstractEslClientHandler

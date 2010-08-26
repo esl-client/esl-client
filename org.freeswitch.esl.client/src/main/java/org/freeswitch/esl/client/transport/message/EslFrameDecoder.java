@@ -45,7 +45,6 @@ import org.slf4j.LoggerFactory;
  * </pre>
  * 
  * @author  david varnes
- * @version $Id$
  */
 public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State>
 {

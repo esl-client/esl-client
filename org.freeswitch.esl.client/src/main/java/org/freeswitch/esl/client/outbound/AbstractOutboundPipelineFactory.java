@@ -24,11 +24,9 @@ import org.jboss.netty.handler.codec.string.StringEncoder;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 /**
- * </p>
  * An abstract factory to assemble a Netty processing pipeline for outbound clients.
  * 
  * @author  david varnes
- * @version $Id$
  */
 public abstract class AbstractOutboundPipelineFactory implements ChannelPipelineFactory
 {

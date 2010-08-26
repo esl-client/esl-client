@@ -26,11 +26,10 @@ import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 /**
  * End users of the {@link Client} should not need to use this class. 
- * </p>
+ * <p>
  * Convenience factory to assemble a Netty processing pipeline for inbound clients.
  * 
  * @author  david varnes
- * @version $Id$
  */
 public class InboundPipelineFactory implements ChannelPipelineFactory
 {
@@ -55,5 +54,4 @@ public class InboundPipelineFactory implements ChannelPipelineFactory
         
         return pipeline;
     }
-
 }
