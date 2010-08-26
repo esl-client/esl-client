@@ -33,7 +33,7 @@ public class ClientTest
 
     private String host = "freeswitch-test";
     private int port = 8021;
-    private String password = "foo22"; //"ClueCon"; 
+    private String password = "ClueCon"; 
         
     @Test
     public void do_connect() throws InterruptedException
