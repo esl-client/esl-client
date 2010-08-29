@@ -46,7 +46,8 @@ public abstract class AbstractOutboundClientHandler extends AbstractEslClientHan
         log.debug( "Received new connection from server, sending connect message" );
         
         EslMessage response = sendSyncSingleLineCommand( ctx.getChannel(), "connect" );
-        // A hack in the message decoder treats most of this incoming message as an event so parse now
+        // The message decoder for outbound, treats most of this incoming message as an 'event' in 
+        // message body, so it parse now
         EslEvent channelDataEvent = new EslEvent( response, true );
         // Let implementing sub classes choose what to do next
         handleConnectResponse( ctx, channelDataEvent );

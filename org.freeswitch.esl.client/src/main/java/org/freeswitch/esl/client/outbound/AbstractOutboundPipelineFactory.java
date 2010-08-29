@@ -35,7 +35,8 @@ public abstract class AbstractOutboundPipelineFactory implements ChannelPipeline
         ChannelPipeline pipeline = Channels.pipeline(); 
         // Add the text line codec combination first
         pipeline.addLast( "encoder", new StringEncoder() );
-        pipeline.addLast( "decoder", new EslFrameDecoder( 8092 ) );
+        // Note that outbound mode requires the decoder to treat many 'headers' as body lines
+        pipeline.addLast( "decoder", new EslFrameDecoder( 8092, true ) );
         // Add an executor to ensure separate thread for each upstream message from here
         pipeline.addLast( "executor", new ExecutionHandler( 
             new OrderedMemoryAwareThreadPoolExecutor( 16, 1048576, 1048576 ) ) );
