@@ -18,7 +18,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.freeswitch.esl.client</groupId>
-    <artifactId>esl-client-parent</artifactId>
+    <artifactId>java-esl-client</artifactId>
     <version>0.9.1-SNAPSHOT</version>
   </parent>
   <artifactId>org.freeswitch.esl.client.example</artifactId>
