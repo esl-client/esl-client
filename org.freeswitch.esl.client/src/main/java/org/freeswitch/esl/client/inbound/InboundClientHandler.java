@@ -19,10 +19,9 @@ import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.IEslProtocolListener;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
-import org.freeswitch.esl.client.transport.message.EslMessage;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Value;
+import org.freeswitch.esl.client.transport.message.EslMessage;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 
 /**
@@ -43,7 +42,6 @@ import org.jboss.netty.handler.execution.ExecutionHandler;
  * 
  * @author  david varnes
  */
-@ChannelPipelineCoverage( "one" )
 public class InboundClientHandler extends AbstractEslClientHandler
 {
     private final String password;

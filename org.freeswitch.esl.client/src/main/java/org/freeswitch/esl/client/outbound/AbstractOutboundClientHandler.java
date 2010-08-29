@@ -19,7 +19,6 @@ import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 
@@ -37,7 +36,6 @@ import org.jboss.netty.handler.execution.ExecutionHandler;
  * 
  * @author  david varnes
  */
-@ChannelPipelineCoverage( "one" )
 public abstract class AbstractOutboundClientHandler extends AbstractEslClientHandler
 {
 
