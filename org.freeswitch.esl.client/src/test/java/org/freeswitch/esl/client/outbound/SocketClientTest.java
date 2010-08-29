@@ -42,6 +42,11 @@ public class SocketClientTest
 {
     private final Logger log = LoggerFactory.getLogger( this.getClass() );
 
+    /*
+     *  Example usage of an 'outbound' socket client.  Of course an application developer would need to
+     *  create their own implementation of a handler and pipeline factory, and invoke the SocketClient.
+     *  
+     */
     @Test
     public void run_client() throws InterruptedException
     {
