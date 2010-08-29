@@ -18,11 +18,12 @@ Features still to be implemented
   
 Distribution
  * [Fixed - using Sonatype] Find out how (if ok) to put binary distribution on files.freeswitch.org
+ * [Done] Cut a release, look at usage of tags in FS git repo.
  * [Started] FreeSWITCH wiki pages
  * Basic usage docs
  * Package jar, javadocs, source and dependencies (slf4j, netty) for people to trial without having to build.
- * Cut a release, look at usage of tags in FS git repo.
-
+ * Host the javadoc API somewhere in the org.freeswitch domain .. files ?
+ 
 Quality items
  * [No] Is there a git equivalent to svn $Id$ tag ?
  * Ask FS dev team for any ESL event generation test strategies/suites.
