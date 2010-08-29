@@ -40,7 +40,6 @@
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Version>${project.version}</Bundle-Version>
             <Bundle-DocURL>http://www.freeswitch.org</Bundle-DocURL>
-<!--            <Import-Package>*</Import-Package>-->
             <Export-Package>
               org.freeswitch.esl.client,
               org.freeswitch.esl.client.inbound,
@@ -73,18 +72,20 @@
   </build>
   <dependencies>
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.6.1</version>
-    </dependency>
-    
+    <!--  tcp socket and codec library see   http://jboss.org/netty  -->
     <dependency>
       <groupId>org.jboss.netty</groupId>
       <artifactId>netty</artifactId>
       <version>3.2.1.Final</version>
     </dependency>
 
+    <!--  logging library see   http://slf4j.org  -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.6.1</version>
+    </dependency>
+    
     <!--  test dependencies -->
     
     <dependency>
