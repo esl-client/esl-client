@@ -23,7 +23,7 @@
     <version>4</version>
   </parent>
   <groupId>org.freeswitch.esl.client</groupId>
-  <artifactId>esl-client-parent</artifactId>
+  <artifactId>java-esl-client</artifactId>
   <version>0.9.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>FreeSWITCH Event Socket Library - Java Client project</name>
