@@ -4,6 +4,7 @@ Features still to be implemented
  * [Fixed]: Fix the event parser to properly use Content-Length header, reports of misshandling missing \n 
  * Problem using latest netty release in an OSGi container
  * Chase down the apparent issue with Netty when using executor in pipeline (wierd).
+ * Improve exception handling - implement exceptionCaught()
  * More testing of the outbound socket client template code
  * Implement Send event command
  * Testing of SendMsg command 
