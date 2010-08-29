@@ -41,18 +41,10 @@
             <Bundle-Version>${project.version}</Bundle-Version>
             <Bundle-DocURL>http://www.freeswitch.org</Bundle-DocURL>
             <Export-Package>
-              org.freeswitch.esl.client,
-              org.freeswitch.esl.client.inbound,
-              org.freeswitch.esl.client.outbound,
-              org.freeswitch.esl.client.transport,
-              org.freeswitch.esl.client.transport.event,
-              org.freeswitch.esl.client.transport.message,
+              !org.freeswitch.esl.client.internal,
+              !org.freeswitch.esl.client.internal.debug,
+              org.freeswitch.esl.client.*
             </Export-Package>
-            <!--  the debug package is a temporary hack  -->
-            <Private-Package>
-              org.freeswitch.esl.client.internal,
-              org.freeswitch.esl.client.internal.debug
-            </Private-Package>
           </instructions>
         </configuration>
       </plugin>
