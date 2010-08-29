@@ -45,9 +45,9 @@
   </licenses>
   <inceptionYear>2009</inceptionYear>
   <scm>
-    <connection>scm:git:git://git.freeswich.org/freeswitch-contrib.git</connection>
-    <developerConnection>scm:git:ssh://git@git.freeswich.org/freeswitch-contrib.git</developerConnection>
-    <url>git://git.freeswich.org/freeswitch-contrib.git</url>
+    <connection>scm:git:git://git.freeswitch.org/freeswitch-contrib.git</connection>
+    <developerConnection>scm:git:ssh://git@git.freeswitch.org/freeswitch-contrib.git</developerConnection>
+    <url>git://git.freeswitch.org/freeswitch-contrib.git</url>
   </scm>
   <developers>
     <developer>
