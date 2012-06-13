@@ -25,33 +25,30 @@ import org.jboss.netty.handler.codec.string.StringEncoder;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 /**
- * End users of the {@link Client} should not need to use this class. 
- * <p>
+ * End users of the {@link Client} should not need to use this class.
+ * <p/>
  * Convenience factory to assemble a Netty processing pipeline for inbound clients.
- * 
- * @author  david varnes
+ *
+ * @author david varnes
  */
-public class InboundPipelineFactory implements ChannelPipelineFactory
-{
-    private final ChannelHandler handler;
-    
-    public InboundPipelineFactory( ChannelHandler handler )
-    {
-        this.handler = handler;
-    }
-    
-    public ChannelPipeline getPipeline() throws Exception
-    {
-        ChannelPipeline pipeline = Channels.pipeline(); 
-        pipeline.addLast( "encoder", new StringEncoder() );
-        pipeline.addLast( "decoder", new EslFrameDecoder( 8192 ) );
-        // Add an executor to ensure separate thread for each upstream message from here
-        pipeline.addLast( "executor", new ExecutionHandler( 
-            new OrderedMemoryAwareThreadPoolExecutor( 16, 1048576, 1048576 ) ) );
+public class InboundPipelineFactory implements ChannelPipelineFactory {
+  private final ChannelHandler handler;
 
-        // now the inbound client logic
-        pipeline.addLast( "clientHandler", handler );
-        
-        return pipeline;
-    }
+  public InboundPipelineFactory(ChannelHandler handler) {
+    this.handler = handler;
+  }
+
+  public ChannelPipeline getPipeline() throws Exception {
+    ChannelPipeline pipeline = Channels.pipeline();
+    pipeline.addLast("encoder", new StringEncoder());
+    pipeline.addLast("decoder", new EslFrameDecoder(8192));
+    // Add an executor to ensure separate thread for each upstream message from here
+    pipeline.addLast("executor", new ExecutionHandler(
+      new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576)));
+
+    // now the inbound client logic
+    pipeline.addLast("clientHandler", handler);
+
+    return pipeline;
+  }
 }

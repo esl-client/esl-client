@@ -23,48 +23,44 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 
 /**
- * Specialised {@link AbstractEslClientHandler} that implements the base connecction logic for an 
+ * Specialised {@link AbstractEslClientHandler} that implements the base connecction logic for an
  * 'Outbound' FreeSWITCH Event Socket connection.  The responsibilities for this class are:
  * <ul><li>
  * To send a 'connect' command when the FreeSWITCH server first establishes a new connection with
  * the socket client in Outbound mode.  This will result in an incoming {@link EslMessage} that is
  * transformed into an {@link EslEvent} that sub classes can handle.
  * </ul>
- * Note: implementation requirement is that an {@link ExecutionHandler} is placed in the processing 
+ * Note: implementation requirement is that an {@link ExecutionHandler} is placed in the processing
  * pipeline prior to this handler. This will ensure that each incoming message is processed in its
  * own thread (although still guaranteed to be processed in the order of receipt).
- * 
- * @author  david varnes
+ *
+ * @author david varnes
  */
-public abstract class AbstractOutboundClientHandler extends AbstractEslClientHandler
-{
+public abstract class AbstractOutboundClientHandler extends AbstractEslClientHandler {
 
-    @Override
-    public void channelConnected( ChannelHandlerContext ctx, ChannelStateEvent e ) throws Exception
-    {
-        // Have received a connection from FreeSWITCH server, send connect response
-        log.debug( "Received new connection from server, sending connect message" );
-        
-        EslMessage response = sendSyncSingleLineCommand( ctx.getChannel(), "connect" );
-        // The message decoder for outbound, treats most of this incoming message as an 'event' in 
-        // message body, so it parse now
-        EslEvent channelDataEvent = new EslEvent( response, true );
-        // Let implementing sub classes choose what to do next
-        handleConnectResponse( ctx, channelDataEvent );
-    }
+  @Override
+  public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+    // Have received a connection from FreeSWITCH server, send connect response
+    log.debug("Received new connection from server, sending connect message");
 
-    protected abstract void handleConnectResponse( ChannelHandlerContext ctx, EslEvent event );
+    EslMessage response = sendSyncSingleLineCommand(ctx.getChannel(), "connect");
+    // The message decoder for outbound, treats most of this incoming message as an 'event' in
+    // message body, so it parse now
+    EslEvent channelDataEvent = new EslEvent(response, true);
+    // Let implementing sub classes choose what to do next
+    handleConnectResponse(ctx, channelDataEvent);
+  }
 
-    @Override
-    protected void handleAuthRequest( ChannelHandlerContext ctx )
-    {
-        // This should not happen in outbound mode
-        log.warn( "Auth request received in outbound mode, ignoring" ); 
-    }
+  protected abstract void handleConnectResponse(ChannelHandlerContext ctx, EslEvent event);
 
-    @Override
-    protected void handleDisconnectionNotice()
-    {
-        log.debug( "Received disconnection notice" );
-    }    
+  @Override
+  protected void handleAuthRequest(ChannelHandlerContext ctx) {
+    // This should not happen in outbound mode
+    log.warn("Auth request received in outbound mode, ignoring");
+  }
+
+  @Override
+  protected void handleDisconnectionNotice() {
+    log.debug("Received disconnection notice");
+  }
 }

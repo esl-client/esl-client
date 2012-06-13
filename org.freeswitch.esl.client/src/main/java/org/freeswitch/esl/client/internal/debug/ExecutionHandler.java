@@ -16,23 +16,16 @@ package org.freeswitch.esl.client.internal.debug;
  * under the License.
  */
 
-import java.util.concurrent.Executor;
-
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelDownstreamHandler;
-import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelState;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ChannelUpstreamHandler;
+import org.jboss.netty.channel.*;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.util.ExternalResourceReleasable;
 import org.jboss.netty.util.internal.ExecutorUtil;
 
+import java.util.concurrent.Executor;
+
 /**
  * Forwards an upstream {@link ChannelEvent} to an {@link Executor}.
- * <p>
+ * <p/>
  * You can implement various thread model by adding this handler to a
  * {@link ChannelPipeline}.  The most common use case of this handler is to
  * add a {@link ExecutionHandler} which was specified with
@@ -53,65 +46,63 @@ import org.jboss.netty.util.internal.ExecutorUtil;
  *
  * @author The Netty Project (netty-dev@lists.jboss.org)
  * @author Trustin Lee (tlee@redhat.com)
- *
  * @version $Rev: 1685 $, $Date: 2009-08-28 16:15:49 +0900 (금, 28 8 2009) $
- *
  * @apiviz.landmark
  * @apiviz.has java.util.concurrent.ThreadPoolExecutor
  */
 public class ExecutionHandler implements ChannelUpstreamHandler, ChannelDownstreamHandler, ExternalResourceReleasable {
 
-    private final Executor executor;
+  private final Executor executor;
 
-    /**
-     * Creates a new instance with the specified {@link Executor}.
-     * Specify an {@link OrderedMemoryAwareThreadPoolExecutor} if unsure.
-     */
-    public ExecutionHandler(Executor executor) {
-        if (executor == null) {
-            throw new NullPointerException("executor");
+  /**
+   * Creates a new instance with the specified {@link Executor}.
+   * Specify an {@link OrderedMemoryAwareThreadPoolExecutor} if unsure.
+   */
+  public ExecutionHandler(Executor executor) {
+    if (executor == null) {
+      throw new NullPointerException("executor");
+    }
+    this.executor = executor;
+  }
+
+  /**
+   * Returns the {@link Executor} which was specified with the constructor.
+   */
+  public Executor getExecutor() {
+    return executor;
+  }
+
+  /**
+   * Shuts down the {@link Executor} which was specified with the constructor
+   * and wait for its termination.
+   */
+  public void releaseExternalResources() {
+    ExecutorUtil.terminate(getExecutor());
+  }
+
+  public void handleUpstream(
+    ChannelHandlerContext context, ChannelEvent e) throws Exception {
+    executor.execute(new ChannelEventRunnable(context, e));
+  }
+
+  public void handleDownstream(
+    ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
+    if (e instanceof ChannelStateEvent) {
+      ChannelStateEvent cse = (ChannelStateEvent) e;
+      if (cse.getState() == ChannelState.INTEREST_OPS &&
+        (((Integer) cse.getValue()).intValue() & Channel.OP_READ) != 0) {
+
+        // setReadable(true) requested
+        boolean readSuspended = ctx.getAttachment() != null;
+        if (readSuspended) {
+          // Drop the request silently if MemoryAwareThreadPool has
+          // set the flag.
+          e.getFuture().setSuccess();
+          return;
         }
-        this.executor = executor;
+      }
     }
 
-    /**
-     * Returns the {@link Executor} which was specified with the constructor.
-     */
-    public Executor getExecutor() {
-        return executor;
-    }
-
-    /**
-     * Shuts down the {@link Executor} which was specified with the constructor
-     * and wait for its termination.
-     */
-    public void releaseExternalResources() {
-        ExecutorUtil.terminate(getExecutor());
-    }
-
-    public void handleUpstream(
-            ChannelHandlerContext context, ChannelEvent e) throws Exception {
-        executor.execute(new ChannelEventRunnable(context, e));
-    }
-
-    public void handleDownstream(
-            ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
-        if (e instanceof ChannelStateEvent) {
-            ChannelStateEvent cse = (ChannelStateEvent) e;
-            if (cse.getState() == ChannelState.INTEREST_OPS &&
-                (((Integer) cse.getValue()).intValue() & Channel.OP_READ) != 0) {
-
-                // setReadable(true) requested
-                boolean readSuspended = ctx.getAttachment() != null;
-                if (readSuspended) {
-                    // Drop the request silently if MemoryAwareThreadPool has
-                    // set the flag.
-                    e.getFuture().setSuccess();
-                    return;
-                }
-            }
-        }
-
-        ctx.sendDownstream(e);
-    }
+    ctx.sendDownstream(e);
+  }
 }

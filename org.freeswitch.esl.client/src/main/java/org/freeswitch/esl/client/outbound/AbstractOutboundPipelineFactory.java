@@ -25,27 +25,25 @@ import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 /**
  * An abstract factory to assemble a Netty processing pipeline for outbound clients.
- * 
- * @author  david varnes
+ *
+ * @author david varnes
  */
-public abstract class AbstractOutboundPipelineFactory implements ChannelPipelineFactory
-{
-    public ChannelPipeline getPipeline() throws Exception
-    {
-        ChannelPipeline pipeline = Channels.pipeline(); 
-        // Add the text line codec combination first
-        pipeline.addLast( "encoder", new StringEncoder() );
-        // Note that outbound mode requires the decoder to treat many 'headers' as body lines
-        pipeline.addLast( "decoder", new EslFrameDecoder( 8092, true ) );
-        // Add an executor to ensure separate thread for each upstream message from here
-        pipeline.addLast( "executor", new ExecutionHandler( 
-            new OrderedMemoryAwareThreadPoolExecutor( 16, 1048576, 1048576 ) ) );
+public abstract class AbstractOutboundPipelineFactory implements ChannelPipelineFactory {
+  public ChannelPipeline getPipeline() throws Exception {
+    ChannelPipeline pipeline = Channels.pipeline();
+    // Add the text line codec combination first
+    pipeline.addLast("encoder", new StringEncoder());
+    // Note that outbound mode requires the decoder to treat many 'headers' as body lines
+    pipeline.addLast("decoder", new EslFrameDecoder(8092, true));
+    // Add an executor to ensure separate thread for each upstream message from here
+    pipeline.addLast("executor", new ExecutionHandler(
+      new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576)));
 
-        // now the outbound client logic
-        pipeline.addLast( "clientHandler", makeHandler() );
-        
-        return pipeline;
-    }
+    // now the outbound client logic
+    pipeline.addLast("clientHandler", makeHandler());
 
-    protected abstract AbstractOutboundClientHandler makeHandler();
+    return pipeline;
+  }
+
+  protected abstract AbstractOutboundClientHandler makeHandler();
 }

@@ -16,13 +16,13 @@ package org.freeswitch.esl.client.internal.debug;
  */
 
 
-import java.util.concurrent.Executor;
-
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.util.EstimatableObjectWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Executor;
 
 /**
  * a {@link Runnable} which sends the specified {@link ChannelEvent} upstream.
@@ -31,57 +31,52 @@ import org.slf4j.LoggerFactory;
  *
  * @author The Netty Project (netty-dev@lists.jboss.org)
  * @author Trustin Lee (tlee@redhat.com)
- *
  * @version $Rev: 1685 $, $Date: 2009-08-28 16:15:49 +0900 (금, 28 8 2009) $
- *
  */
 public class ChannelEventRunnable implements Runnable, EstimatableObjectWrapper {
-    
-    private final Logger log = LoggerFactory.getLogger( this.getClass() );
-    private final ChannelHandlerContext ctx;
-    private final ChannelEvent e;
-    volatile int estimatedSize;
 
-    /**
-     * Creates a {@link Runnable} which sends the specified {@link ChannelEvent}
-     * upstream via the specified {@link ChannelHandlerContext}.
-     */
-    public ChannelEventRunnable(ChannelHandlerContext ctx, ChannelEvent e) {
-        this.ctx = ctx;
-        this.e = e;
-    }
+  private final Logger log = LoggerFactory.getLogger(this.getClass());
+  private final ChannelHandlerContext ctx;
+  private final ChannelEvent e;
+  volatile int estimatedSize;
 
-    /**
-     * Returns the {@link ChannelHandlerContext} which will be used to
-     * send the {@link ChannelEvent} upstream.
-     */
-    public ChannelHandlerContext getContext() {
-        return ctx;
-    }
+  /**
+   * Creates a {@link Runnable} which sends the specified {@link ChannelEvent}
+   * upstream via the specified {@link ChannelHandlerContext}.
+   */
+  public ChannelEventRunnable(ChannelHandlerContext ctx, ChannelEvent e) {
+    this.ctx = ctx;
+    this.e = e;
+  }
 
-    /**
-     * Returns the {@link ChannelEvent} which will be sent upstream.
-     */
-    public ChannelEvent getEvent() {
-        return e;
-    }
+  /**
+   * Returns the {@link ChannelHandlerContext} which will be used to
+   * send the {@link ChannelEvent} upstream.
+   */
+  public ChannelHandlerContext getContext() {
+    return ctx;
+  }
 
-    /**
-     * Sends the event upstream.
-     */
-    public void run() {
+  /**
+   * Returns the {@link ChannelEvent} which will be sent upstream.
+   */
+  public ChannelEvent getEvent() {
+    return e;
+  }
+
+  /**
+   * Sends the event upstream.
+   */
+  public void run() {
 //        log.info( "Sending [{}] upstream in [{}]", e, ctx );
-        try
-        {
-            ctx.sendUpstream(e);
-        }
-        catch ( Throwable t )
-        {
-            log.error( "Caught -->", t );
-        }
+    try {
+      ctx.sendUpstream(e);
+    } catch (Throwable t) {
+      log.error("Caught -->", t);
     }
+  }
 
-    public Object unwrap() {
-        return e;
-    }
+  public Object unwrap() {
+    return e;
+  }
 }

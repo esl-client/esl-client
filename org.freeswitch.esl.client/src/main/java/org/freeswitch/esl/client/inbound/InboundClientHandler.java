@@ -25,62 +25,54 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 
 /**
- * End users of the inbound {@link Client} should not need to use this class. 
- * <p>
- * Specialised {@link AbstractEslClientHandler} that implements the connection logic for an 
+ * End users of the inbound {@link Client} should not need to use this class.
+ * <p/>
+ * Specialised {@link AbstractEslClientHandler} that implements the connection logic for an
  * 'Inbound' FreeSWITCH Event Socket connection.  The responsibilities for this class are:
  * <ul><li>
- * To handle the auth request that the FreeSWITCH server will send immediately following a new 
+ * To handle the auth request that the FreeSWITCH server will send immediately following a new
  * connection when mode is Inbound.
  * <li>
- * To signal the observing {@link IEslProtocolListener} (expected to be the Inbound client 
+ * To signal the observing {@link IEslProtocolListener} (expected to be the Inbound client
  * implementation) when ESL events are received.
  * </ul>
- * Note: implementation requirement is that an {@link ExecutionHandler} is placed in the processing 
+ * Note: implementation requirement is that an {@link ExecutionHandler} is placed in the processing
  * pipeline prior to this handler. This will ensure that each incoming message is processed in its
  * own thread (although still guaranteed to be processed in the order of receipt).
- * 
- * @author  david varnes
+ *
+ * @author david varnes
  */
-public class InboundClientHandler extends AbstractEslClientHandler
-{
-    private final String password;
-    private final IEslProtocolListener listener;
-    
-    public InboundClientHandler( String password, IEslProtocolListener listener )
-    {
-        this.password = password;
-        this.listener = listener;
-    }
-    
-    protected void handleEslEvent( ChannelHandlerContext ctx, EslEvent event )
-    {
-        log.debug( "Received event: [{}]", event );
-        listener.eventReceived( event );
-    }
+public class InboundClientHandler extends AbstractEslClientHandler {
+  private final String password;
+  private final IEslProtocolListener listener;
 
-    protected void handleAuthRequest( ChannelHandlerContext ctx )
-    {
-        log.debug( "Auth requested, sending [auth {}]", "*****" );
-        EslMessage response = sendSyncSingleLineCommand( ctx.getChannel(), "auth " + password );
-        log.debug( "Auth response [{}]", response );
-        if ( response.getContentType().equals( Value.COMMAND_REPLY ) )
-        {
-            CommandResponse commandResponse = new CommandResponse( "auth " + password, response );
-            listener.authResponseReceived( commandResponse );
-        }
-        else
-        {
-            log.error( "Bad auth response message [{}]", response );
-            throw new IllegalStateException( "Incorrect auth response" ); 
-        }
-    }
+  public InboundClientHandler(String password, IEslProtocolListener listener) {
+    this.password = password;
+    this.listener = listener;
+  }
 
-    @Override
-    protected void handleDisconnectionNotice()
-    {
-        log.debug( "Received disconnection notice" );
-        listener.disconnected();
+  protected void handleEslEvent(ChannelHandlerContext ctx, EslEvent event) {
+    log.debug("Received event: [{}]", event);
+    listener.eventReceived(event);
+  }
+
+  protected void handleAuthRequest(ChannelHandlerContext ctx) {
+    log.debug("Auth requested, sending [auth {}]", "*****");
+    EslMessage response = sendSyncSingleLineCommand(ctx.getChannel(), "auth " + password);
+    log.debug("Auth response [{}]", response);
+    if (response.getContentType().equals(Value.COMMAND_REPLY)) {
+      CommandResponse commandResponse = new CommandResponse("auth " + password, response);
+      listener.authResponseReceived(commandResponse);
+    } else {
+      log.error("Bad auth response message [{}]", response);
+      throw new IllegalStateException("Incorrect auth response");
     }
-    
+  }
+
+  @Override
+  protected void handleDisconnectionNotice() {
+    log.debug("Received disconnection notice");
+    listener.disconnected();
+  }
+
 }

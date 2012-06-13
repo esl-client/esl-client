@@ -20,17 +20,16 @@ import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 
 /**
- * End users of the {@link Client} should not need to use this class. 
- * <p>
+ * End users of the {@link Client} should not need to use this class.
+ * <p/>
  * Allow client implementations to observe events arriving from the server.
- * 
- * @author  david varnes
+ *
+ * @author david varnes
  */
-public interface IEslProtocolListener
-{
-    void authResponseReceived( CommandResponse response );
-    
-    void eventReceived( EslEvent event );
-    
-    void disconnected();
+public interface IEslProtocolListener {
+  void authResponseReceived(CommandResponse response);
+
+  void eventReceived(EslEvent event);
+
+  void disconnected();
 }

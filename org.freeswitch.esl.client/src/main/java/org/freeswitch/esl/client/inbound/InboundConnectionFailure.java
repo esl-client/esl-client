@@ -17,20 +17,17 @@ package org.freeswitch.esl.client.inbound;
 
 /**
  * Checked exception to handle connection failures.
- * 
- * @author  david varnes
+ *
+ * @author david varnes
  */
-public class InboundConnectionFailure extends Exception
-{
-    private static final long serialVersionUID = 1L;
+public class InboundConnectionFailure extends Exception {
+  private static final long serialVersionUID = 1L;
 
-    public InboundConnectionFailure( String message )
-    {
-        super( message );
-    }
-    
-    public InboundConnectionFailure( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
+  public InboundConnectionFailure(String message) {
+    super(message);
+  }
+
+  public InboundConnectionFailure(String message, Throwable cause) {
+    super(message, cause);
+  }
 }
