@@ -31,7 +31,7 @@ import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
  *
  * @author david varnes
  */
-public class InboundPipelineFactory implements ChannelPipelineFactory {
+class InboundPipelineFactory implements ChannelPipelineFactory {
   private final ChannelHandler handler;
 
   public InboundPipelineFactory(ChannelHandler handler) {

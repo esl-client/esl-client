@@ -108,7 +108,6 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
    * attach it to the callback.
    *
    * @param channel
-   * @param command List of command lines to send
    * @return the {@link EslMessage} attached to this command's callback
    */
   public EslMessage sendSyncMultiLineCommand(Channel channel, final List<String> commandLines) {

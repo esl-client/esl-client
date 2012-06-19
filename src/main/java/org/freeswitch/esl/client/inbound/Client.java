@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author david varnes
  */
 public class Client {
+
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   private final List<IEslEventListener> eventListeners = new CopyOnWriteArrayList<IEslEventListener>();
@@ -285,7 +286,6 @@ public class Client {
 
   /**
    * Delete an event filter from the current set of event filters on this connection.  See
-   * {@link Client.addEventFilter}
    *
    * @param eventHeader   to remove
    * @param valueToFilter to remove

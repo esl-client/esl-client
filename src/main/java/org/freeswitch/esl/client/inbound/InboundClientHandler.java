@@ -42,7 +42,7 @@ import org.jboss.netty.handler.execution.ExecutionHandler;
  *
  * @author david varnes
  */
-public class InboundClientHandler extends AbstractEslClientHandler {
+class InboundClientHandler extends AbstractEslClientHandler {
   private final String password;
   private final IEslProtocolListener listener;
 
