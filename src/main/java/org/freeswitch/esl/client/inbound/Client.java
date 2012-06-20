@@ -16,11 +16,14 @@
 package org.freeswitch.esl.client.inbound;
 
 import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import org.freeswitch.esl.client.IEslEventListener;
 import org.freeswitch.esl.client.internal.IEslProtocolListener;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
+import org.freeswitch.esl.client.transport.message.EslHeaders;
 import org.freeswitch.esl.client.transport.message.EslMessage;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -34,6 +37,9 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  * Entry point to connect to a running FreeSWITCH Event Socket Library module, as a client.
@@ -59,19 +65,14 @@ public class Client {
         return new Thread(r, "EslEventNotifier-" + threadNumber.getAndIncrement());
       }
     });
-  private final Executor backgroundJobListenerExecutor = Executors.newSingleThreadExecutor(
-    new ThreadFactory() {
-      AtomicInteger threadNumber = new AtomicInteger(1);
 
-      public Thread newThread(Runnable r) {
-        return new Thread(r, "EslBackgroundJobNotifier-" + threadNumber.getAndIncrement());
-      }
-    });
-
-  private AtomicBoolean authenticatorResponded = new AtomicBoolean(false);
+  private final AtomicBoolean authenticatorResponded = new AtomicBoolean(false);
   private boolean authenticated;
   private CommandResponse authenticationResponse;
   private Channel channel;
+
+  private final ConcurrentHashMap<String, SettableFuture<EslEvent>> backgroundJobs =
+    new ConcurrentHashMap<String, SettableFuture<EslEvent>>();
 
   public boolean canSend() {
     return channel != null && channel.isConnected() && authenticated;
@@ -153,21 +154,22 @@ public class Client {
    * @param arg     command arguments
    * @return an {@link EslMessage} containing command results
    */
-  public EslMessage sendSyncApiCommand(String command, String arg) {
+  public EslMessage sendApiCommand(String command, String arg) {
+
+    checkArgument(!isNullOrEmpty(command), "command cannot be null or empty");
     checkConnected();
-    InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    StringBuilder sb = new StringBuilder();
-    if (command != null && !command.isEmpty()) {
-      sb.append("api ");
-      sb.append(command);
-    }
-    if (arg != null && !arg.isEmpty()) {
-      sb.append(' ');
-      sb.append(arg);
-    }
 
     try {
+
+      final StringBuilder sb = new StringBuilder();
+      sb.append("api ").append(command);
+      if (!isNullOrEmpty(arg)) {
+        sb.append(' ').append(arg);
+      }
+
+      final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
       return handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+
     } catch (Throwable t) {
       throw Throwables.propagate(t);
     }
@@ -184,20 +186,23 @@ public class Client {
    * @param arg     command arguments
    * @return String Job-UUID that the server will tag result event with.
    */
-  public String sendAsyncApiCommand(String command, String arg) {
+  public ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg) {
+
+    checkArgument(!isNullOrEmpty(command), "command cannot be null or empty");
     checkConnected();
-    InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    StringBuilder sb = new StringBuilder();
-    if (command != null && !command.isEmpty()) {
-      sb.append("bgapi ");
-      sb.append(command);
-    }
-    if (arg != null && !arg.isEmpty()) {
-      sb.append(' ');
-      sb.append(arg);
+
+    final StringBuilder sb = new StringBuilder();
+    sb.append("bgapi ").append(command);
+    if (!isNullOrEmpty(arg)) {
+      sb.append(' ').append(arg);
     }
 
-    return handler.sendAsyncCommand(channel, sb.toString());
+    final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
+    final String jobUuid = handler.sendAsyncCommand(channel, sb.toString());
+    final SettableFuture<EslEvent> future = SettableFuture.create();
+    backgroundJobs.put(jobUuid, future);
+
+    return future;
   }
 
   /**
@@ -219,25 +224,22 @@ public class Client {
    */
   public CommandResponse setEventSubscriptions(String format, String events) {
     // temporary hack
-    if (!format.equals("plain")) {
-      throw new IllegalStateException("Only 'plain' event format is supported at present");
-    }
-
+    checkState(format.equals("plain"), "Only 'plain' event format is supported at present");
+    checkArgument(!isNullOrEmpty(format), "Format cannot be null or empty");
     checkConnected();
-    InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    StringBuilder sb = new StringBuilder();
-    if (format != null && !format.isEmpty()) {
-      sb.append("event ");
-      sb.append(format);
-    }
-    if (events != null && !events.isEmpty()) {
-      sb.append(' ');
-      sb.append(events);
-    }
 
     try {
-      EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+
+      final StringBuilder sb = new StringBuilder();
+      sb.append("event ").append(format);
+      if (!isNullOrEmpty(events)) {
+        sb.append(' ').append(events);
+      }
+
+      final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
+      final EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
       return new CommandResponse(sb.toString(), response);
+
     } catch (Throwable t) {
       throw Throwables.propagate(t);
     }
@@ -250,11 +252,12 @@ public class Client {
    * @return a {@link CommandResponse} with the server's response.
    */
   public CommandResponse cancelEventSubscriptions() {
+
     checkConnected();
-    InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
 
     try {
-      EslMessage response = handler.sendSyncSingleLineCommand(channel, "noevents").get();
+      final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
+      final EslMessage response = handler.sendSyncSingleLineCommand(channel, "noevents").get();
       return new CommandResponse("noevents", response);
     } catch (Throwable t) {
       throw Throwables.propagate(t);
@@ -282,21 +285,22 @@ public class Client {
    * @return a {@link CommandResponse} with the server's response.
    */
   public CommandResponse addEventFilter(String eventHeader, String valueToFilter) {
+
+    checkArgument(!isNullOrEmpty(eventHeader), "eventHeader cannot be null or empty");
     checkConnected();
-    InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    StringBuilder sb = new StringBuilder();
-    if (eventHeader != null && !eventHeader.isEmpty()) {
-      sb.append("filter ");
-      sb.append(eventHeader);
-    }
-    if (valueToFilter != null && !valueToFilter.isEmpty()) {
-      sb.append(' ');
-      sb.append(valueToFilter);
-    }
 
     try {
-      EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      final StringBuilder sb = new StringBuilder();
+      sb.append("filter ").append(eventHeader);
+      if (!isNullOrEmpty(valueToFilter)) {
+        sb.append(' ');
+        sb.append(valueToFilter);
+      }
+
+      final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
+      final EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
       return new CommandResponse(sb.toString(), response);
+
     } catch (Throwable t) {
       throw Throwables.propagate(t);
     }
@@ -310,21 +314,23 @@ public class Client {
    * @return a {@link CommandResponse} with the server's response.
    */
   public CommandResponse deleteEventFilter(String eventHeader, String valueToFilter) {
+
+    checkArgument(!isNullOrEmpty(eventHeader), "eventHeader cannot be null or empty");
     checkConnected();
-    InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    StringBuilder sb = new StringBuilder();
-    if (eventHeader != null && !eventHeader.isEmpty()) {
-      sb.append("filter delete ");
-      sb.append(eventHeader);
-    }
-    if (valueToFilter != null && !valueToFilter.isEmpty()) {
-      sb.append(' ');
-      sb.append(valueToFilter);
-    }
 
     try {
-      EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+
+      final StringBuilder sb = new StringBuilder();
+      sb.append("filter delete ").append(eventHeader);
+      if (!isNullOrEmpty(valueToFilter)) {
+        sb.append(' ');
+        sb.append(valueToFilter);
+      }
+
+      final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
+      final EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
       return new CommandResponse(sb.toString(), response);
+
     } catch (Throwable t) {
       throw Throwables.propagate(t);
     }
@@ -338,15 +344,18 @@ public class Client {
    * @return a {@link CommandResponse} with the server's response.
    */
   public CommandResponse sendMessage(SendMsg sendMsg) {
+
+    checkNotNull(sendMsg, "sendMsg cannot be null");
     checkConnected();
-    InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
 
     try {
-      EslMessage response = handler.sendSyncMultiLineCommand(channel, sendMsg.getMsgLines()).get();
+      final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
+      final EslMessage response = handler.sendSyncMultiLineCommand(channel, sendMsg.getMsgLines()).get();
       return new CommandResponse(sendMsg.toString(), response);
     } catch (Throwable t) {
       throw Throwables.propagate(t);
     }
+
   }
 
   /**
@@ -356,16 +365,16 @@ public class Client {
    * @return a {@link CommandResponse} with the server's response.
    */
   public CommandResponse setLoggingLevel(String level) {
+
+    checkArgument(!isNullOrEmpty(level), "level cannot be null or empty");
     checkConnected();
-    InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    StringBuilder sb = new StringBuilder();
-    if (level != null && !level.isEmpty()) {
-      sb.append("log ");
-      sb.append(level);
-    }
 
     try {
-      EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      final StringBuilder sb = new StringBuilder();
+      sb.append("log ").append(level);
+
+      final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
+      final EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
       return new CommandResponse(sb.toString(), response);
     } catch (Throwable t) {
       throw Throwables.propagate(t);
@@ -378,11 +387,12 @@ public class Client {
    * @return a {@link CommandResponse} with the server's response.
    */
   public CommandResponse cancelLogging() {
+
     checkConnected();
-    InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
 
     try {
-      EslMessage response = handler.sendSyncSingleLineCommand(channel, "nolog").get();
+      final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
+      final EslMessage response = handler.sendSyncSingleLineCommand(channel, "nolog").get();
       return new CommandResponse("nolog", response);
     } catch (Throwable t) {
       throw Throwables.propagate(t);
@@ -396,10 +406,10 @@ public class Client {
    */
   public CommandResponse close() {
     checkConnected();
-    InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
 
     try {
-      EslMessage response = handler.sendSyncSingleLineCommand(channel, "exit").get();
+      final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
+      final EslMessage response = handler.sendSyncSingleLineCommand(channel, "exit").get();
       return new CommandResponse("exit", response);
     } catch (Throwable t) {
       throw Throwables.propagate(t);
@@ -419,26 +429,20 @@ public class Client {
 
     public void eventReceived(final EslEvent event) {
       log.debug("Event received [{}]", event);
-      /*
-      *  Notify listeners in a different thread in order to:
-      *    - not to block the IO threads with potentially long-running listeners
-      *    - generally be defensive running other people's code
-      *  Use a different worker thread pool for async job results than for event driven
-      *  events to keep the latency as low as possible.
-      */
       if (event.getEventName().equals("BACKGROUND_JOB")) {
-        for (final IEslEventListener listener : eventListeners) {
-          backgroundJobListenerExecutor.execute(new Runnable() {
-            public void run() {
-              try {
-                listener.backgroundJobResultReceived(event);
-              } catch (Throwable t) {
-                log.error("Error caught notifying listener of job result [" + event + ']', t);
-              }
-            }
-          });
+        final String backgroundUuid = event.getEventHeaders().get(EslHeaders.Name.JOB_UUID);
+        final SettableFuture<EslEvent> future = backgroundJobs.get(backgroundUuid);
+        if (null != future) {
+          future.set(event);
         }
       } else {
+        /*
+        *  Notify listeners in a different thread in order to:
+        *    - not to block the IO threads with potentially long-running listeners
+        *    - generally be defensive running other people's code
+        *  Use a different worker thread pool for async job results than for event driven
+        *  events to keep the latency as low as possible.
+        */
         for (final IEslEventListener listener : eventListeners) {
           eventListenerExecutor.execute(new Runnable() {
             public void run() {

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Specialised {@link ChannelUpstreamHandler} that implements the logic of an ESL connection that
@@ -52,19 +53,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author david varnes
  */
 public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHandler {
+
   public static final String MESSAGE_TERMINATOR = "\n\n";
   public static final String LINE_TERMINATOR = "\n";
 
   protected final Logger log = LoggerFactory.getLogger(this.getClass());
-
+  // used to preserve association between adding future to queue and sending message on channel
+  private final ReentrantLock syncLock = new ReentrantLock();
   private final ConcurrentLinkedQueue<SettableFuture<EslMessage>> syncCallbacks =
     new ConcurrentLinkedQueue<SettableFuture<EslMessage>>();
 
   @Override
   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
     if (e.getMessage() instanceof EslMessage) {
-      EslMessage message = (EslMessage) e.getMessage();
-      String contentType = message.getContentType();
+      final EslMessage message = (EslMessage) e.getMessage();
+      final String contentType = message.getContentType();
       if (contentType.equals(Value.TEXT_EVENT_PLAIN) ||
         contentType.equals(Value.TEXT_EVENT_XML)) {
         //  transform into an event
@@ -78,6 +81,27 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
     }
   }
 
+  protected void handleEslMessage(ChannelHandlerContext ctx, EslMessage message) {
+    log.info("Received message: [{}]", message);
+    String contentType = message.getContentType();
+
+    if (contentType.equals(Value.API_RESPONSE)) {
+      log.debug("Api response received [{}]", message);
+      syncCallbacks.poll().set(message);
+    } else if (contentType.equals(Value.COMMAND_REPLY)) {
+      log.debug("Command reply received [{}]", message);
+      syncCallbacks.poll().set(message);
+    } else if (contentType.equals(Value.AUTH_REQUEST)) {
+      log.debug("Auth request received [{}]", message);
+      handleAuthRequest(ctx);
+    } else if (contentType.equals(Value.TEXT_DISCONNECT_NOTICE)) {
+      log.debug("Disconnect notice received [{}]", message);
+      handleDisconnectionNotice();
+    } else {
+      log.warn("Unexpected message content type [{}]", contentType);
+    }
+  }
+
   /**
    * Synthesise a synchronous command/response by creating a callback object which is placed in
    * queue and blocks waiting for another IO thread to process an incoming {@link EslMessage} and
@@ -88,10 +112,15 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
    * @return the {@link EslMessage} attached to this command's callback
    */
   public ListenableFuture<EslMessage> sendSyncSingleLineCommand(Channel channel, final String command) {
-    final SettableFuture<EslMessage> future = SettableFuture.create();
-    syncCallbacks.add(future);
-    channel.write(command + MESSAGE_TERMINATOR);
-    return future;
+    try {
+      syncLock.lock();
+      final SettableFuture<EslMessage> future = SettableFuture.create();
+      syncCallbacks.add(future);
+      channel.write(command + MESSAGE_TERMINATOR);
+      return future;
+    } finally {
+      syncLock.unlock();
+    }
   }
 
   /**
@@ -111,10 +140,15 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
     }
     sb.append(LINE_TERMINATOR);
 
-    final SettableFuture<EslMessage> future = SettableFuture.create();
-    syncCallbacks.add(future);
-    channel.write(sb.toString());
-    return future;
+    try {
+      syncLock.lock();
+      final SettableFuture<EslMessage> future = SettableFuture.create();
+      syncCallbacks.add(future);
+      channel.write(sb.toString());
+      return future;
+    } finally {
+      syncLock.unlock();
+    }
 
   }
 
@@ -142,27 +176,6 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
       return response.getHeaderValue(Name.JOB_UUID);
     } else {
       throw new IllegalStateException("Missing Job-UUID header in bgapi response");
-    }
-  }
-
-  protected void handleEslMessage(ChannelHandlerContext ctx, EslMessage message) {
-    log.info("Received message: [{}]", message);
-    String contentType = message.getContentType();
-
-    if (contentType.equals(Value.API_RESPONSE)) {
-      log.debug("Api response received [{}]", message);
-      syncCallbacks.poll().set(message);
-    } else if (contentType.equals(Value.COMMAND_REPLY)) {
-      log.debug("Command reply received [{}]", message);
-      syncCallbacks.poll().set(message);
-    } else if (contentType.equals(Value.AUTH_REQUEST)) {
-      log.debug("Auth request received [{}]", message);
-      handleAuthRequest(ctx);
-    } else if (contentType.equals(Value.TEXT_DISCONNECT_NOTICE)) {
-      log.debug("Disconnect notice received [{}]", message);
-      handleDisconnectionNotice();
-    } else {
-      log.warn("Unexpected message content type [{}]", contentType);
     }
   }
 

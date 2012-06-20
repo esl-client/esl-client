@@ -41,11 +41,4 @@ public interface IEslEventListener {
    */
   void eventReceived(EslEvent event);
 
-  /**
-   * Signal of an event containing the result of a client requested background job.  The Job-UUID will
-   * be available as an event header of that name.
-   *
-   * @param event as an {@link EslEvent}
-   */
-  void backgroundJobResultReceived(EslEvent event);
 }
