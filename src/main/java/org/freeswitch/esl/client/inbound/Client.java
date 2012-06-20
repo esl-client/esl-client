@@ -15,6 +15,7 @@
  */
 package org.freeswitch.esl.client.inbound;
 
+import com.google.common.base.Throwables;
 import org.freeswitch.esl.client.IEslEventListener;
 import org.freeswitch.esl.client.internal.IEslProtocolListener;
 import org.freeswitch.esl.client.transport.CommandResponse;
@@ -165,7 +166,11 @@ public class Client {
       sb.append(arg);
     }
 
-    return handler.sendSyncSingleLineCommand(channel, sb.toString());
+    try {
+      return handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+    } catch (Throwable t) {
+      throw Throwables.propagate(t);
+    }
   }
 
   /**
@@ -229,9 +234,14 @@ public class Client {
       sb.append(' ');
       sb.append(events);
     }
-    EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString());
 
-    return new CommandResponse(sb.toString(), response);
+    try {
+      EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      return new CommandResponse(sb.toString(), response);
+    } catch (Throwable t) {
+      throw Throwables.propagate(t);
+    }
+
   }
 
   /**
@@ -242,9 +252,13 @@ public class Client {
   public CommandResponse cancelEventSubscriptions() {
     checkConnected();
     InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    EslMessage response = handler.sendSyncSingleLineCommand(channel, "noevents");
 
-    return new CommandResponse("noevents", response);
+    try {
+      EslMessage response = handler.sendSyncSingleLineCommand(channel, "noevents").get();
+      return new CommandResponse("noevents", response);
+    } catch (Throwable t) {
+      throw Throwables.propagate(t);
+    }
   }
 
   /**
@@ -279,9 +293,13 @@ public class Client {
       sb.append(' ');
       sb.append(valueToFilter);
     }
-    EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString());
 
-    return new CommandResponse(sb.toString(), response);
+    try {
+      EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      return new CommandResponse(sb.toString(), response);
+    } catch (Throwable t) {
+      throw Throwables.propagate(t);
+    }
   }
 
   /**
@@ -303,9 +321,13 @@ public class Client {
       sb.append(' ');
       sb.append(valueToFilter);
     }
-    EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString());
 
-    return new CommandResponse(sb.toString(), response);
+    try {
+      EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      return new CommandResponse(sb.toString(), response);
+    } catch (Throwable t) {
+      throw Throwables.propagate(t);
+    }
   }
 
   /**
@@ -318,9 +340,13 @@ public class Client {
   public CommandResponse sendMessage(SendMsg sendMsg) {
     checkConnected();
     InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    EslMessage response = handler.sendSyncMultiLineCommand(channel, sendMsg.getMsgLines());
 
-    return new CommandResponse(sendMsg.toString(), response);
+    try {
+      EslMessage response = handler.sendSyncMultiLineCommand(channel, sendMsg.getMsgLines()).get();
+      return new CommandResponse(sendMsg.toString(), response);
+    } catch (Throwable t) {
+      throw Throwables.propagate(t);
+    }
   }
 
   /**
@@ -337,9 +363,13 @@ public class Client {
       sb.append("log ");
       sb.append(level);
     }
-    EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString());
 
-    return new CommandResponse(sb.toString(), response);
+    try {
+      EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      return new CommandResponse(sb.toString(), response);
+    } catch (Throwable t) {
+      throw Throwables.propagate(t);
+    }
   }
 
   /**
@@ -350,9 +380,13 @@ public class Client {
   public CommandResponse cancelLogging() {
     checkConnected();
     InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    EslMessage response = handler.sendSyncSingleLineCommand(channel, "nolog");
 
-    return new CommandResponse("nolog", response);
+    try {
+      EslMessage response = handler.sendSyncSingleLineCommand(channel, "nolog").get();
+      return new CommandResponse("nolog", response);
+    } catch (Throwable t) {
+      throw Throwables.propagate(t);
+    }
   }
 
   /**
@@ -363,9 +397,13 @@ public class Client {
   public CommandResponse close() {
     checkConnected();
     InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    EslMessage response = handler.sendSyncSingleLineCommand(channel, "exit");
 
-    return new CommandResponse("exit", response);
+    try {
+      EslMessage response = handler.sendSyncSingleLineCommand(channel, "exit").get();
+      return new CommandResponse("exit", response);
+    } catch (Throwable t) {
+      throw Throwables.propagate(t);
+    }
   }
 
   /*

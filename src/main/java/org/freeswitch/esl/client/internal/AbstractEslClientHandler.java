@@ -15,6 +15,9 @@
  */
 package org.freeswitch.esl.client.internal;
 
+import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Value;
@@ -25,11 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Specialised {@link ChannelUpstreamHandler} that implements the logic of an ESL connection that
@@ -58,8 +57,8 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
 
   protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
-  private final Lock syncLock = new ReentrantLock();
-  private final Queue<SyncCallback> syncCallbacks = new ConcurrentLinkedQueue<SyncCallback>();
+  private final ConcurrentLinkedQueue<SettableFuture<EslMessage>> syncCallbacks =
+    new ConcurrentLinkedQueue<SettableFuture<EslMessage>>();
 
   @Override
   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
@@ -88,18 +87,11 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
    * @param command single string to send
    * @return the {@link EslMessage} attached to this command's callback
    */
-  public EslMessage sendSyncSingleLineCommand(Channel channel, final String command) {
-    SyncCallback callback = new SyncCallback();
-    syncLock.lock();
-    try {
-      syncCallbacks.add(callback);
-      channel.write(command + MESSAGE_TERMINATOR);
-    } finally {
-      syncLock.unlock();
-    }
-
-    //  Block until the response is available
-    return callback.get();
+  public ListenableFuture<EslMessage> sendSyncSingleLineCommand(Channel channel, final String command) {
+    final SettableFuture<EslMessage> future = SettableFuture.create();
+    syncCallbacks.add(future);
+    channel.write(command + MESSAGE_TERMINATOR);
+    return future;
   }
 
   /**
@@ -110,8 +102,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
    * @param channel
    * @return the {@link EslMessage} attached to this command's callback
    */
-  public EslMessage sendSyncMultiLineCommand(Channel channel, final List<String> commandLines) {
-    SyncCallback callback = new SyncCallback();
+  public ListenableFuture<EslMessage> sendSyncMultiLineCommand(Channel channel, final List<String> commandLines) {
     //  Build command with double line terminator at the end
     StringBuilder sb = new StringBuilder();
     for (String line : commandLines) {
@@ -120,16 +111,11 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
     }
     sb.append(LINE_TERMINATOR);
 
-    syncLock.lock();
-    try {
-      syncCallbacks.add(callback);
-      channel.write(sb.toString());
-    } finally {
-      syncLock.unlock();
-    }
+    final SettableFuture<EslMessage> future = SettableFuture.create();
+    syncCallbacks.add(future);
+    channel.write(sb.toString());
+    return future;
 
-    //  Block until the response is available
-    return callback.get();
   }
 
   /**
@@ -140,11 +126,18 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
    * @return Job-UUID as a string
    */
   public String sendAsyncCommand(Channel channel, final String command) {
+
     /*
     * Send synchronously to get the Job-UUID to return, the results of the actual
     * job request will be returned by the server as an async event.
     */
-    EslMessage response = sendSyncSingleLineCommand(channel, command);
+    EslMessage response = null;
+    try {
+      response = sendSyncSingleLineCommand(channel, command).get();
+    } catch (Throwable t) {
+      Throwables.propagate(t);
+    }
+
     if (response.hasHeader(Name.JOB_UUID)) {
       return response.getHeaderValue(Name.JOB_UUID);
     } else {
@@ -158,10 +151,10 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
 
     if (contentType.equals(Value.API_RESPONSE)) {
       log.debug("Api response received [{}]", message);
-      syncCallbacks.poll().handle(message);
+      syncCallbacks.poll().set(message);
     } else if (contentType.equals(Value.COMMAND_REPLY)) {
       log.debug("Command reply received [{}]", message);
-      syncCallbacks.poll().handle(message);
+      syncCallbacks.poll().set(message);
     } else if (contentType.equals(Value.AUTH_REQUEST)) {
       log.debug("Auth request received [{}]", message);
       handleAuthRequest(ctx);
@@ -178,40 +171,5 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
   protected abstract void handleAuthRequest(ChannelHandlerContext ctx);
 
   protected abstract void handleDisconnectionNotice();
-
-  private static class SyncCallback {
-    private static final Logger log = LoggerFactory.getLogger(SyncCallback.class);
-    private final CountDownLatch latch = new CountDownLatch(1);
-    private EslMessage response;
-
-    /**
-     * Block waiting for the countdown latch to be released, then return the
-     * associated response object.
-     *
-     * @return
-     */
-    EslMessage get() {
-      try {
-        log.trace("awaiting latch ... ");
-        latch.await();
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-
-      log.trace("returning response [{}]", response);
-      return response;
-    }
-
-    /**
-     * Attach this response to the callback and release the countdown latch.
-     *
-     * @param response
-     */
-    void handle(EslMessage response) {
-      this.response = response;
-      log.trace("releasing latch for response [{}]", response);
-      latch.countDown();
-    }
-  }
 
 }

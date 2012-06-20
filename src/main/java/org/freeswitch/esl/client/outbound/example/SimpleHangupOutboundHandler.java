@@ -15,10 +15,11 @@
  */
 package org.freeswitch.esl.client.outbound.example;
 
+import com.google.common.base.Throwables;
 import org.freeswitch.esl.client.outbound.AbstractOutboundClientHandler;
 import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
-import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
+import org.freeswitch.esl.client.transport.message.EslHeaders;
 import org.freeswitch.esl.client.transport.message.EslMessage;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -62,12 +63,16 @@ public class SimpleHangupOutboundHandler extends AbstractOutboundClientHandler {
     hangupMsg.addCallCommand("execute");
     hangupMsg.addExecuteAppName("hangup");
 
-    EslMessage response = sendSyncMultiLineCommand(channel, hangupMsg.getMsgLines());
-
-    if (response.getHeaderValue(Name.REPLY_TEXT).startsWith("+OK")) {
-      log.info("Call hangup successful");
-    } else {
-      log.error("Call hangup failed: [{}}", response.getHeaderValue(Name.REPLY_TEXT));
+    try {
+      final EslMessage response = sendSyncMultiLineCommand(channel, hangupMsg.getMsgLines()).get();
+      if (response.getHeaderValue(EslHeaders.Name.REPLY_TEXT).startsWith("+OK")) {
+        log.info("Call hangup successful");
+      } else {
+        log.error("Call hangup failed: [{}}", response.getHeaderValue(EslHeaders.Name.REPLY_TEXT));
+      }
+    } catch (Throwable t) {
+      Throwables.propagate(t);
     }
+
   }
 }

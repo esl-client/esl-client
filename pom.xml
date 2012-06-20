@@ -53,6 +53,12 @@
             <version>3.3.1.Final</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>11.0</version>
+        </dependency>
+
         <!--  logging library see   http://slf4j.org  -->
         <dependency>
             <groupId>org.slf4j</groupId>

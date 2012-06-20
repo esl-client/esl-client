@@ -15,6 +15,7 @@
  */
 package org.freeswitch.esl.client.inbound;
 
+import com.google.common.base.Throwables;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.IEslProtocolListener;
 import org.freeswitch.esl.client.transport.CommandResponse;
@@ -58,7 +59,14 @@ class InboundClientHandler extends AbstractEslClientHandler {
 
   protected void handleAuthRequest(ChannelHandlerContext ctx) {
     log.debug("Auth requested, sending [auth {}]", "*****");
-    EslMessage response = sendSyncSingleLineCommand(ctx.getChannel(), "auth " + password);
+
+    EslMessage response = null;
+    try {
+      response = sendSyncSingleLineCommand(ctx.getChannel(), "auth " + password).get();
+    } catch (Throwable t) {
+      throw Throwables.propagate(t);
+    }
+
     log.debug("Auth response [{}]", response);
     if (response.getContentType().equals(Value.COMMAND_REPLY)) {
       CommandResponse commandResponse = new CommandResponse("auth " + password, response);
