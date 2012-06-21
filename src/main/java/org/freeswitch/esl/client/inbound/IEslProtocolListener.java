@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.freeswitch.esl.client.outbound.example;
+package org.freeswitch.esl.client.inbound;
 
-import org.freeswitch.esl.client.outbound.AbstractOutboundClientHandler;
-import org.freeswitch.esl.client.outbound.AbstractOutboundPipelineFactory;
+import org.freeswitch.esl.client.inbound.Client;
+import org.freeswitch.esl.client.transport.CommandResponse;
+import org.freeswitch.esl.client.transport.event.EslEvent;
 
 /**
- * Factory for the simple hangup handler
+ * End users of the {@link Client} should not need to use this class.
+ * <p/>
+ * Allow client implementations to observe events arriving from the server.
  *
  * @author david varnes
  */
-public class SimpleHangupPipelineFactory extends AbstractOutboundPipelineFactory {
+interface IEslProtocolListener {
+  void authResponseReceived(CommandResponse response);
 
-  @Override
-  protected AbstractOutboundClientHandler makeHandler() {
-    return new SimpleHangupOutboundHandler();
-  }
+  void eventReceived(EslEvent event);
 
+  void disconnected();
 }

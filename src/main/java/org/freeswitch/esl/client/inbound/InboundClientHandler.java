@@ -17,7 +17,6 @@ package org.freeswitch.esl.client.inbound;
 
 import com.google.common.base.Throwables;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
-import org.freeswitch.esl.client.internal.IEslProtocolListener;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Value;
@@ -62,7 +61,7 @@ class InboundClientHandler extends AbstractEslClientHandler {
 
     EslMessage response = null;
     try {
-      response = sendSyncSingleLineCommand(ctx.getChannel(), "auth " + password).get();
+      response = sendApiSingleLineCommand(ctx.getChannel(), "auth " + password).get();
     } catch (Throwable t) {
       throw Throwables.propagate(t);
     }

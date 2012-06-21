@@ -16,10 +16,10 @@
 package org.freeswitch.esl.client.inbound;
 
 import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import org.freeswitch.esl.client.IEslEventListener;
-import org.freeswitch.esl.client.internal.IEslProtocolListener;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
@@ -34,9 +34,11 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -55,22 +57,11 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public class Client {
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
-
   private final List<IEslEventListener> eventListeners = new CopyOnWriteArrayList<IEslEventListener>();
-  private final Executor eventListenerExecutor = Executors.newSingleThreadExecutor(
-    new ThreadFactory() {
-      AtomicInteger threadNumber = new AtomicInteger(1);
-
-      public Thread newThread(Runnable r) {
-        return new Thread(r, "EslEventNotifier-" + threadNumber.getAndIncrement());
-      }
-    });
-
   private final AtomicBoolean authenticatorResponded = new AtomicBoolean(false);
   private boolean authenticated;
   private CommandResponse authenticationResponse;
   private Channel channel;
-
   private final ConcurrentHashMap<String, SettableFuture<EslEvent>> backgroundJobs =
     new ConcurrentHashMap<String, SettableFuture<EslEvent>>();
 
@@ -81,6 +72,12 @@ public class Client {
   public void addEventListener(IEslEventListener listener) {
     if (listener != null) {
       eventListeners.add(listener);
+    }
+  }
+
+  private void checkConnected() {
+    if (!canSend()) {
+      throw new IllegalStateException("Not connected to FreeSWITCH Event Socket");
     }
   }
 
@@ -168,7 +165,7 @@ public class Client {
       }
 
       final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-      return handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      return handler.sendApiSingleLineCommand(channel, sb.toString()).get();
 
     } catch (Throwable t) {
       throw Throwables.propagate(t);
@@ -198,10 +195,19 @@ public class Client {
     }
 
     final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-    final String jobUuid = handler.sendAsyncCommand(channel, sb.toString());
+    final ListenableFuture<String> jobUuid = handler.sendBackgroundApiCommand(channel, sb.toString());
     final SettableFuture<EslEvent> future = SettableFuture.create();
-    backgroundJobs.put(jobUuid, future);
+    Futures.addCallback(jobUuid, new FutureCallback<String>() {
+      @Override
+      public void onSuccess(String result) {
+        backgroundJobs.put(result, future);
+      }
 
+      @Override
+      public void onFailure(Throwable t) {
+        future.setException(t);
+      }
+    });
     return future;
   }
 
@@ -237,7 +243,7 @@ public class Client {
       }
 
       final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-      final EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      final EslMessage response = handler.sendApiSingleLineCommand(channel, sb.toString()).get();
       return new CommandResponse(sb.toString(), response);
 
     } catch (Throwable t) {
@@ -257,7 +263,7 @@ public class Client {
 
     try {
       final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-      final EslMessage response = handler.sendSyncSingleLineCommand(channel, "noevents").get();
+      final EslMessage response = handler.sendApiSingleLineCommand(channel, "noevents").get();
       return new CommandResponse("noevents", response);
     } catch (Throwable t) {
       throw Throwables.propagate(t);
@@ -298,7 +304,7 @@ public class Client {
       }
 
       final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-      final EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      final EslMessage response = handler.sendApiSingleLineCommand(channel, sb.toString()).get();
       return new CommandResponse(sb.toString(), response);
 
     } catch (Throwable t) {
@@ -328,7 +334,7 @@ public class Client {
       }
 
       final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-      final EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      final EslMessage response = handler.sendApiSingleLineCommand(channel, sb.toString()).get();
       return new CommandResponse(sb.toString(), response);
 
     } catch (Throwable t) {
@@ -350,7 +356,7 @@ public class Client {
 
     try {
       final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-      final EslMessage response = handler.sendSyncMultiLineCommand(channel, sendMsg.getMsgLines()).get();
+      final EslMessage response = handler.sendApiMultiLineCommand(channel, sendMsg.getMsgLines()).get();
       return new CommandResponse(sendMsg.toString(), response);
     } catch (Throwable t) {
       throw Throwables.propagate(t);
@@ -374,7 +380,7 @@ public class Client {
       sb.append("log ").append(level);
 
       final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-      final EslMessage response = handler.sendSyncSingleLineCommand(channel, sb.toString()).get();
+      final EslMessage response = handler.sendApiSingleLineCommand(channel, sb.toString()).get();
       return new CommandResponse(sb.toString(), response);
     } catch (Throwable t) {
       throw Throwables.propagate(t);
@@ -392,7 +398,7 @@ public class Client {
 
     try {
       final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-      final EslMessage response = handler.sendSyncSingleLineCommand(channel, "nolog").get();
+      final EslMessage response = handler.sendApiSingleLineCommand(channel, "nolog").get();
       return new CommandResponse("nolog", response);
     } catch (Throwable t) {
       throw Throwables.propagate(t);
@@ -409,7 +415,7 @@ public class Client {
 
     try {
       final InboundClientHandler handler = (InboundClientHandler) channel.getPipeline().getLast();
-      final EslMessage response = handler.sendSyncSingleLineCommand(channel, "exit").get();
+      final EslMessage response = handler.sendApiSingleLineCommand(channel, "exit").get();
       return new CommandResponse("exit", response);
     } catch (Throwable t) {
       throw Throwables.propagate(t);
@@ -431,40 +437,19 @@ public class Client {
       log.debug("Event received [{}]", event);
       if (event.getEventName().equals("BACKGROUND_JOB")) {
         final String backgroundUuid = event.getEventHeaders().get(EslHeaders.Name.JOB_UUID);
-        final SettableFuture<EslEvent> future = backgroundJobs.get(backgroundUuid);
+        final SettableFuture<EslEvent> future = backgroundJobs.remove(backgroundUuid);
         if (null != future) {
           future.set(event);
         }
       } else {
-        /*
-        *  Notify listeners in a different thread in order to:
-        *    - not to block the IO threads with potentially long-running listeners
-        *    - generally be defensive running other people's code
-        *  Use a different worker thread pool for async job results than for event driven
-        *  events to keep the latency as low as possible.
-        */
         for (final IEslEventListener listener : eventListeners) {
-          eventListenerExecutor.execute(new Runnable() {
-            public void run() {
-              try {
-                listener.eventReceived(event);
-              } catch (Throwable t) {
-                log.error("Error caught notifying listener of event [" + event + ']', t);
-              }
-            }
-          });
+          listener.eventReceived(event);
         }
       }
     }
 
     public void disconnected() {
-      log.info("Disconnected ..");
+      log.info("Disconnected ...");
     }
   };
-
-  private void checkConnected() {
-    if (!canSend()) {
-      throw new IllegalStateException("Not connected to FreeSWITCH Event Socket");
-    }
-  }
 }

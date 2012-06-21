@@ -41,10 +41,9 @@ import java.util.concurrent.Executors;
  * @author david varnes
  */
 public class SocketClient {
+
   private final Logger log = LoggerFactory.getLogger(this.getClass());
-
   private final ChannelGroup allChannels = new DefaultChannelGroup("esl-socket-client");
-
   private final int port;
   private final ChannelFactory channelFactory;
   private final AbstractOutboundPipelineFactory pipelineFactory;
@@ -58,19 +57,19 @@ public class SocketClient {
   }
 
   public void start() {
-    ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
+    final ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
 
     bootstrap.setPipelineFactory(pipelineFactory);
     bootstrap.setOption("child.tcpNoDelay", true);
     bootstrap.setOption("child.keepAlive", true);
 
-    Channel serverChannel = bootstrap.bind(new InetSocketAddress(port));
+    final Channel serverChannel = bootstrap.bind(new InetSocketAddress(port));
     allChannels.add(serverChannel);
     log.info("SocketClient waiting for connections on port [{}] ...", port);
   }
 
   public void stop() {
-    ChannelGroupFuture future = allChannels.close();
+    final ChannelGroupFuture future = allChannels.close();
     future.awaitUninterruptibly();
     channelFactory.releaseExternalResources();
     log.info("SocketClient stopped");

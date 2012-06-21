@@ -15,7 +15,7 @@
  */
 package org.freeswitch.esl.client.transport.event;
 
-import org.freeswitch.esl.client.internal.HeaderParser;
+import org.freeswitch.esl.client.transport.HeaderParser;
 import org.freeswitch.esl.client.transport.message.EslHeaders;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Value;

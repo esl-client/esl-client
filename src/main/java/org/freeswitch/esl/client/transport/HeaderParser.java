@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.freeswitch.esl.client.internal;
+package org.freeswitch.esl.client.transport;
 
 import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 

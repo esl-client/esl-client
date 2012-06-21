@@ -13,18 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.freeswitch.esl.client;
+package org.freeswitch.esl.client.inbound;
 
 import org.freeswitch.esl.client.transport.event.EslEvent;
 
 /**
  * Interface for observers wanting to be notified of incoming FreeSWITCH Event Socket events.
  * <p/>
- * Incoming events arrive asynchronously and are processed into two queues, one for server
- * initiated events, and one for the results of client requested background jobs.
- * <p/>
- * Each queue is serviced by a different thread pool (to ensure lowest latency for event-driven events)
- * and each queue is guaranteed to be processed (and listeners notified) in the order in which the
+ * Events are guaranteed to be processed (and listeners notified) in the order in which the
  * events are received off the wire.
  * <p/>
  * This design ensures that incoming event processing is not blocked by any long-running listener process.

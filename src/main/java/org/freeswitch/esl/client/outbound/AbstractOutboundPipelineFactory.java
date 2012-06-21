@@ -15,12 +15,12 @@
  */
 package org.freeswitch.esl.client.outbound;
 
-import org.freeswitch.esl.client.internal.debug.ExecutionHandler;
 import org.freeswitch.esl.client.transport.message.EslFrameDecoder;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.codec.string.StringEncoder;
+import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 /**

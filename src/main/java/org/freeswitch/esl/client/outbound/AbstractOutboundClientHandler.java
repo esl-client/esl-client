@@ -43,10 +43,10 @@ public abstract class AbstractOutboundClientHandler extends AbstractEslClientHan
     // Have received a connection from FreeSWITCH server, send connect response
     log.debug("Received new connection from server, sending connect message");
 
-    EslMessage response = sendSyncSingleLineCommand(ctx.getChannel(), "connect").get();
+    final EslMessage response = sendApiSingleLineCommand(ctx.getChannel(), "connect").get();
     // The message decoder for outbound, treats most of this incoming message as an 'event' in
     // message body, so it parse now
-    EslEvent channelDataEvent = new EslEvent(response, true);
+    final EslEvent channelDataEvent = new EslEvent(response, true);
     // Let implementing sub classes choose what to do next
     handleConnectResponse(ctx, channelDataEvent);
   }
