@@ -52,8 +52,9 @@ public class SendMsg {
    *
    * @param command the string command [ execute | hangup ]
    */
-  public void addCallCommand(String command) {
+  public SendMsg addCallCommand(String command) {
     msgLines.add("call-command: " + command);
+    return this;
   }
 
   /**
@@ -64,8 +65,9 @@ public class SendMsg {
    *
    * @param appName the string app name to execute
    */
-  public void addExecuteAppName(String appName) {
+  public SendMsg addExecuteAppName(String appName) {
     msgLines.add("execute-app-name: " + appName);
+    return this;
   }
 
   /**
@@ -76,8 +78,9 @@ public class SendMsg {
    *
    * @param arg the string arg
    */
-  public void addExecuteAppArg(String arg) {
+  public SendMsg addExecuteAppArg(String arg) {
     msgLines.add("execute-app-arg: " + arg);
+    return this;
   }
 
   /**
@@ -88,8 +91,9 @@ public class SendMsg {
    *
    * @param count the int number of times to loop
    */
-  public void addLoops(int count) {
+  public SendMsg addLoops(int count) {
     msgLines.add("loops: " + count);
+    return this;
   }
 
   /**
@@ -100,8 +104,9 @@ public class SendMsg {
    *
    * @param cause the string cause
    */
-  public void addHangupCause(String cause) {
+  public SendMsg addHangupCause(String cause) {
     msgLines.add("hangup-cause: " + cause);
+    return this;
   }
 
   /**
@@ -112,8 +117,9 @@ public class SendMsg {
    *
    * @param value the string value part of the line
    */
-  public void addNomediaUuid(String value) {
+  public SendMsg addNomediaUuid(String value) {
     msgLines.add("nomedia-uuid: " + value);
+    return this;
   }
 
   /**
@@ -122,8 +128,9 @@ public class SendMsg {
    *    event-lock: true
    *  </pre>
    */
-  public void addEventLock() {
+  public SendMsg addEventLock() {
     msgLines.add("event-lock: true");
+    return this;
   }
 
   /**
@@ -136,8 +143,9 @@ public class SendMsg {
    * @param name  part of line
    * @param value part of line
    */
-  public void addGenericLine(String name, String value) {
+  public SendMsg addGenericLine(String name, String value) {
     msgLines.add(name + ": " + value);
+    return this;
   }
 
   /**
