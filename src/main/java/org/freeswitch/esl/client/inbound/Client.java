@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -91,7 +92,7 @@ public class Client {
    * @param password       server event socket is expecting (set in event_socket_conf.xml)
    * @param timeoutSeconds number of seconds to wait for the server socket before aborting
    */
-  public void connect(String host, int port, String password, int timeoutSeconds) throws InboundConnectionFailure {
+  public void connect(SocketAddress clientAddress, String password, int timeoutSeconds) throws InboundConnectionFailure {
     // If already connected, disconnect first
     if (canSend()) {
       close();
@@ -108,23 +109,23 @@ public class Client {
     bootstrap.setPipelineFactory(new InboundPipelineFactory(handler));
 
     // Attempt connection
-    ChannelFuture future = bootstrap.connect(new InetSocketAddress(host, port));
+    ChannelFuture future = bootstrap.connect(clientAddress);
 
     // Wait till attempt succeeds, fails or timeouts
     if (!future.awaitUninterruptibly(timeoutSeconds, TimeUnit.SECONDS)) {
-      throw new InboundConnectionFailure("Timeout connecting to " + host + ":" + port);
+      throw new InboundConnectionFailure("Timeout connecting to " + clientAddress);
     }
     // Did not timeout
     channel = future.getChannel();
     // But may have failed anyway
     if (!future.isSuccess()) {
-      log.warn("Failed to connect to [{}:{}]", host, port);
+      log.warn("Failed to connect to [{}]", clientAddress);
       log.warn("  * reason: {}", future.getCause());
 
       channel = null;
       bootstrap.releaseExternalResources();
 
-      throw new InboundConnectionFailure("Could not connect to " + host + ":" + port, future.getCause());
+      throw new InboundConnectionFailure("Could not connect to " + clientAddress, future.getCause());
     }
 
     //  Wait for the authentication handshake to call back

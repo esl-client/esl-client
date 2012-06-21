@@ -15,17 +15,15 @@
  */
 package org.freeswitch.esl.client.outbound;
 
+import com.google.common.util.concurrent.AbstractService;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.channel.group.ChannelGroupFuture;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.concurrent.Executors;
 
 /**
@@ -40,38 +38,42 @@ import java.util.concurrent.Executors;
  *
  * @author david varnes
  */
-public class SocketClient {
+public class SocketClient extends AbstractService {
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
-  private final ChannelGroup allChannels = new DefaultChannelGroup("esl-socket-client");
-  private final int port;
   private final ChannelFactory channelFactory;
-  private final AbstractOutboundPipelineFactory pipelineFactory;
+  private final IClientHandlerFactory clientHandlerFactory;
+  private final SocketAddress bindAddress;
 
-  public SocketClient(int port, AbstractOutboundPipelineFactory pipelineFactory) {
-    this.port = port;
-    this.pipelineFactory = pipelineFactory;
+  private Channel serverChannel;
+
+  public SocketClient(SocketAddress bindAddress, IClientHandlerFactory clientHandlerFactory) {
+    this.bindAddress = bindAddress;
+    this.clientHandlerFactory = clientHandlerFactory;
     this.channelFactory = new NioServerSocketChannelFactory(
       Executors.newCachedThreadPool(),
       Executors.newCachedThreadPool());
   }
 
-  public void start() {
+  @Override
+  protected void doStart() {
     final ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
-
-    bootstrap.setPipelineFactory(pipelineFactory);
+    bootstrap.setPipelineFactory(new OutboundPipelineFactory(clientHandlerFactory));
     bootstrap.setOption("child.tcpNoDelay", true);
     bootstrap.setOption("child.keepAlive", true);
-
-    final Channel serverChannel = bootstrap.bind(new InetSocketAddress(port));
-    allChannels.add(serverChannel);
-    log.info("SocketClient waiting for connections on port [{}] ...", port);
+    serverChannel = bootstrap.bind(bindAddress);
+    notifyStarted();
+    log.info("SocketClient waiting for connections on port [{}] ...", bindAddress);
   }
 
-  public void stop() {
-    final ChannelGroupFuture future = allChannels.close();
-    future.awaitUninterruptibly();
+  @Override
+  protected void doStop() {
+    if (null != serverChannel) {
+      serverChannel.close().awaitUninterruptibly();
+    }
     channelFactory.releaseExternalResources();
+    notifyStopped();
     log.info("SocketClient stopped");
   }
+
 }

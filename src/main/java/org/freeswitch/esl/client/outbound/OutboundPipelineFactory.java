@@ -28,7 +28,14 @@ import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
  *
  * @author david varnes
  */
-public abstract class AbstractOutboundPipelineFactory implements ChannelPipelineFactory {
+class OutboundPipelineFactory implements ChannelPipelineFactory {
+
+  private final IClientHandlerFactory clientHandlerFactory;
+
+  public OutboundPipelineFactory(IClientHandlerFactory clientHandlerFactory) {
+    this.clientHandlerFactory = clientHandlerFactory;
+  }
+
   public ChannelPipeline getPipeline() throws Exception {
     ChannelPipeline pipeline = Channels.pipeline();
     // Add the text line codec combination first
@@ -40,10 +47,9 @@ public abstract class AbstractOutboundPipelineFactory implements ChannelPipeline
       new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576)));
 
     // now the outbound client logic
-    pipeline.addLast("clientHandler", makeHandler());
+    pipeline.addLast("clientHandler", new OutboundClientHandler(clientHandlerFactory.createClientHandler()));
 
     return pipeline;
   }
 
-  protected abstract AbstractOutboundClientHandler makeHandler();
 }

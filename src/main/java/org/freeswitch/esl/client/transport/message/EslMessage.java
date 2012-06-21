@@ -141,6 +141,14 @@ public class EslMessage {
     body.add(line);
   }
 
+  /**
+   * Did this message return Reply-Text: +OK
+   * @return true if reply equals +OK, false if not.
+   */
+  public boolean isReplyOk() {
+    return getHeaderValue(Name.REPLY_TEXT).trim().equals("+OK");
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("EslMessage: contentType=[");

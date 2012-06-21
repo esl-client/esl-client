@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 /**
  * Specialised {@link ChannelUpstreamHandler} that implements the logic of an ESL connection that
  * is common to both inbound and outbound clients. This
@@ -124,6 +127,29 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
     } finally {
       syncLock.unlock();
     }
+  }
+
+  /**
+   * Sends a FreeSWITCH API command to the channel and blocks, waiting for an immediate response from the
+   * server.
+   * <p/>
+   * The outcome of the command from the server is returned in an {@link EslMessage} object.
+   *
+   * @param channel
+   * @param command API command to send
+   * @param arg     command arguments
+   * @return an {@link EslMessage} containing command results
+   */
+  public ListenableFuture<EslMessage> sendSyncApiCommand(Channel channel, String command, String arg) {
+
+    checkArgument(!isNullOrEmpty(command), "command may not be null or empty");
+    checkArgument(!isNullOrEmpty(arg), "arg may not be null or empty");
+
+    final StringBuilder sb = new StringBuilder();
+    sb.append("api ").append(command).append(' ').append(arg);
+
+    return sendApiSingleLineCommand(channel, sb.toString());
+
   }
 
   /**

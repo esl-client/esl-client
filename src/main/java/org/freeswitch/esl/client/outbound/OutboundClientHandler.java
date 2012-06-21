@@ -36,7 +36,13 @@ import org.jboss.netty.handler.execution.ExecutionHandler;
  *
  * @author david varnes
  */
-public abstract class AbstractOutboundClientHandler extends AbstractEslClientHandler {
+class OutboundClientHandler extends AbstractEslClientHandler {
+
+  private final IClientHandler clientHandler;
+
+  public OutboundClientHandler(IClientHandler clientHandler) {
+    this.clientHandler = clientHandler;
+  }
 
   @Override
   public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
@@ -51,7 +57,14 @@ public abstract class AbstractOutboundClientHandler extends AbstractEslClientHan
     handleConnectResponse(ctx, channelDataEvent);
   }
 
-  protected abstract void handleConnectResponse(ChannelHandlerContext ctx, EslEvent event);
+  void handleConnectResponse(ChannelHandlerContext ctx, EslEvent event) {
+    clientHandler.onConnect(new Context(ctx.getChannel(), this), event);
+  }
+
+  @Override
+  protected void handleEslEvent(ChannelHandlerContext ctx, EslEvent event) {
+    clientHandler.handleEslEvent(new Context(ctx.getChannel(), this), event);
+  }
 
   @Override
   protected void handleAuthRequest(ChannelHandlerContext ctx) {
