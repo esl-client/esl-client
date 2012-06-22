@@ -15,7 +15,7 @@
  */
 package org.freeswitch.esl.client.inbound;
 
-import org.freeswitch.esl.client.inbound.Client;
+import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 
@@ -29,7 +29,7 @@ import org.freeswitch.esl.client.transport.event.EslEvent;
 interface IEslProtocolListener {
   void authResponseReceived(CommandResponse response);
 
-  void eventReceived(EslEvent event);
+  void eventReceived(Context ctx, EslEvent event);
 
   void disconnected();
 }

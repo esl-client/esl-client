@@ -16,6 +16,7 @@
 package org.freeswitch.esl.client.outbound;
 
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
+import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
 import org.jboss.netty.channel.ChannelHandlerContext;

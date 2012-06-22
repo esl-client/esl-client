@@ -15,6 +15,7 @@
  */
 package org.freeswitch.esl.client.inbound;
 
+import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 
 /**
@@ -35,6 +36,6 @@ public interface IEslEventListener {
    *
    * @param event as an {@link EslEvent}
    */
-  void eventReceived(EslEvent event);
+  void eventReceived(Context ctx, EslEvent event);
 
 }

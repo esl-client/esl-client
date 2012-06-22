@@ -15,11 +15,12 @@
  */
 package org.freeswitch.esl.client.internal;
 
-import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import org.freeswitch.esl.client.transport.event.EslEvent;
+import org.freeswitch.esl.client.transport.message.EslHeaders;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Value;
 import org.freeswitch.esl.client.transport.message.EslMessage;
@@ -29,11 +30,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
+import static com.google.common.util.concurrent.Futures.transform;
 
 /**
  * Specialised {@link ChannelUpstreamHandler} that implements the logic of an ESL connection that
@@ -66,8 +70,8 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
   private final ReentrantLock syncLock = new ReentrantLock();
   private final ConcurrentLinkedQueue<SettableFuture<EslMessage>> apiCalls =
     new ConcurrentLinkedQueue<SettableFuture<EslMessage>>();
-  private final ConcurrentLinkedQueue<String> backgroundApiCalls =
-    new ConcurrentLinkedQueue<String>();
+  private final ConcurrentHashMap<String, SettableFuture<EslEvent>> backgroundJobs =
+    new ConcurrentHashMap<String, SettableFuture<EslEvent>>();
 
   @Override
   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
@@ -78,7 +82,15 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
         contentType.equals(Value.TEXT_EVENT_XML)) {
         //  transform into an event
         final EslEvent eslEvent = new EslEvent(message);
-        handleEslEvent(ctx, eslEvent);
+        if (eslEvent.getEventName().equals("BACKGROUND_JOB")) {
+          final String backgroundUuid = eslEvent.getEventHeaders().get(EslHeaders.Name.JOB_UUID);
+          final SettableFuture<EslEvent> future = backgroundJobs.remove(backgroundUuid);
+          if (null != future) {
+            future.set(eslEvent);
+          }
+        } else {
+          handleEslEvent(ctx, eslEvent);
+        }
       } else {
         handleEslMessage(ctx, (EslMessage) e.getMessage());
       }
@@ -188,28 +200,26 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
    * @param command
    * @return Job-UUID as a string
    */
-  public ListenableFuture<String> sendBackgroundApiCommand(Channel channel, final String command) {
+  public ListenableFuture<EslEvent> sendBackgroundApiCommand(Channel channel, final String command) {
 
     final ListenableFuture<EslMessage> response = sendApiSingleLineCommand(channel, command);
-    final SettableFuture<String> uuidFuture = SettableFuture.create();
-    Futures.addCallback(response, new FutureCallback<EslMessage>() {
-      @Override
-      public void onSuccess(EslMessage result) {
-        //To change body of implemented methods use File | Settings | File Templates.
-        if (result.hasHeader(Name.JOB_UUID)) {
-          uuidFuture.set(result.getHeaderValue(Name.JOB_UUID));
-        } else {
-          uuidFuture.setException(new IllegalStateException("Missing Job-UUID header in bgapi response"));
+    final AsyncFunction<EslMessage, EslEvent> transformFunction =
+      new AsyncFunction<EslMessage, EslEvent>() {
+        @Override
+        public ListenableFuture<EslEvent> apply(EslMessage result) throws Exception {
+          if (result.hasHeader(Name.JOB_UUID)) {
+            final String jobId = result.getHeaderValue(Name.JOB_UUID);
+            final SettableFuture<EslEvent> resultFuture = SettableFuture.create();
+            backgroundJobs.put(jobId, resultFuture);
+            return resultFuture;
+          } else {
+            return immediateFailedFuture(new IllegalStateException("Missing Job-UUID header in bgapi response"));
+          }
         }
-      }
+      };
 
-      @Override
-      public void onFailure(Throwable t) {
-        uuidFuture.setException(t);
-      }
-    });
+    return transform(response, transformFunction);
 
-    return uuidFuture;
   }
 
   protected abstract void handleEslEvent(ChannelHandlerContext ctx, EslEvent event);

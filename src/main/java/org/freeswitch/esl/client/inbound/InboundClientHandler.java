@@ -17,6 +17,7 @@ package org.freeswitch.esl.client.inbound;
 
 import com.google.common.base.Throwables;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
+import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Value;
@@ -53,7 +54,7 @@ class InboundClientHandler extends AbstractEslClientHandler {
 
   protected void handleEslEvent(ChannelHandlerContext ctx, EslEvent event) {
     log.debug("Received event: [{}]", event);
-    listener.eventReceived(event);
+    listener.eventReceived(new Context(ctx.getChannel(), this), event);
   }
 
   protected void handleAuthRequest(ChannelHandlerContext ctx) {
