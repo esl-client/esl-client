@@ -36,6 +36,6 @@ public interface IEslEventListener {
    *
    * @param event as an {@link EslEvent}
    */
-  void eventReceived(Context ctx, EslEvent event);
+  void onEslEvent(Context ctx, EslEvent event);
 
 }

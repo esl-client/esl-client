@@ -15,13 +15,20 @@
  */
 package org.freeswitch.esl.client.outbound;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.handler.execution.ExecutionHandler;
+
+import java.util.concurrent.ExecutorService;
+
+import static com.google.common.util.concurrent.Futures.addCallback;
 
 /**
  * Specialised {@link AbstractEslClientHandler} that implements the base connecction logic for an
@@ -40,31 +47,55 @@ import org.jboss.netty.handler.execution.ExecutionHandler;
 class OutboundClientHandler extends AbstractEslClientHandler {
 
   private final IClientHandler clientHandler;
+  private final ExecutorService callbackExecutor;
 
-  public OutboundClientHandler(IClientHandler clientHandler) {
+  public OutboundClientHandler(IClientHandler clientHandler, ExecutorService callbackExecutor) {
     this.clientHandler = clientHandler;
+    this.callbackExecutor = callbackExecutor;
   }
 
   @Override
-  public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+  public void channelConnected(final ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
     // Have received a connection from FreeSWITCH server, send connect response
     log.debug("Received new connection from server, sending connect message");
 
-    final EslMessage response = sendApiSingleLineCommand(ctx.getChannel(), "connect").get();
-    // The message decoder for outbound, treats most of this incoming message as an 'event' in
-    // message body, so it parse now
-    final EslEvent channelDataEvent = new EslEvent(response, true);
-    // Let implementing sub classes choose what to do next
-    handleConnectResponse(ctx, channelDataEvent);
+    final ListenableFuture<EslMessage> connectFuture = sendApiSingleLineCommand(ctx.getChannel(), "connect");
+
+    addCallback(
+      connectFuture,
+      new FutureCallback<EslMessage>() {
+        @Override
+        public void onSuccess(EslMessage response) {
+          final EslEvent channelDataEvent = new EslEvent(response, true);
+          handleConnectResponse(ctx.getChannel(), channelDataEvent);
+        }
+
+        @Override
+        public void onFailure(Throwable throwable) {
+          ctx.getChannel().close();
+          handleDisconnectionNotice();
+        }
+      }
+    );
   }
 
-  void handleConnectResponse(ChannelHandlerContext ctx, EslEvent event) {
-    clientHandler.onConnect(new Context(ctx.getChannel(), this), event);
+  void handleConnectResponse(final Channel channel, final EslEvent event) {
+    callbackExecutor.execute(new Runnable() {
+      @Override
+      public void run() {
+        clientHandler.onConnect(new Context(channel, OutboundClientHandler.this), event);
+      }
+    });
   }
 
   @Override
-  protected void handleEslEvent(ChannelHandlerContext ctx, EslEvent event) {
-    clientHandler.handleEslEvent(new Context(ctx.getChannel(), this), event);
+  protected void handleEslEvent(final ChannelHandlerContext ctx, final EslEvent event) {
+    callbackExecutor.execute(new Runnable() {
+      @Override
+      public void run() {
+        clientHandler.onEslEvent(new Context(ctx.getChannel(), OutboundClientHandler.this), event);
+      }
+    });
   }
 
   @Override

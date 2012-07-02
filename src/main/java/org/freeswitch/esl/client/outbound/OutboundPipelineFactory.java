@@ -20,8 +20,9 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.codec.string.StringEncoder;
-import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * An abstract factory to assemble a Netty processing pipeline for outbound clients.
@@ -31,9 +32,15 @@ import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 class OutboundPipelineFactory implements ChannelPipelineFactory {
 
   private final IClientHandlerFactory clientHandlerFactory;
+  private ExecutorService callbackExecutor = Executors.newSingleThreadExecutor();
 
   public OutboundPipelineFactory(IClientHandlerFactory clientHandlerFactory) {
     this.clientHandlerFactory = clientHandlerFactory;
+  }
+
+  public OutboundPipelineFactory setCallbackExecutor(ExecutorService callbackExecutor) {
+    this.callbackExecutor = callbackExecutor;
+    return this;
   }
 
   public ChannelPipeline getPipeline() throws Exception {
@@ -43,11 +50,12 @@ class OutboundPipelineFactory implements ChannelPipelineFactory {
     // Note that outbound mode requires the decoder to treat many 'headers' as body lines
     pipeline.addLast("decoder", new EslFrameDecoder(8092, true));
     // Add an executor to ensure separate thread for each upstream message from here
-    pipeline.addLast("executor", new ExecutionHandler(
-      new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576)));
 
     // now the outbound client logic
-    pipeline.addLast("clientHandler", new OutboundClientHandler(clientHandlerFactory.createClientHandler()));
+    pipeline.addLast("clientHandler",
+      new OutboundClientHandler(
+        clientHandlerFactory.createClientHandler(),
+        callbackExecutor));
 
     return pipeline;
   }

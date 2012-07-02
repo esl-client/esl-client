@@ -15,15 +15,19 @@
  */
 package org.freeswitch.esl.client.inbound;
 
-import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
-import org.freeswitch.esl.client.transport.message.EslHeaders.Value;
+import org.freeswitch.esl.client.transport.message.EslHeaders;
 import org.freeswitch.esl.client.transport.message.EslMessage;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.execution.ExecutionHandler;
+
+import static com.google.common.base.Throwables.propagate;
+import static com.google.common.util.concurrent.Futures.addCallback;
 
 /**
  * End users of the inbound {@link Client} should not need to use this class.
@@ -44,6 +48,7 @@ import org.jboss.netty.handler.execution.ExecutionHandler;
  * @author david varnes
  */
 class InboundClientHandler extends AbstractEslClientHandler {
+
   private final String password;
   private final IEslProtocolListener listener;
 
@@ -52,29 +57,40 @@ class InboundClientHandler extends AbstractEslClientHandler {
     this.listener = listener;
   }
 
+  @Override
   protected void handleEslEvent(ChannelHandlerContext ctx, EslEvent event) {
     log.debug("Received event: [{}]", event);
     listener.eventReceived(new Context(ctx.getChannel(), this), event);
   }
 
+  @Override
   protected void handleAuthRequest(ChannelHandlerContext ctx) {
     log.debug("Auth requested, sending [auth {}]", "*****");
 
-    EslMessage response = null;
-    try {
-      response = sendApiSingleLineCommand(ctx.getChannel(), "auth " + password).get();
-    } catch (Throwable t) {
-      throw Throwables.propagate(t);
-    }
+    final ListenableFuture<EslMessage> authFuture = sendApiSingleLineCommand(ctx.getChannel(), "auth " + password);
 
-    log.debug("Auth response [{}]", response);
-    if (response.getContentType().equals(Value.COMMAND_REPLY)) {
-      CommandResponse commandResponse = new CommandResponse("auth " + password, response);
-      listener.authResponseReceived(commandResponse);
-    } else {
-      log.error("Bad auth response message [{}]", response);
-      throw new IllegalStateException("Incorrect auth response");
-    }
+    addCallback(
+      authFuture,
+      new FutureCallback<EslMessage>() {
+
+        @Override
+        public void onSuccess(EslMessage response) {
+          log.debug("Auth response [{}]", response);
+          if (response.getContentType().equals(EslHeaders.Value.COMMAND_REPLY)) {
+            final CommandResponse commandResponse = new CommandResponse("auth " + password, response);
+            listener.authResponseReceived(commandResponse);
+          } else {
+            log.error("Bad auth response message [{}]", response);
+            throw new IllegalStateException("Incorrect auth response");
+          }
+        }
+
+        @Override
+        public void onFailure(Throwable throwable) {
+          propagate(throwable);
+        }
+
+      });
   }
 
   @Override

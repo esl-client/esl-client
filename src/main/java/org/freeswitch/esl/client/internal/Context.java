@@ -10,8 +10,9 @@ import org.jboss.netty.channel.Channel;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Throwables.propagate;
+import static com.google.common.util.concurrent.Futures.getUnchecked;
 
-public class Context {
+public class Context implements IModEslApi {
 
   private final AbstractEslClientHandler handler;
   private final Channel channel;
@@ -21,6 +22,7 @@ public class Context {
     this.channel = channel;
   }
 
+  @Override
   public boolean canSend() {
     return channel != null && channel.isConnected();
   }
@@ -35,6 +37,7 @@ public class Context {
    * @param arg     command arguments
    * @return an {@link org.freeswitch.esl.client.transport.message.EslMessage} containing command results
    */
+  @Override
   public EslMessage sendApiCommand(String command, String arg) {
 
     checkArgument(!isNullOrEmpty(command), "command cannot be null or empty");
@@ -47,7 +50,7 @@ public class Context {
         sb.append(' ').append(arg);
       }
 
-      return handler.sendApiSingleLineCommand(channel, sb.toString()).get();
+      return getUnchecked(handler.sendApiSingleLineCommand(channel, sb.toString()));
 
     } catch (Throwable t) {
       throw propagate(t);
@@ -65,6 +68,7 @@ public class Context {
    * @param arg     command arguments
    * @return String Job-UUID that the server will tag result event with.
    */
+  @Override
   public ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg) {
 
     checkArgument(!isNullOrEmpty(command), "command cannot be null or empty");
@@ -95,6 +99,7 @@ public class Context {
    * @param events { all | space separated list of events }
    * @return a {@link org.freeswitch.esl.client.transport.CommandResponse} with the server's response.
    */
+  @Override
   public CommandResponse setEventSubscriptions(String format, String events) {
     // temporary hack
     checkState(format.equals("plain"), "Only 'plain' event format is supported at present");
@@ -108,7 +113,7 @@ public class Context {
         sb.append(' ').append(events);
       }
 
-      final EslMessage response = handler.sendApiSingleLineCommand(channel, sb.toString()).get();
+      final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, sb.toString()));
       return new CommandResponse(sb.toString(), response);
 
     } catch (Throwable t) {
@@ -122,10 +127,11 @@ public class Context {
    *
    * @return a {@link CommandResponse} with the server's response.
    */
+  @Override
   public CommandResponse cancelEventSubscriptions() {
 
     try {
-      final EslMessage response = handler.sendApiSingleLineCommand(channel, "noevents").get();
+      final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, "noevents"));
       return new CommandResponse("noevents", response);
     } catch (Throwable t) {
       throw propagate(t);
@@ -152,6 +158,7 @@ public class Context {
    * @param valueToFilter the value to match
    * @return a {@link CommandResponse} with the server's response.
    */
+  @Override
   public CommandResponse addEventFilter(String eventHeader, String valueToFilter) {
 
     checkArgument(!isNullOrEmpty(eventHeader), "eventHeader cannot be null or empty");
@@ -164,7 +171,7 @@ public class Context {
         sb.append(valueToFilter);
       }
 
-      final EslMessage response = handler.sendApiSingleLineCommand(channel, sb.toString()).get();
+      final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, sb.toString()));
       return new CommandResponse(sb.toString(), response);
 
     } catch (Throwable t) {
@@ -179,6 +186,7 @@ public class Context {
    * @param valueToFilter to remove
    * @return a {@link CommandResponse} with the server's response.
    */
+  @Override
   public CommandResponse deleteEventFilter(String eventHeader, String valueToFilter) {
 
     checkArgument(!isNullOrEmpty(eventHeader), "eventHeader cannot be null or empty");
@@ -192,7 +200,7 @@ public class Context {
         sb.append(valueToFilter);
       }
 
-      final EslMessage response = handler.sendApiSingleLineCommand(channel, sb.toString()).get();
+      final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, sb.toString()));
       return new CommandResponse(sb.toString(), response);
 
     } catch (Throwable t) {
@@ -207,12 +215,13 @@ public class Context {
    * @param sendMsg a {@link SendMsg} with call UUID
    * @return a {@link CommandResponse} with the server's response.
    */
+  @Override
   public CommandResponse sendMessage(SendMsg sendMsg) {
 
     checkNotNull(sendMsg, "sendMsg cannot be null");
 
     try {
-      final EslMessage response = handler.sendApiMultiLineCommand(channel, sendMsg.getMsgLines()).get();
+      final EslMessage response = getUnchecked(handler.sendApiMultiLineCommand(channel, sendMsg.getMsgLines()));
       return new CommandResponse(sendMsg.toString(), response);
     } catch (Throwable t) {
       throw propagate(t);
@@ -226,6 +235,7 @@ public class Context {
    * @param level using the same values as in console.conf
    * @return a {@link CommandResponse} with the server's response.
    */
+  @Override
   public CommandResponse setLoggingLevel(String level) {
 
     checkArgument(!isNullOrEmpty(level), "level cannot be null or empty");
@@ -234,7 +244,7 @@ public class Context {
       final StringBuilder sb = new StringBuilder();
       sb.append("log ").append(level);
 
-      final EslMessage response = handler.sendApiSingleLineCommand(channel, sb.toString()).get();
+      final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, sb.toString()));
       return new CommandResponse(sb.toString(), response);
     } catch (Throwable t) {
       throw propagate(t);
@@ -246,10 +256,11 @@ public class Context {
    *
    * @return a {@link CommandResponse} with the server's response.
    */
+  @Override
   public CommandResponse cancelLogging() {
 
     try {
-      final EslMessage response = handler.sendApiSingleLineCommand(channel, "nolog").get();
+      final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, "nolog"));
       return new CommandResponse("nolog", response);
     } catch (Throwable t) {
       throw propagate(t);

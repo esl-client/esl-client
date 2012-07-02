@@ -16,7 +16,6 @@
 package org.freeswitch.esl.client.internal;
 
 import com.google.common.util.concurrent.AsyncFunction;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import org.freeswitch.esl.client.transport.event.EslEvent;
@@ -32,12 +31,15 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
 import static com.google.common.util.concurrent.Futures.transform;
+import static org.jboss.netty.channel.Channels.close;
 
 /**
  * Specialised {@link ChannelUpstreamHandler} that implements the logic of an ESL connection that
@@ -70,8 +72,27 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
   private final ReentrantLock syncLock = new ReentrantLock();
   private final ConcurrentLinkedQueue<SettableFuture<EslMessage>> apiCalls =
     new ConcurrentLinkedQueue<SettableFuture<EslMessage>>();
+
   private final ConcurrentHashMap<String, SettableFuture<EslEvent>> backgroundJobs =
     new ConcurrentHashMap<String, SettableFuture<EslEvent>>();
+  private final ExecutorService backgroundJobExecutor = Executors.newCachedThreadPool();
+
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+
+    for (final SettableFuture<EslMessage> apiCall : apiCalls) {
+      apiCall.setException(e.getCause());
+    }
+
+    for (final SettableFuture<EslEvent> backgroundJob : backgroundJobs.values()) {
+      backgroundJob.setException(e.getCause());
+    }
+
+    close(ctx.getChannel());
+
+    ctx.sendUpstream(e);
+
+  }
 
   @Override
   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
@@ -130,15 +151,17 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
    * @return the {@link EslMessage} attached to this command's callback
    */
   public ListenableFuture<EslMessage> sendApiSingleLineCommand(Channel channel, final String command) {
+    final SettableFuture<EslMessage> future = SettableFuture.create();
     try {
       syncLock.lock();
-      final SettableFuture<EslMessage> future = SettableFuture.create();
       apiCalls.add(future);
       channel.write(command + MESSAGE_TERMINATOR);
-      return future;
     } finally {
       syncLock.unlock();
     }
+
+    return future;
+
   }
 
   /**
@@ -181,15 +204,16 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
     }
     sb.append(LINE_TERMINATOR);
 
+    final SettableFuture<EslMessage> future = SettableFuture.create();
     try {
       syncLock.lock();
-      final SettableFuture<EslMessage> future = SettableFuture.create();
       apiCalls.add(future);
       channel.write(sb.toString());
-      return future;
     } finally {
       syncLock.unlock();
     }
+
+    return future;
 
   }
 
@@ -218,7 +242,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
         }
       };
 
-    return transform(response, transformFunction);
+    return transform(response, transformFunction, backgroundJobExecutor);
 
   }
 

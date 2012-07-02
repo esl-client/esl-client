@@ -20,6 +20,7 @@ import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import org.freeswitch.esl.client.internal.Context;
+import org.freeswitch.esl.client.internal.IModEslApi;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
@@ -33,10 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -50,7 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author david varnes
  */
-public class Client {
+public class Client implements IModEslApi {
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
   private final List<IEslEventListener> eventListeners = new CopyOnWriteArrayList<IEslEventListener>();
@@ -61,6 +59,7 @@ public class Client {
   private boolean authenticated;
   private CommandResponse authenticationResponse;
   private Optional<Context> clientContext = Optional.absent();
+  private ExecutorService callbackExecutor = Executors.newSingleThreadExecutor();
 
   public void addEventListener(IEslEventListener listener) {
     if (listener != null) {
@@ -78,6 +77,10 @@ public class Client {
     if (!canSend()) {
       throw new IllegalStateException("Not connected to FreeSWITCH Event Socket");
     }
+  }
+  
+  public void setCallbackExecutor(ExecutorService callbackExecutor) {
+    this.callbackExecutor = callbackExecutor;
   }
 
   /**
@@ -291,6 +294,10 @@ public class Client {
       throw Throwables.propagate(t);
     }
 
+
+
+
+
   }
 
   /*
@@ -305,10 +312,15 @@ public class Client {
       log.debug("Auth response success={}, message=[{}]", authenticated, response.getReplyText());
     }
 
-    public void eventReceived(Context ctx, final EslEvent event) {
+    public void eventReceived(final Context ctx, final EslEvent event) {
       log.debug("Event received [{}]", event);
       for (final IEslEventListener listener : eventListeners) {
-        listener.handleEslEvent(ctx, event);
+        callbackExecutor.execute(new Runnable() {
+          @Override
+          public void run() {
+            listener.onEslEvent(ctx, event);
+          }
+        });
       }
     }
 

@@ -24,6 +24,9 @@ import org.jboss.netty.handler.codec.string.StringEncoder;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * End users of the {@link Client} should not need to use this class.
  * <p/>
@@ -32,6 +35,7 @@ import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
  * @author david varnes
  */
 class InboundPipelineFactory implements ChannelPipelineFactory {
+  
   private final ChannelHandler handler;
 
   public InboundPipelineFactory(ChannelHandler handler) {
@@ -42,9 +46,6 @@ class InboundPipelineFactory implements ChannelPipelineFactory {
     ChannelPipeline pipeline = Channels.pipeline();
     pipeline.addLast("encoder", new StringEncoder());
     pipeline.addLast("decoder", new EslFrameDecoder(8192));
-    // Add an executor to ensure separate thread for each upstream message from here
-    pipeline.addLast("executor", new ExecutionHandler(
-      new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576)));
 
     // now the inbound client logic
     pipeline.addLast("clientHandler", handler);
