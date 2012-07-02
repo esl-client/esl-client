@@ -596,7 +596,7 @@ public class Execute {
         sb.append(regexp).append(" ");
         sb.append(digitTimeout);
 
-        CommandResponse resp = sendExeMesg("playAndGetDigits", sb.toString());
+        CommandResponse resp = sendExeMesg("play_and_get_digits", sb.toString());
 
         if (resp.isOk()) {
             EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
