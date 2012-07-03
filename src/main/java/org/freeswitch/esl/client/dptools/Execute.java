@@ -74,8 +74,12 @@ public class Execute {
      */
     public void bindMetaApp(char key, String leg, char flags,
             String application, String params) throws ExecuteException {
-        sendExeMesg("bind_meta_app", key + "" + leg + " " + flags + " "
-                + application + "::" + params);
+        StringBuilder sb = new StringBuilder(key);
+        sb.append(" ").append(leg);
+        sb.append("").append(flags);
+        sb.append(" ").append(application);
+        sb.append("::").append(params);
+        sendExeMesg("bind_meta_app", sb.toString());
     }
 
     /**
@@ -124,8 +128,13 @@ public class Execute {
      */
     public void bridgeExport(String key, String value, boolean local)
             throws ExecuteException {
-        sendExeMesg("bridge_export", (local ? "" : "nolocal:") + key + "="
-                + value);
+        StringBuilder sb = new StringBuilder();
+        if(!local)
+            sb.append("nolocal:");
+        sb.append(key);
+        sb.append("=");
+        sb.append(value);
+        sendExeMesg("bridge_export",sb.toString());
     }
 
     /**
@@ -144,7 +153,11 @@ public class Execute {
      */
     public void chat(String proto, String from, String to, String message)
             throws ExecuteException {
-        sendExeMesg("chat", proto + '|' + from + '|' + to + '|' + '|' + message);
+        StringBuilder sb = new StringBuilder(proto);
+        sb.append("|").append(from);
+        sb.append("|").append(to);
+        sb.append("|").append(message);
+        sendExeMesg("chat", sb.toString());
     }
 
     /**
@@ -217,15 +230,17 @@ public class Execute {
      * @param optionalTimeLimitMillis
      *            optional time limit, 0 for none
      * @throws ExecuteException
-     * @see http
-     *      ://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
      */
     public void displaceSession(String path, String optionalFlags,
             long optionalTimeLimitMillis) throws ExecuteException {
-        sendExeMesg("displace_session", path
-                + (optionalFlags != null ? " " + optionalFlags : "")
-                + (optionalTimeLimitMillis > 0 ? " +" + optionalTimeLimitMillis
-                        : ""));
+        StringBuilder sb = new StringBuilder(path);
+        if(nn(optionalFlags))
+            sb.append(" ").append(optionalFlags);
+        if(optionalTimeLimitMillis > 0 )
+            sb.append(" +").append(optionalTimeLimitMillis);
+        
+        sendExeMesg("displace_session",sb.toString());
     }
 
     /**
@@ -255,16 +270,15 @@ public class Execute {
             String optionalFailedWav, String optionalNewChannelWav,
             String optionalIdleWav, boolean enableDTMF) throws ExecuteException {
 
-        if (optionalGroupId != null)
+        if (nn(optionalGroupId))
             set("eavesdrop_require_group", optionalGroupId);
-        if (optionalFailedWav != null)
+        if (nn(optionalFailedWav))
             set("eavesdrop_indicate_failed", optionalFailedWav);
-        if (optionalNewChannelWav != null)
+        if (nn(optionalNewChannelWav))
             set("eavesdrop_indicate_new", optionalNewChannelWav);
-        if (optionalIdleWav != null)
+        if (nn(optionalIdleWav))
             set("eavesdrop_indicate_idle", optionalIdleWav);
-        if (enableDTMF)
-            set("eavesdrop_enable_dtmf", "true");
+        set("eavesdrop_enable_dtmf", String.valueOf(enableDTMF));
 
         sendExeMesg("eavesdrop", uuid);
     }
@@ -335,9 +349,13 @@ public class Execute {
      */
     public void executeExtension(String extension, String optionalDialplan,
             String optionalContext) throws ExecuteException {
-        sendExeMesg("execute_extension", extension
-                + (optionalDialplan != null ? " "+ optionalDialplan
-                + (optionalContext != null ? " " + optionalContext : "") : ""));
+        StringBuilder sb = new StringBuilder(extension);
+        if(nn(optionalDialplan)) {
+            sb.append(" ").append(optionalDialplan);
+            if(nn(optionalContext))
+                sb.append(" ").append(optionalContext);
+        }
+        sendExeMesg("execute_extension", sb.toString());
     }
 
     /**
@@ -356,7 +374,13 @@ public class Execute {
      */
     public void export(String key, String value, boolean local)
             throws ExecuteException {
-        sendExeMesg("export", (local ? "" : "nolocal:") + key + "=" + value);
+        StringBuilder sb = new StringBuilder();
+        if(!local)
+            sb.append("nolocal:");
+        sb.append(key);
+        sb.append("=");
+        sb.append(value);
+        sendExeMesg("export", sb.toString());
     }
 
     /**
@@ -471,7 +495,7 @@ public class Execute {
      */
     public void log(String optionalLevel, String message)
             throws ExecuteException {
-        sendExeMesg("log", (optionalLevel != null ? optionalLevel + " " : "")
+        sendExeMesg("log", (nn(optionalLevel) ? optionalLevel + " " : "")
                 + message);
     }
 
@@ -551,7 +575,7 @@ public class Execute {
             String optionalParams, String grammer) throws ExecuteException {
         CommandResponse resp = sendExeMesg("play_and_detect_speech", file
                 + " detect:" + engine + " {"
-                + (optionalParams != null ? optionalParams : "") + "}"
+                + (nn(optionalParams) ? optionalParams : "") + "}"
                 + grammer);
         if (resp.isOk()) {
             EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
@@ -622,7 +646,7 @@ public class Execute {
     public void playback(String file, String optionalData)
             throws ExecuteException {
         sendExeMesg("playback", file
-                + (optionalData != null ? " {" + optionalData + "}" : ""));
+                + (nn(optionalData) ? " {" + optionalData + "}" : ""));
     }
     
     /**
@@ -734,6 +758,340 @@ public class Execute {
     }
     
     /**
+     * Record is used for recording messages, like in a voicemail system. This
+     * application will record a file to file
+     * 
+     * @param file
+     * @param optionalTimeLimitSeconds
+     *            the maximum duration of the recording.
+     * @param optionalSilenceThreshold
+     *            is the energy level.
+     * @param optionalSilenceHits
+     *            how many positive hits on being below that thresh you can
+     *            tolerate to stop default hits are sample rate * 3 / the number
+     *            of samples per frame so the default, if missing, is 3.
+     * @param wateResources
+     *            By default record doesn't send RTP packets. This is generally
+     *            acceptable, but for longer recordings or depending on the RTP
+     *            timer of your gateway, your channel may hangup with cause
+     *            MEDIA_TIMEOUT. Setting this variable will 'waste' bandwidth by
+     *            sending RTP even during recording. The value can be
+     *            true/false/<desired silence factor>. By default the silence
+     *            factor is 1400 if true
+     * @param append
+     *            append or overwite if file exists
+     * @param optionalRecordTile
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordCopyright
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordSoftware
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordArtist
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordComment
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordDate
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordRate
+     *            the sample rate of the recording.
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     */
+    public void record(String file, int optionalTimeLimitSeconds,
+            int optionalSilenceThreshold, int optionalSilenceHits,
+            boolean wateResources, boolean append, String optionalRecordTile,
+            String optionalRecordCopyright, String optionalRecordSoftware,
+            String optionalRecordArtist, String optionalRecordComment,
+            String optionalRecordDate, int optionalRecordRate)
+            throws ExecuteException {
+        record("record", file, optionalTimeLimitSeconds,
+                optionalSilenceThreshold, optionalSilenceHits, wateResources,
+                append, optionalRecordTile, optionalRecordCopyright,
+                optionalRecordSoftware, optionalRecordArtist,
+                optionalRecordComment, optionalRecordDate, optionalRecordRate);
+    }
+    
+    /**
+     * Records an entire phone call or session.
+     * 
+     * @param file
+     * @param optionalTimeLimitSeconds
+     *            the maximum duration of the recording.
+     * @param optionalSilenceThreshold
+     *            is the energy level.
+     * @param optionalSilenceHits
+     *            how many positive hits on being below that thresh you can
+     *            tolerate to stop default hits are sample rate * 3 / the number
+     *            of samples per frame so the default, if missing, is 3.
+     * @param wateResources
+     *            By default record doesn't send RTP packets. This is generally
+     *            acceptable, but for longer recordings or depending on the RTP
+     *            timer of your gateway, your channel may hangup with cause
+     *            MEDIA_TIMEOUT. Setting this variable will 'waste' bandwidth by
+     *            sending RTP even during recording. The value can be
+     *            true/false/<desired silence factor>. By default the silence
+     *            factor is 1400 if true
+     * @param append
+     *            append or overwite if file exists
+     * @param optionalRecordTile
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordCopyright
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordSoftware
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordArtist
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordComment
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordDate
+     *            store in the file header meta data (provided the file format
+     *            supports meta headers).
+     * @param optionalRecordRate
+     *            the sample rate of the recording.
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record_session
+     */
+    public void recordSession(String file, int optionalTimeLimitSeconds,
+            int optionalSilenceThreshold, int optionalSilenceHits,
+            boolean wateResources, boolean append, String optionalRecordTile,
+            String optionalRecordCopyright, String optionalRecordSoftware,
+            String optionalRecordArtist, String optionalRecordComment,
+            String optionalRecordDate, int optionalRecordRate)
+            throws ExecuteException {
+        record("record_session", file, optionalTimeLimitSeconds,
+                optionalSilenceThreshold, optionalSilenceHits, wateResources,
+                append, optionalRecordTile, optionalRecordCopyright,
+                optionalRecordSoftware, optionalRecordArtist,
+                optionalRecordComment, optionalRecordDate, optionalRecordRate);
+    }
+
+    private void record(String action, String file, int optionalTimeLimitSeconds,
+            int optionalSilenceThreshold, int optionalSilenceHits,
+            boolean wateResources, boolean append, String optionalRecordTile,
+            String optionalRecordCopyright, String optionalRecordSoftware,
+            String optionalRecordArtist, String optionalRecordComment,
+            String optionalRecordDate, int optionalRecordRate)
+            throws ExecuteException {
+
+        if (nn(optionalRecordTile))
+            set("RECORD_TITLE", optionalRecordTile);
+        if (nn(optionalRecordCopyright))
+            set("RECORD_COPYRIGHT", optionalRecordCopyright);
+        if (nn(optionalRecordSoftware))
+            set("RECORD_SOFTWARE", optionalRecordSoftware);
+        if (nn(optionalRecordArtist))
+            set("RECORD_ARTIST", optionalRecordArtist);
+        if (nn(optionalRecordComment))
+            set("RECORD_COMMENT", optionalRecordComment);
+        if (nn(optionalRecordDate))
+            set("RECORD_DATE", optionalRecordDate);
+        if (optionalRecordRate > 0)
+            set("record_sample_rate", String.valueOf(optionalRecordRate));
+
+        set("RECORD_APPEND", String.valueOf(append));
+        set("record_waste_resources", String.valueOf(wateResources));
+
+        StringBuilder sb = new StringBuilder(file);
+        if (optionalTimeLimitSeconds > 0) {
+            sb.append(" ").append(optionalTimeLimitSeconds);
+            if (optionalSilenceThreshold > 0) {
+                sb.append(" ").append(optionalSilenceThreshold);
+                if (optionalSilenceHits > 0) {
+                    sb.append(" ").append(optionalSilenceHits);
+                }
+            }
+        }
+
+        sendExeMesg(action, sb.toString());
+    }
+    
+    /**
+     * Can redirect a channel to another endpoint, you must take care to not
+     * redirect incompatible channels, as that wont have the desired effect. Ie
+     * if you redirect to a SIP url it should be a SIP channel. By providing a
+     * single SIP URI FreeSWITCH will issue a 302 "Moved Temporarily":
+     * 
+     * @param endpoint
+     *            ex:"sip:foo@bar.com " or "sip:foo@bar.com,sip:foo@end.com"
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_redirect
+     */
+    public void redirect(String endpoint) throws ExecuteException {
+        sendExeMesg("redirect", endpoint);
+    }
+
+    /**
+     * Send SIP session respond code to the SIP device.
+     * 
+     * @param code
+     *            ex: "407" or "480 Try again later"
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_respond
+     */
+    public void respond(String code) throws ExecuteException {
+        sendExeMesg("respond", code);
+    }
+    
+    /**
+     * This causes an 180 Ringing to be sent to the originator.
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_ring_ready
+     */
+    public void ringReady() throws ExecuteException {
+        sendExeMesg("ring_ready");
+    }
+    
+    /**
+     * The say application will use the pre-recorded sound files to read or say
+     * various things like dates, times, digits, etc. The say application can
+     * read digits and numbers as well as dollar amounts, date/time values and
+     * IP addresses. It can also spell out alpha-numeric text, including
+     * punctuation marks. There's a transcript of the pre-recorded files in the
+     * sources under docs/phrase/phrase_en.xml
+     * 
+     * @param moduleName
+     *            Module name is usually the channel language, e.g. "en" or "es"
+     * @param sayType
+     *            Say type is one of the following NUMBER ITEMS PERSONS MESSAGES
+     *            CURRENCY TIME_MEASUREMENT CURRENT_DATE CURRENT_TIME
+     *            CURRENT_DATE_TIME TELEPHONE_NUMBER TELEPHONE_EXTENSION URL
+     *            IP_ADDRESS EMAIL_ADDRESS POSTAL_ADDRESS ACCOUNT_NUMBER
+     *            NAME_SPELLED NAME_PHONETIC SHORT_DATE_TIME
+     * @param sayMethod
+     *            Say method is one of the following N/A PRONOUNCED ITERATED
+     *            COUNTED
+     * @param optionalGender
+     *            Say gender is one of the following (For languages with
+     *            gender-specific grammar, like French and German) FEMININE
+     *            MASCULINE NEUTER
+     * 
+     * @param text
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_say
+     */
+    public void say(String moduleName, String sayType, String sayMethod,
+            String optionalGender, String text) throws ExecuteException {
+
+        StringBuilder sb = new StringBuilder(moduleName);
+        sb.append(" ").append(sayType);
+        sb.append(" ").append(sayMethod);
+        if (nn(optionalGender))
+            sb.append(" ").append(optionalGender);
+        sb.append(" ").append(text);
+
+        sendExeMesg("say", sb.toString());
+    }
+    
+    /**
+     * Schedule future broadcast.
+     * 
+     * @param seconds
+     *            the epoc time in the future, or the number of seconds in the
+     *            future
+     * @param interval
+     *            is the param seconds an epoc time or interval
+     * @param path
+     *            ex: /tmp/howdy.wav
+     * @param leg
+     *            can be aleg,bleg,both
+     * @throws ExecuteException
+     */
+    public void schedBroadcast(long seconds, boolean interval, String path,
+            String leg) throws ExecuteException {
+        StringBuilder sb = new StringBuilder();
+        if (interval)
+            sb.append('+');
+        sb.append(seconds);
+        sb.append(" ").append(path);
+        sb.append(" ").append(leg);
+        sendExeMesg("sched_broadcast", sb.toString());
+    }
+    
+    /**
+     * The sched_hangup application allows you to schedule a hangup action for a
+     * call, basically to limit call duration.
+     * 
+     * @param seconds
+     *            the epoc time in the future, or the number of seconds in the
+     *            future
+     * @param interval
+     *            is the param seconds an epoc time or interval
+     * @param optionalCause
+     *            ex:allotted_timeout
+     * @throws ExecuteException
+     */
+    public void schedHangup(long seconds, boolean interval, String optionalCause)
+            throws ExecuteException {
+        StringBuilder sb = new StringBuilder();
+        if (interval)
+            sb.append('+');
+        sb.append(seconds);
+        if (nn(optionalCause))
+            sb.append(" ").append(optionalCause);
+        sendExeMesg("sched_hangup", sb.toString());
+    }
+
+    /**
+     * Schedule a transfer in the future.
+     * 
+     * @param seconds
+     *            the epoc time in the future, or the number of seconds in the
+     *            future
+     * @param interval
+     *            is the param seconds an epoc time or interval
+     * @param extension
+     * @param optionalDialPlan
+     * @param optionalContext
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer
+     */
+    public void schedTransfer(long seconds, boolean interval, String extension,
+            String optionalDialPlan, String optionalContext)
+            throws ExecuteException {
+        StringBuilder sb = new StringBuilder();
+        if (interval)
+            sb.append('+');
+        sb.append(seconds);
+        sb.append(" ").append(extension);
+        if (nn(optionalDialPlan)) {
+            sb.append(" ").append(optionalDialPlan);
+            if (nn(optionalContext)) {
+                sb.append(" ").append(optionalContext);
+            }
+        }
+        sendExeMesg("sched_transfer", sb.toString());
+    }
+
+    /**
+     * Send DTMF digits from the session using the method(s) configured on the
+     * endpoint in use. Use the character w for a .5 second delay and the
+     * character W for a 1 second delay.
+     * 
+     * @param digits
+     * @param optionalDurationMillis
+     * @throws ExecuteException
+     */
+    public void sendDTMF(String digits, int optionalToneDurationMillis)
+            throws ExecuteException {
+        StringBuilder sb = new StringBuilder(digits);
+        if (nn(optionalToneDurationMillis))
+            sb.append('@').append(optionalToneDurationMillis);
+
+        sendExeMesg("send_dtmf", sb.toString());
+    }
+    
+    /**
      * Set a channel variable for the channel calling the application.
      * 
      * @param key
@@ -755,7 +1113,7 @@ public class Execute {
         SendMsg msg = new SendMsg();
         msg.addCallCommand("execute");
         msg.addExecuteAppName(app);
-        if (args != null)
+        if (nn(args))
             msg.addExecuteAppArg(args);
         CommandResponse resp = api.sendMessage(msg);
         if (!resp.isOk())
@@ -763,5 +1121,7 @@ public class Execute {
         else
             return resp;
     }
+    
+    private boolean nn(Object obj) {return obj != null;}
 
 }
