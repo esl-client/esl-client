@@ -573,10 +573,14 @@ public class Execute {
      */
     public String playAndDetectSpeech(String file, String engine,
             String optionalParams, String grammer) throws ExecuteException {
-        CommandResponse resp = sendExeMesg("play_and_detect_speech", file
-                + " detect:" + engine + " {"
-                + (nn(optionalParams) ? optionalParams : "") + "}"
-                + grammer);
+        StringBuilder sb = new StringBuilder(file);
+        sb.append(" detect:");
+        sb.append(engine);
+        sb.append(" {");
+        sb.append((nn(optionalParams) ? optionalParams : ""));
+        sb.append("}");
+        sb.append(grammer);
+        CommandResponse resp = sendExeMesg("play_and_detect_speech",sb.toString());
         if (resp.isOk()) {
             EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
                     + " detect_speech_result");
@@ -608,17 +612,16 @@ public class Execute {
 
         String id = UUID.randomUUID().toString();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(min).append(" ");
-        sb.append(max).append(" ");
-        sb.append(tries).append(" ");
-        sb.append(timeout).append(" ");
-        sb.append(terminator).append(" ");
-        sb.append(file).append(" ");
-        sb.append(invalidFile).append(" ");
-        sb.append(id).append(" ");
-        sb.append(regexp).append(" ");
-        sb.append(digitTimeout);
+        StringBuilder sb = new StringBuilder(min);
+        sb.append(" ").append(max);
+        sb.append(" ").append(tries);
+        sb.append(" ").append(timeout);
+        sb.append(" ").append(terminator);
+        sb.append(" ").append(file);
+        sb.append(" ").append(invalidFile);
+        sb.append(" ").append(id);
+        sb.append(" ").append(regexp);
+        sb.append(" ").append(digitTimeout);
 
         CommandResponse resp = sendExeMesg("play_and_get_digits", sb.toString());
 
@@ -645,8 +648,13 @@ public class Execute {
      */
     public void playback(String file, String optionalData)
             throws ExecuteException {
-        sendExeMesg("playback", file
-                + (nn(optionalData) ? " {" + optionalData + "}" : ""));
+        StringBuilder sb = new StringBuilder(file);
+        if(nn(optionalData)) {
+            sb.append(" {");
+            sb.append(optionalData);
+            sb.append("}");
+        }
+        sendExeMesg("playback",sb.toString());
     }
     
     /**
@@ -680,8 +688,12 @@ public class Execute {
      */
     public void presence(String user, boolean in, String rpid, String message)
             throws ExecuteException {
-        sendExeMesg("presence", (in ? "in" : "out") + "|" + user + "|" + rpid
-                + "|" + message);
+        StringBuilder sb = new StringBuilder(in ? "in" : "out");
+        sb.append("|").append(user);
+        sb.append("|").append(rpid);
+        sb.append("|").append(message);
+        
+        sendExeMesg("presence", sb.toString());
     }
 
     /**
@@ -736,13 +748,12 @@ public class Execute {
 
         String id = UUID.randomUUID().toString();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(min).append(" ");
-        sb.append(max).append(" ");
-        sb.append(soundFile).append(" ");
-        sb.append(id).append(" ");
-        sb.append(timeout).append(" ");
-        sb.append(terminators);
+        StringBuilder sb = new StringBuilder(min);
+        sb.append(" ").append(max);
+        sb.append(" ").append(soundFile);
+        sb.append(" ").append(id);
+        sb.append(" ").append(timeout);
+        sb.append(" ").append(terminators);
 
         CommandResponse resp = sendExeMesg("read", sb.toString());
 
