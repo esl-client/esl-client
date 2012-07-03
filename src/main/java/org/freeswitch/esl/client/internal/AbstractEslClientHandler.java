@@ -226,7 +226,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
    */
   public ListenableFuture<EslEvent> sendBackgroundApiCommand(Channel channel, final String command) {
 
-    final ListenableFuture<EslMessage> response = sendApiSingleLineCommand(channel, command);
+    final ListenableFuture<EslMessage> backgroundIdFuture = sendApiSingleLineCommand(channel, command);
     final AsyncFunction<EslMessage, EslEvent> transformFunction =
       new AsyncFunction<EslMessage, EslEvent>() {
         @Override
@@ -242,7 +242,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
         }
       };
 
-    return transform(response, transformFunction, backgroundJobExecutor);
+    return transform(backgroundIdFuture, transformFunction, backgroundJobExecutor);
 
   }
 

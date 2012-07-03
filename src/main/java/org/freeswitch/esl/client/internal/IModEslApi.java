@@ -7,13 +7,56 @@ import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
 
 public interface IModEslApi {
+
+  public enum EventFormat {
+
+    PLAIN("plain"),
+    XML("xml");
+
+    private final String text;
+
+    EventFormat(String txt) {
+      this.text = txt;
+    }
+
+    @Override
+    public String toString() {
+      return text;
+    }
+
+  };
+
+  public enum LoggingLevel {
+
+    CONSOLE("console"),
+    DEBUG("debug"),
+    INFO("info"),
+    NOTICE("notice"),
+    WARNING("warning"),
+    ERR("err"),
+    CRIT("crit"),
+    ALERT("alert");
+
+    private final String text;
+
+    LoggingLevel(String txt) {
+      this.text = txt;
+    }
+
+    @Override
+    public String toString() {
+      return text;
+    }
+
+  }
+
   boolean canSend();
 
   EslMessage sendApiCommand(String command, String arg);
 
   ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg);
 
-  CommandResponse setEventSubscriptions(String format, String events);
+  CommandResponse setEventSubscriptions(EventFormat format, String events);
 
   CommandResponse cancelEventSubscriptions();
 
@@ -23,7 +66,7 @@ public interface IModEslApi {
 
   CommandResponse sendMessage(SendMsg sendMsg);
 
-  CommandResponse setLoggingLevel(String level);
+  CommandResponse setLoggingLevel(LoggingLevel level);
 
   CommandResponse cancelLogging();
 }

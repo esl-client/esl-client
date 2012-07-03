@@ -191,7 +191,7 @@ public class Client implements IModEslApi {
    * @param events { all | space separated list of events }
    * @return a {@link CommandResponse} with the server's response.
    */
-  public CommandResponse setEventSubscriptions(String format, String events) {
+  public CommandResponse setEventSubscriptions(EventFormat format, String events) {
     checkConnected();
     return clientContext.get().setEventSubscriptions(format, events);
   }
@@ -261,7 +261,7 @@ public class Client implements IModEslApi {
    * @param level using the same values as in console.conf
    * @return a {@link CommandResponse} with the server's response.
    */
-  public CommandResponse setLoggingLevel(String level) {
+  public CommandResponse setLoggingLevel(LoggingLevel level) {
     checkConnected();
     return clientContext.get().setLoggingLevel(level);
   }

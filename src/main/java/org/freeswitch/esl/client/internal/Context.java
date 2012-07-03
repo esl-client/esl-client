@@ -11,6 +11,7 @@ import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.util.concurrent.Futures.getUnchecked;
+import static org.freeswitch.esl.client.internal.IModEslApi.EventFormat.*;
 
 public class Context implements IModEslApi {
 
@@ -100,15 +101,15 @@ public class Context implements IModEslApi {
    * @return a {@link org.freeswitch.esl.client.transport.CommandResponse} with the server's response.
    */
   @Override
-  public CommandResponse setEventSubscriptions(String format, String events) {
+  public CommandResponse setEventSubscriptions(EventFormat format, String events) {
+
     // temporary hack
-    checkState(format.equals("plain"), "Only 'plain' event format is supported at present");
-    checkArgument(!isNullOrEmpty(format), "Format cannot be null or empty");
+    checkState(format.equals(PLAIN), "Only 'plain' event format is supported at present");
 
     try {
 
       final StringBuilder sb = new StringBuilder();
-      sb.append("event ").append(format);
+      sb.append("event ").append(format.toString());
       if (!isNullOrEmpty(events)) {
         sb.append(' ').append(events);
       }
@@ -167,8 +168,7 @@ public class Context implements IModEslApi {
       final StringBuilder sb = new StringBuilder();
       sb.append("filter ").append(eventHeader);
       if (!isNullOrEmpty(valueToFilter)) {
-        sb.append(' ');
-        sb.append(valueToFilter);
+        sb.append(' ').append(valueToFilter);
       }
 
       final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, sb.toString()));
@@ -196,8 +196,7 @@ public class Context implements IModEslApi {
       final StringBuilder sb = new StringBuilder();
       sb.append("filter delete ").append(eventHeader);
       if (!isNullOrEmpty(valueToFilter)) {
-        sb.append(' ');
-        sb.append(valueToFilter);
+        sb.append(' ').append(valueToFilter);
       }
 
       final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, sb.toString()));
@@ -236,19 +235,18 @@ public class Context implements IModEslApi {
    * @return a {@link CommandResponse} with the server's response.
    */
   @Override
-  public CommandResponse setLoggingLevel(String level) {
-
-    checkArgument(!isNullOrEmpty(level), "level cannot be null or empty");
+  public CommandResponse setLoggingLevel(LoggingLevel level) {
 
     try {
       final StringBuilder sb = new StringBuilder();
-      sb.append("log ").append(level);
+      sb.append("log ").append(level.toString());
 
       final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, sb.toString()));
       return new CommandResponse(sb.toString(), response);
     } catch (Throwable t) {
       throw propagate(t);
     }
+
   }
 
   /**
