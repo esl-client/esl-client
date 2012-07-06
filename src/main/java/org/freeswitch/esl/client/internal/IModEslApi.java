@@ -24,7 +24,7 @@ public interface IModEslApi {
       return text;
     }
 
-  };
+  }
 
   public enum LoggingLevel {
 

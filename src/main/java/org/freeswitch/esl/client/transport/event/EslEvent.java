@@ -54,7 +54,7 @@ public class EslEvent {
   private final Map<Name, String> messageHeaders;
   private final Map<String, String> eventHeaders;
   private final List<String> eventBody;
-  private boolean decodeEventHeaders = true;
+  private final boolean decodeEventHeaders = true;
 
   public EslEvent(EslMessage rawMessage) {
     this(rawMessage, false);

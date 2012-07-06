@@ -87,7 +87,7 @@ class InboundClientHandler extends AbstractEslClientHandler {
 
         @Override
         public void onFailure(Throwable throwable) {
-          propagate(throwable);
+          throw propagate(throwable);
         }
 
       });
