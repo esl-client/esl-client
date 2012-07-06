@@ -80,7 +80,7 @@ public class Context implements IModEslApi {
       sb.append(' ').append(arg);
     }
 
-    return handler.sendBackgroundApiCommand(channel, sb.toString());
+    return handler.sendBackgroundApiCommand(channel, command);
   }
 
   /**

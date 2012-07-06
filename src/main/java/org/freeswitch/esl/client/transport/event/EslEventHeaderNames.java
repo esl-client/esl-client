@@ -23,7 +23,7 @@ package org.freeswitch.esl.client.transport.event;
  *
  * @author david varnes
  */
-class EslEventHeaderNames {
+public class EslEventHeaderNames {
   /**
    * {@code "Event-Name"}
    */

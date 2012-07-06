@@ -12,8 +12,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class Execute {
 
-  private final IModEslApi api;
-  private final String _uuid;
+  IModEslApi api;
+  String _uuid;
 
   public Execute(IModEslApi api, String uuid) {
     this.api = api;

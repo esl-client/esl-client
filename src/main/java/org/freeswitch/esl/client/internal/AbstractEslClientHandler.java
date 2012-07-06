@@ -64,8 +64,8 @@ import static org.jboss.netty.channel.Channels.close;
  */
 public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHandler {
 
-  private static final String MESSAGE_TERMINATOR = "\n\n";
-  private static final String LINE_TERMINATOR = "\n";
+  public static final String MESSAGE_TERMINATOR = "\n\n";
+  public static final String LINE_TERMINATOR = "\n";
 
   protected final Logger log = LoggerFactory.getLogger(this.getClass());
   // used to preserve association between adding future to queue and sending message on channel
@@ -104,7 +104,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
         //  transform into an event
         final EslEvent eslEvent = new EslEvent(message);
         if (eslEvent.getEventName().equals("BACKGROUND_JOB")) {
-          final String backgroundUuid = eslEvent.getEventHeaders().get(EslHeaders.Name.JOB_UUID.toString());
+          final String backgroundUuid = eslEvent.getEventHeaders().get(EslHeaders.Name.JOB_UUID);
           final SettableFuture<EslEvent> future = backgroundJobs.remove(backgroundUuid);
           if (null != future) {
             future.set(eslEvent);
@@ -120,7 +120,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
     }
   }
 
-  void handleEslMessage(ChannelHandlerContext ctx, EslMessage message) {
+  protected void handleEslMessage(ChannelHandlerContext ctx, EslMessage message) {
     log.info("Received message: [{}]", message);
     final String contentType = message.getContentType();
 
