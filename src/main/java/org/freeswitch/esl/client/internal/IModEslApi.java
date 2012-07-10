@@ -8,65 +8,67 @@ import org.freeswitch.esl.client.transport.message.EslMessage;
 
 public interface IModEslApi {
 
-  public enum EventFormat {
+	public enum EventFormat {
 
-    PLAIN("plain"),
-    XML("xml");
+		PLAIN("plain"),
+		XML("xml");
 
-    private final String text;
+		private final String text;
 
-    EventFormat(String txt) {
-      this.text = txt;
-    }
+		EventFormat(String txt) {
+			this.text = txt;
+		}
 
-    @Override
-    public String toString() {
-      return text;
-    }
+		@Override
+		public String toString() {
+			return text;
+		}
 
-  };
+	}
 
-  public enum LoggingLevel {
+	;
 
-    CONSOLE("console"),
-    DEBUG("debug"),
-    INFO("info"),
-    NOTICE("notice"),
-    WARNING("warning"),
-    ERR("err"),
-    CRIT("crit"),
-    ALERT("alert");
+	public enum LoggingLevel {
 
-    private final String text;
+		CONSOLE("console"),
+		DEBUG("debug"),
+		INFO("info"),
+		NOTICE("notice"),
+		WARNING("warning"),
+		ERR("err"),
+		CRIT("crit"),
+		ALERT("alert");
 
-    LoggingLevel(String txt) {
-      this.text = txt;
-    }
+		private final String text;
 
-    @Override
-    public String toString() {
-      return text;
-    }
+		LoggingLevel(String txt) {
+			this.text = txt;
+		}
 
-  }
+		@Override
+		public String toString() {
+			return text;
+		}
 
-  boolean canSend();
+	}
 
-  EslMessage sendApiCommand(String command, String arg);
+	boolean canSend();
 
-  ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg);
+	EslMessage sendApiCommand(String command, String arg);
 
-  CommandResponse setEventSubscriptions(EventFormat format, String events);
+	ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg);
 
-  CommandResponse cancelEventSubscriptions();
+	CommandResponse setEventSubscriptions(EventFormat format, String events);
 
-  CommandResponse addEventFilter(String eventHeader, String valueToFilter);
+	CommandResponse cancelEventSubscriptions();
 
-  CommandResponse deleteEventFilter(String eventHeader, String valueToFilter);
+	CommandResponse addEventFilter(String eventHeader, String valueToFilter);
 
-  CommandResponse sendMessage(SendMsg sendMsg);
+	CommandResponse deleteEventFilter(String eventHeader, String valueToFilter);
 
-  CommandResponse setLoggingLevel(LoggingLevel level);
+	CommandResponse sendMessage(SendMsg sendMsg);
 
-  CommandResponse cancelLogging();
+	CommandResponse setLoggingLevel(LoggingLevel level);
+
+	CommandResponse cancelLogging();
 }

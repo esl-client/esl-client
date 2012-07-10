@@ -35,21 +35,21 @@ import java.util.concurrent.Executors;
  * @author david varnes
  */
 class InboundPipelineFactory implements ChannelPipelineFactory {
-  
-  private final ChannelHandler handler;
 
-  public InboundPipelineFactory(ChannelHandler handler) {
-    this.handler = handler;
-  }
+	private final ChannelHandler handler;
 
-  public ChannelPipeline getPipeline() throws Exception {
-    ChannelPipeline pipeline = Channels.pipeline();
-    pipeline.addLast("encoder", new StringEncoder());
-    pipeline.addLast("decoder", new EslFrameDecoder(8192));
+	public InboundPipelineFactory(ChannelHandler handler) {
+		this.handler = handler;
+	}
 
-    // now the inbound client logic
-    pipeline.addLast("clientHandler", handler);
+	public ChannelPipeline getPipeline() throws Exception {
+		ChannelPipeline pipeline = Channels.pipeline();
+		pipeline.addLast("encoder", new StringEncoder());
+		pipeline.addLast("decoder", new EslFrameDecoder(8192));
 
-    return pipeline;
-  }
+		// now the inbound client logic
+		pipeline.addLast("clientHandler", handler);
+
+		return pipeline;
+	}
 }

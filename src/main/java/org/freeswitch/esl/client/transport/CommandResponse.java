@@ -24,43 +24,43 @@ import org.freeswitch.esl.client.transport.message.EslMessage;
  * @author david varnes
  */
 public class CommandResponse {
-  private final String command;
-  private final String replyText;
-  private final EslMessage response;
-  private final boolean success;
+	private final String command;
+	private final String replyText;
+	private final EslMessage response;
+	private final boolean success;
 
-  public CommandResponse(String command, EslMessage response) {
-    this.command = command;
-    this.response = response;
-    this.replyText = response.getHeaderValue(Name.REPLY_TEXT);
-    this.success = replyText.startsWith("+OK");
-  }
+	public CommandResponse(String command, EslMessage response) {
+		this.command = command;
+		this.response = response;
+		this.replyText = response.getHeaderValue(Name.REPLY_TEXT);
+		this.success = replyText.startsWith("+OK");
+	}
 
-  /**
-   * @return the original command sent to the server
-   */
-  public String getCommand() {
-    return command;
-  }
+	/**
+	 * @return the original command sent to the server
+	 */
+	public String getCommand() {
+		return command;
+	}
 
-  /**
-   * @return true if and only if the response Reply-Text line starts with "+OK"
-   */
-  public boolean isOk() {
-    return success;
-  }
+	/**
+	 * @return true if and only if the response Reply-Text line starts with "+OK"
+	 */
+	public boolean isOk() {
+		return success;
+	}
 
-  /**
-   * @return the full response Reply-Text line.
-   */
-  public String getReplyText() {
-    return replyText;
-  }
+	/**
+	 * @return the full response Reply-Text line.
+	 */
+	public String getReplyText() {
+		return replyText;
+	}
 
-  /**
-   * @return {@link EslMessage} the full response from the server
-   */
-  public EslMessage getResponse() {
-    return response;
-  }
+	/**
+	 * @return {@link EslMessage} the full response from the server
+	 */
+	public EslMessage getResponse() {
+		return response;
+	}
 }

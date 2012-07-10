@@ -27,9 +27,9 @@ import org.freeswitch.esl.client.transport.event.EslEvent;
  * @author david varnes
  */
 interface IEslProtocolListener {
-  void authResponseReceived(CommandResponse response);
+	void authResponseReceived(CommandResponse response);
 
-  void eventReceived(Context ctx, EslEvent event);
+	void eventReceived(Context ctx, EslEvent event);
 
-  void disconnected();
+	void disconnected();
 }

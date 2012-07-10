@@ -50,282 +50,279 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Client implements IModEslApi {
 
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
-  private final List<IEslEventListener> eventListeners = new CopyOnWriteArrayList<IEslEventListener>();
-  private final AtomicBoolean authenticatorResponded = new AtomicBoolean(false);
-  private final ConcurrentHashMap<String, SettableFuture<EslEvent>> backgroundJobs =
-    new ConcurrentHashMap<String, SettableFuture<EslEvent>>();
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final List<IEslEventListener> eventListeners = new CopyOnWriteArrayList<IEslEventListener>();
+	private final AtomicBoolean authenticatorResponded = new AtomicBoolean(false);
+	private final ConcurrentHashMap<String, SettableFuture<EslEvent>> backgroundJobs =
+		new ConcurrentHashMap<String, SettableFuture<EslEvent>>();
 
-  private boolean authenticated;
-  private CommandResponse authenticationResponse;
-  private Optional<Context> clientContext = Optional.absent();
-  private ExecutorService callbackExecutor = Executors.newSingleThreadExecutor();
+	private boolean authenticated;
+	private CommandResponse authenticationResponse;
+	private Optional<Context> clientContext = Optional.absent();
+	private ExecutorService callbackExecutor = Executors.newSingleThreadExecutor();
 
-  public void addEventListener(IEslEventListener listener) {
-    if (listener != null) {
-      eventListeners.add(listener);
-    }
-  }
+	public void addEventListener(IEslEventListener listener) {
+		if (listener != null) {
+			eventListeners.add(listener);
+		}
+	}
 
-  public boolean canSend() {
-    return clientContext.isPresent()
-      && clientContext.get().canSend()
-      && authenticated;
-  }
+	public boolean canSend() {
+		return clientContext.isPresent()
+			&& clientContext.get().canSend()
+			&& authenticated;
+	}
 
-  private void checkConnected() {
-    if (!canSend()) {
-      throw new IllegalStateException("Not connected to FreeSWITCH Event Socket");
-    }
-  }
-  
-  public void setCallbackExecutor(ExecutorService callbackExecutor) {
-    this.callbackExecutor = callbackExecutor;
-  }
+	private void checkConnected() {
+		if (!canSend()) {
+			throw new IllegalStateException("Not connected to FreeSWITCH Event Socket");
+		}
+	}
 
-  /**
-   * Attempt to establish an authenticated connection to the nominated FreeSWITCH ESL server socket.
-   * This call will block, waiting for an authentication handshake to occur, or timeout after the
-   * supplied number of seconds.
-   *
-   * @param clientAddress  a SocketAddress representing the endpoint to connect to
-   * @param password       server event socket is expecting (set in event_socket_conf.xml)
-   * @param timeoutSeconds number of seconds to wait for the server socket before aborting
-   */
-  public void connect(SocketAddress clientAddress, String password, int timeoutSeconds) throws InboundConnectionFailure {
-    // If already connected, disconnect first
-    if (canSend()) {
-      close();
-    }
+	public void setCallbackExecutor(ExecutorService callbackExecutor) {
+		this.callbackExecutor = callbackExecutor;
+	}
 
-    // Configure this client
-    ClientBootstrap bootstrap = new ClientBootstrap(
-      new NioClientSocketChannelFactory(
-        Executors.newCachedThreadPool(),
-        Executors.newCachedThreadPool()));
+	/**
+	 * Attempt to establish an authenticated connection to the nominated FreeSWITCH ESL server socket.
+	 * This call will block, waiting for an authentication handshake to occur, or timeout after the
+	 * supplied number of seconds.
+	 *
+	 * @param clientAddress  a SocketAddress representing the endpoint to connect to
+	 * @param password       server event socket is expecting (set in event_socket_conf.xml)
+	 * @param timeoutSeconds number of seconds to wait for the server socket before aborting
+	 */
+	public void connect(SocketAddress clientAddress, String password, int timeoutSeconds) throws InboundConnectionFailure {
+		// If already connected, disconnect first
+		if (canSend()) {
+			close();
+		}
 
-    // Add ESL handler and factory
-    InboundClientHandler handler = new InboundClientHandler(password, protocolListener);
-    bootstrap.setPipelineFactory(new InboundPipelineFactory(handler));
+		// Configure this client
+		ClientBootstrap bootstrap = new ClientBootstrap(
+			new NioClientSocketChannelFactory(
+				Executors.newCachedThreadPool(),
+				Executors.newCachedThreadPool()));
 
-    // Attempt connection
-    ChannelFuture future = bootstrap.connect(clientAddress);
+		// Add ESL handler and factory
+		InboundClientHandler handler = new InboundClientHandler(password, protocolListener);
+		bootstrap.setPipelineFactory(new InboundPipelineFactory(handler));
 
-    // Wait till attempt succeeds, fails or timeouts
-    if (!future.awaitUninterruptibly(timeoutSeconds, TimeUnit.SECONDS)) {
-      throw new InboundConnectionFailure("Timeout connecting to " + clientAddress);
-    }
-    // Did not timeout
-    final Channel channel = future.getChannel();
-    // But may have failed anyway
-    if (!future.isSuccess()) {
-      log.warn("Failed to connect to [{}]", clientAddress);
-      log.warn("  * reason: {}", future.getCause());
+		// Attempt connection
+		ChannelFuture future = bootstrap.connect(clientAddress);
 
-      bootstrap.releaseExternalResources();
+		// Wait till attempt succeeds, fails or timeouts
+		if (!future.awaitUninterruptibly(timeoutSeconds, TimeUnit.SECONDS)) {
+			throw new InboundConnectionFailure("Timeout connecting to " + clientAddress);
+		}
+		// Did not timeout
+		final Channel channel = future.getChannel();
+		// But may have failed anyway
+		if (!future.isSuccess()) {
+			log.warn("Failed to connect to [{}]", clientAddress);
+			log.warn("  * reason: {}", future.getCause());
 
-      throw new InboundConnectionFailure("Could not connect to " + clientAddress, future.getCause());
-    }
+			bootstrap.releaseExternalResources();
 
-    //  Wait for the authentication handshake to call back
-    while (!authenticatorResponded.get()) {
-      try {
-        Thread.sleep(250);
-      } catch (InterruptedException e) {
-        // ignore
-      }
-    }
+			throw new InboundConnectionFailure("Could not connect to " + clientAddress, future.getCause());
+		}
 
-    this.clientContext = Optional.of(new Context(channel, handler));
+		//  Wait for the authentication handshake to call back
+		while (!authenticatorResponded.get()) {
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				// ignore
+			}
+		}
 
-    if (!authenticated) {
-      throw new InboundConnectionFailure("Authentication failed: " + authenticationResponse.getReplyText());
-    }
-  }
+		this.clientContext = Optional.of(new Context(channel, handler));
 
-  /**
-   * Sends a FreeSWITCH API command to the server and blocks, waiting for an immediate response from the
-   * server.
-   * <p/>
-   * The outcome of the command from the server is retured in an {@link EslMessage} object.
-   *
-   * @param command API command to send
-   * @param arg     command arguments
-   * @return an {@link EslMessage} containing command results
-   */
-  public EslMessage sendApiCommand(String command, String arg) {
-    checkConnected();
-    return clientContext.get().sendApiCommand(command, arg);
-  }
+		if (!authenticated) {
+			throw new InboundConnectionFailure("Authentication failed: " + authenticationResponse.getReplyText());
+		}
+	}
 
-  /**
-   * Submit a FreeSWITCH API command to the server to be executed in background mode. A synchronous
-   * response from the server provides a UUID to identify the job execution results. When the server
-   * has completed the job execution it fires a BACKGROUND_JOB Event with the execution results.<p/>
-   * Note that this Client must be subscribed in the normal way to BACKGOUND_JOB Events, in order to
-   * receive this event.
-   *
-   * @param command API command to send
-   * @param arg     command arguments
-   * @return String Job-UUID that the server will tag result event with.
-   */
-  public ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg) {
-    checkConnected();
-    return clientContext.get().sendBackgroundApiCommand(command, arg);
-  }
+	/**
+	 * Sends a FreeSWITCH API command to the server and blocks, waiting for an immediate response from the
+	 * server.
+	 * <p/>
+	 * The outcome of the command from the server is retured in an {@link EslMessage} object.
+	 *
+	 * @param command API command to send
+	 * @param arg     command arguments
+	 * @return an {@link EslMessage} containing command results
+	 */
+	public EslMessage sendApiCommand(String command, String arg) {
+		checkConnected();
+		return clientContext.get().sendApiCommand(command, arg);
+	}
 
-  /**
-   * Set the current event subscription for this connection to the server.  Examples of the events
-   * argument are:
-   * <pre>
-   *   ALL
-   *   CHANNEL_CREATE CHANNEL_DESTROY HEARTBEAT
-   *   CUSTOM conference::maintenance
-   *   CHANNEL_CREATE CHANNEL_DESTROY CUSTOM conference::maintenance sofia::register sofia::expire
-   * </pre>
-   * Subsequent calls to this method replaces any previous subscriptions that were set.
-   * </p>
-   * Note: current implementation can only process 'plain' events.
-   *
-   * @param format can be { plain | xml }
-   * @param events { all | space separated list of events }
-   * @return a {@link CommandResponse} with the server's response.
-   */
-  public CommandResponse setEventSubscriptions(EventFormat format, String events) {
-    checkConnected();
-    return clientContext.get().setEventSubscriptions(format, events);
-  }
+	/**
+	 * Submit a FreeSWITCH API command to the server to be executed in background mode. A synchronous
+	 * response from the server provides a UUID to identify the job execution results. When the server
+	 * has completed the job execution it fires a BACKGROUND_JOB Event with the execution results.<p/>
+	 * Note that this Client must be subscribed in the normal way to BACKGOUND_JOB Events, in order to
+	 * receive this event.
+	 *
+	 * @param command API command to send
+	 * @param arg     command arguments
+	 * @return String Job-UUID that the server will tag result event with.
+	 */
+	public ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg) {
+		checkConnected();
+		return clientContext.get().sendBackgroundApiCommand(command, arg);
+	}
 
-  /**
-   * Cancel any existing event subscription.
-   *
-   * @return a {@link CommandResponse} with the server's response.
-   */
-  public CommandResponse cancelEventSubscriptions() {
-    checkConnected();
-    return clientContext.get().cancelEventSubscriptions();
-  }
+	/**
+	 * Set the current event subscription for this connection to the server.  Examples of the events
+	 * argument are:
+	 * <pre>
+	 *   ALL
+	 *   CHANNEL_CREATE CHANNEL_DESTROY HEARTBEAT
+	 *   CUSTOM conference::maintenance
+	 *   CHANNEL_CREATE CHANNEL_DESTROY CUSTOM conference::maintenance sofia::register sofia::expire
+	 * </pre>
+	 * Subsequent calls to this method replaces any previous subscriptions that were set.
+	 * </p>
+	 * Note: current implementation can only process 'plain' events.
+	 *
+	 * @param format can be { plain | xml }
+	 * @param events { all | space separated list of events }
+	 * @return a {@link CommandResponse} with the server's response.
+	 */
+	public CommandResponse setEventSubscriptions(EventFormat format, String events) {
+		checkConnected();
+		return clientContext.get().setEventSubscriptions(format, events);
+	}
 
-  /**
-   * Add an event filter to the current set of event filters on this connection. Any of the event headers
-   * can be used as a filter.
-   * </p>
-   * Note that event filters follow 'filter-in' semantics. That is, when a filter is applied
-   * only the filtered values will be received. Multiple filters can be added to the current
-   * connection.
-   * </p>
-   * Example filters:
-   * <pre>
-   *    eventHeader        valueToFilter
-   *    ----------------------------------
-   *    Event-Name         CHANNEL_EXECUTE
-   *    Channel-State      CS_NEW
-   * </pre>
-   *
-   * @param eventHeader   to filter on
-   * @param valueToFilter the value to match
-   * @return a {@link CommandResponse} with the server's response.
-   */
-  public CommandResponse addEventFilter(String eventHeader, String valueToFilter) {
-    checkConnected();
-    return clientContext.get().addEventFilter(eventHeader, valueToFilter);
-  }
+	/**
+	 * Cancel any existing event subscription.
+	 *
+	 * @return a {@link CommandResponse} with the server's response.
+	 */
+	public CommandResponse cancelEventSubscriptions() {
+		checkConnected();
+		return clientContext.get().cancelEventSubscriptions();
+	}
 
-  /**
-   * Delete an event filter from the current set of event filters on this connection.  See
-   *
-   * @param eventHeader   to remove
-   * @param valueToFilter to remove
-   * @return a {@link CommandResponse} with the server's response.
-   */
-  public CommandResponse deleteEventFilter(String eventHeader, String valueToFilter) {
-    checkConnected();
-    return clientContext.get().deleteEventFilter(eventHeader, valueToFilter);
-  }
+	/**
+	 * Add an event filter to the current set of event filters on this connection. Any of the event headers
+	 * can be used as a filter.
+	 * </p>
+	 * Note that event filters follow 'filter-in' semantics. That is, when a filter is applied
+	 * only the filtered values will be received. Multiple filters can be added to the current
+	 * connection.
+	 * </p>
+	 * Example filters:
+	 * <pre>
+	 *    eventHeader        valueToFilter
+	 *    ----------------------------------
+	 *    Event-Name         CHANNEL_EXECUTE
+	 *    Channel-State      CS_NEW
+	 * </pre>
+	 *
+	 * @param eventHeader   to filter on
+	 * @param valueToFilter the value to match
+	 * @return a {@link CommandResponse} with the server's response.
+	 */
+	public CommandResponse addEventFilter(String eventHeader, String valueToFilter) {
+		checkConnected();
+		return clientContext.get().addEventFilter(eventHeader, valueToFilter);
+	}
 
-  /**
-   * Send a {@link SendMsg} command to FreeSWITCH.  This client requires that the {@link SendMsg}
-   * has a call UUID parameter.
-   *
-   * @param sendMsg a {@link SendMsg} with call UUID
-   * @return a {@link CommandResponse} with the server's response.
-   */
-  public CommandResponse sendMessage(SendMsg sendMsg) {
-    checkConnected();
-    return clientContext.get().sendMessage(sendMsg);
-  }
+	/**
+	 * Delete an event filter from the current set of event filters on this connection.  See
+	 *
+	 * @param eventHeader   to remove
+	 * @param valueToFilter to remove
+	 * @return a {@link CommandResponse} with the server's response.
+	 */
+	public CommandResponse deleteEventFilter(String eventHeader, String valueToFilter) {
+		checkConnected();
+		return clientContext.get().deleteEventFilter(eventHeader, valueToFilter);
+	}
 
-  /**
-   * Enable log output.
-   *
-   * @param level using the same values as in console.conf
-   * @return a {@link CommandResponse} with the server's response.
-   */
-  public CommandResponse setLoggingLevel(LoggingLevel level) {
-    checkConnected();
-    return clientContext.get().setLoggingLevel(level);
-  }
+	/**
+	 * Send a {@link SendMsg} command to FreeSWITCH.  This client requires that the {@link SendMsg}
+	 * has a call UUID parameter.
+	 *
+	 * @param sendMsg a {@link SendMsg} with call UUID
+	 * @return a {@link CommandResponse} with the server's response.
+	 */
+	public CommandResponse sendMessage(SendMsg sendMsg) {
+		checkConnected();
+		return clientContext.get().sendMessage(sendMsg);
+	}
 
-  /**
-   * Disable any logging previously enabled with setLogLevel().
-   *
-   * @return a {@link CommandResponse} with the server's response.
-   */
-  public CommandResponse cancelLogging() {
-    checkConnected();
-    return clientContext.get().cancelLogging();
-  }
+	/**
+	 * Enable log output.
+	 *
+	 * @param level using the same values as in console.conf
+	 * @return a {@link CommandResponse} with the server's response.
+	 */
+	public CommandResponse setLoggingLevel(LoggingLevel level) {
+		checkConnected();
+		return clientContext.get().setLoggingLevel(level);
+	}
 
-  /**
-   * Close the socket connection
-   *
-   * @return a {@link CommandResponse} with the server's response.
-   */
-  public CommandResponse close() {
-    checkConnected();
+	/**
+	 * Disable any logging previously enabled with setLogLevel().
+	 *
+	 * @return a {@link CommandResponse} with the server's response.
+	 */
+	public CommandResponse cancelLogging() {
+		checkConnected();
+		return clientContext.get().cancelLogging();
+	}
 
-    try {
-      if (clientContext.isPresent()) {
-        return new CommandResponse("exit", clientContext.get().sendApiCommand("exit", null));
-      } else {
-        throw new IllegalStateException("not connected/authenticated");
-      }
-    } catch (Throwable t) {
-      throw Throwables.propagate(t);
-    }
+	/**
+	 * Close the socket connection
+	 *
+	 * @return a {@link CommandResponse} with the server's response.
+	 */
+	public CommandResponse close() {
+		checkConnected();
 
-
+		try {
+			if (clientContext.isPresent()) {
+				return new CommandResponse("exit", clientContext.get().sendApiCommand("exit", null));
+			} else {
+				throw new IllegalStateException("not connected/authenticated");
+			}
+		} catch (Throwable t) {
+			throw Throwables.propagate(t);
+		}
 
 
+	}
 
-  }
+	/*
+		*  Internal observer of the ESL protocol
+		*/
+	private final IEslProtocolListener protocolListener = new IEslProtocolListener() {
 
-  /*
-  *  Internal observer of the ESL protocol
-  */
-  private final IEslProtocolListener protocolListener = new IEslProtocolListener() {
+		public void authResponseReceived(CommandResponse response) {
+			authenticatorResponded.set(true);
+			authenticated = response.isOk();
+			authenticationResponse = response;
+			log.debug("Auth response success={}, message=[{}]", authenticated, response.getReplyText());
+		}
 
-    public void authResponseReceived(CommandResponse response) {
-      authenticatorResponded.set(true);
-      authenticated = response.isOk();
-      authenticationResponse = response;
-      log.debug("Auth response success={}, message=[{}]", authenticated, response.getReplyText());
-    }
+		public void eventReceived(final Context ctx, final EslEvent event) {
+			log.debug("Event received [{}]", event);
+			for (final IEslEventListener listener : eventListeners) {
+				callbackExecutor.execute(new Runnable() {
+					@Override
+					public void run() {
+						listener.onEslEvent(ctx, event);
+					}
+				});
+			}
+		}
 
-    public void eventReceived(final Context ctx, final EslEvent event) {
-      log.debug("Event received [{}]", event);
-      for (final IEslEventListener listener : eventListeners) {
-        callbackExecutor.execute(new Runnable() {
-          @Override
-          public void run() {
-            listener.onEslEvent(ctx, event);
-          }
-        });
-      }
-    }
-
-    public void disconnected() {
-      log.info("Disconnected ...");
-    }
-  };
+		public void disconnected() {
+			log.info("Disconnected ...");
+		}
+	};
 }

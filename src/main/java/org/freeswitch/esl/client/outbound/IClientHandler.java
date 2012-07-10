@@ -6,6 +6,6 @@ import org.freeswitch.esl.client.transport.event.EslEvent;
 
 public interface IClientHandler extends IEslEventListener {
 
-  public void onConnect(Context ctx, EslEvent event);
+	public void onConnect(Context ctx, EslEvent event);
 
 }

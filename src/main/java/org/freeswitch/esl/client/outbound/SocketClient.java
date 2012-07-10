@@ -40,40 +40,40 @@ import java.util.concurrent.Executors;
  */
 public class SocketClient extends AbstractService {
 
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
-  private final ChannelFactory channelFactory;
-  private final IClientHandlerFactory clientHandlerFactory;
-  private final SocketAddress bindAddress;
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final ChannelFactory channelFactory;
+	private final IClientHandlerFactory clientHandlerFactory;
+	private final SocketAddress bindAddress;
 
-  private Channel serverChannel;
+	private Channel serverChannel;
 
-  public SocketClient(SocketAddress bindAddress, IClientHandlerFactory clientHandlerFactory) {
-    this.bindAddress = bindAddress;
-    this.clientHandlerFactory = clientHandlerFactory;
-    this.channelFactory = new NioServerSocketChannelFactory(
-      Executors.newCachedThreadPool(),
-      Executors.newCachedThreadPool());
-  }
+	public SocketClient(SocketAddress bindAddress, IClientHandlerFactory clientHandlerFactory) {
+		this.bindAddress = bindAddress;
+		this.clientHandlerFactory = clientHandlerFactory;
+		this.channelFactory = new NioServerSocketChannelFactory(
+			Executors.newCachedThreadPool(),
+			Executors.newCachedThreadPool());
+	}
 
-  @Override
-  protected void doStart() {
-    final ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
-    bootstrap.setPipelineFactory(new OutboundPipelineFactory(clientHandlerFactory));
-    bootstrap.setOption("child.tcpNoDelay", true);
-    bootstrap.setOption("child.keepAlive", true);
-    serverChannel = bootstrap.bind(bindAddress);
-    notifyStarted();
-    log.info("SocketClient waiting for connections on port [{}] ...", bindAddress);
-  }
+	@Override
+	protected void doStart() {
+		final ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
+		bootstrap.setPipelineFactory(new OutboundPipelineFactory(clientHandlerFactory));
+		bootstrap.setOption("child.tcpNoDelay", true);
+		bootstrap.setOption("child.keepAlive", true);
+		serverChannel = bootstrap.bind(bindAddress);
+		notifyStarted();
+		log.info("SocketClient waiting for connections on port [{}] ...", bindAddress);
+	}
 
-  @Override
-  protected void doStop() {
-    if (null != serverChannel) {
-      serverChannel.close().awaitUninterruptibly();
-    }
-    channelFactory.releaseExternalResources();
-    notifyStopped();
-    log.info("SocketClient stopped");
-  }
+	@Override
+	protected void doStop() {
+		if (null != serverChannel) {
+			serverChannel.close().awaitUninterruptibly();
+		}
+		channelFactory.releaseExternalResources();
+		notifyStopped();
+		log.info("SocketClient stopped");
+	}
 
 }

@@ -21,13 +21,13 @@ package org.freeswitch.esl.client.inbound;
  * @author david varnes
  */
 public class InboundConnectionFailure extends Exception {
-  private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-  public InboundConnectionFailure(String message) {
-    super(message);
-  }
+	public InboundConnectionFailure(String message) {
+		super(message);
+	}
 
-  public InboundConnectionFailure(String message, Throwable cause) {
-    super(message, cause);
-  }
+	public InboundConnectionFailure(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

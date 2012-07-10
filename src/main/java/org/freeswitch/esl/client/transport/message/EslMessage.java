@@ -39,127 +39,128 @@ import java.util.Map;
  * @see EslHeaders.Name
  */
 public class EslMessage {
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-  private final Map<Name, String> headers = new HashMap<Name, String>();
-  private final List<String> body = new ArrayList<String>();
+	private final Map<Name, String> headers = new HashMap<Name, String>();
+	private final List<String> body = new ArrayList<String>();
 
-  private Integer contentLength = null;
+	private Integer contentLength = null;
 
-  /**
-   * All the received message headers in a map keyed by {@link EslHeaders.Name}. The string mapped value
-   * is the parsed content of the header line (ie, it does not include the header name).
-   *
-   * @return map of header values
-   */
-  public Map<Name, String> getHeaders() {
-    return headers;
-  }
+	/**
+	 * All the received message headers in a map keyed by {@link EslHeaders.Name}. The string mapped value
+	 * is the parsed content of the header line (ie, it does not include the header name).
+	 *
+	 * @return map of header values
+	 */
+	public Map<Name, String> getHeaders() {
+		return headers;
+	}
 
-  /**
-   * Convenience method
-   *
-   * @param headerName as a {@link EslHeaders.Name}
-   * @return true if an only if there is a header entry with the supplied header name
-   */
-  public boolean hasHeader(Name headerName) {
-    return headers.containsKey(headerName);
-  }
+	/**
+	 * Convenience method
+	 *
+	 * @param headerName as a {@link EslHeaders.Name}
+	 * @return true if an only if there is a header entry with the supplied header name
+	 */
+	public boolean hasHeader(Name headerName) {
+		return headers.containsKey(headerName);
+	}
 
-  /**
-   * Convenience method
-   *
-   * @param headerName as a {@link EslHeaders.Name}
-   * @return same as getHeaders().get( headerName )
-   */
-  public String getHeaderValue(Name headerName) {
-    return headers.get(headerName);
-  }
+	/**
+	 * Convenience method
+	 *
+	 * @param headerName as a {@link EslHeaders.Name}
+	 * @return same as getHeaders().get( headerName )
+	 */
+	public String getHeaderValue(Name headerName) {
+		return headers.get(headerName);
+	}
 
-  /**
-   * Convenience method
-   *
-   * @return true if and only if a header exists with name "Content-Length"
-   */
-  public boolean hasContentLength() {
-    return headers.containsKey(Name.CONTENT_LENGTH);
-  }
+	/**
+	 * Convenience method
+	 *
+	 * @return true if and only if a header exists with name "Content-Length"
+	 */
+	public boolean hasContentLength() {
+		return headers.containsKey(Name.CONTENT_LENGTH);
+	}
 
-  /**
-   * Convenience method
-   *
-   * @return integer value of header with name "Content-Length"
-   */
-  public Integer getContentLength() {
-    if (contentLength != null) {
-      return contentLength;
-    }
-    if (hasContentLength()) {
-      contentLength = Integer.valueOf(headers.get(Name.CONTENT_LENGTH));
-    }
-    return contentLength;
-  }
+	/**
+	 * Convenience method
+	 *
+	 * @return integer value of header with name "Content-Length"
+	 */
+	public Integer getContentLength() {
+		if (contentLength != null) {
+			return contentLength;
+		}
+		if (hasContentLength()) {
+			contentLength = Integer.valueOf(headers.get(Name.CONTENT_LENGTH));
+		}
+		return contentLength;
+	}
 
-  /**
-   * Convenience method
-   *
-   * @return header value of header with name "Content-Type"
-   */
-  public String getContentType() {
-    return headers.get(Name.CONTENT_TYPE);
-  }
+	/**
+	 * Convenience method
+	 *
+	 * @return header value of header with name "Content-Type"
+	 */
+	public String getContentType() {
+		return headers.get(Name.CONTENT_TYPE);
+	}
 
-  /**
-   * Any received message body lines
-   *
-   * @return list with a string for each line received, may be an empty list
-   */
-  public List<String> getBodyLines() {
-    return body;
-  }
+	/**
+	 * Any received message body lines
+	 *
+	 * @return list with a string for each line received, may be an empty list
+	 */
+	public List<String> getBodyLines() {
+		return body;
+	}
 
-  /**
-   * Used by the {@link EslMessageDecoder}.
-   *
-   * @param name
-   * @param value
-   */
-  void addHeader(Name name, String value) {
-    log.debug("adding header [{}] [{}]", name, value);
-    headers.put(name, value);
-  }
+	/**
+	 * Used by the {@link EslMessageDecoder}.
+	 *
+	 * @param name
+	 * @param value
+	 */
+	void addHeader(Name name, String value) {
+		log.debug("adding header [{}] [{}]", name, value);
+		headers.put(name, value);
+	}
 
-  /**
-   * Used by the {@link EslMessageDecoder}
-   *
-   * @param line
-   */
-  void addBodyLine(String line) {
-    if (line == null) {
-      return;
-    }
-    body.add(line);
-  }
+	/**
+	 * Used by the {@link EslMessageDecoder}
+	 *
+	 * @param line
+	 */
+	void addBodyLine(String line) {
+		if (line == null) {
+			return;
+		}
+		body.add(line);
+	}
 
-  /**
-   * Did this message return Reply-Text: +OK
-   * @return true if reply equals +OK, false if not.
-   */
-  public boolean isReplyOk() {
-    return getHeaderValue(Name.REPLY_TEXT).trim().equals("+OK");
-  }
+	/**
+	 * Did this message return Reply-Text: +OK
+	 *
+	 * @return true if reply equals +OK, false if not.
+	 */
+	public boolean isReplyOk() {
+		return getHeaderValue(Name.REPLY_TEXT).trim().equals("+OK");
+	}
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("EslMessage: contentType=[");
-    sb.append(getContentType());
-    sb.append("] headers=");
-    sb.append(headers.size());
-    sb.append(", body=");
-    sb.append(body.size());
-    sb.append(" lines.");
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("EslMessage: contentType=[");
+		sb.append(getContentType());
+		sb.append("] headers=");
+		sb.append(headers.size());
+		sb.append(", body=");
+		sb.append(body.size());
+		sb.append(" lines.");
 
-    return sb.toString();
-  }
+		return sb.toString();
+	}
 
 }

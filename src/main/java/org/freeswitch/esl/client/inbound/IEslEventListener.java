@@ -31,11 +31,11 @@ import org.freeswitch.esl.client.transport.event.EslEvent;
  * @author david varnes
  */
 public interface IEslEventListener {
-  /**
-   * Signal of a server initiated event.
-   *
-   * @param event as an {@link EslEvent}
-   */
-  void onEslEvent(Context ctx, EslEvent event);
+	/**
+	 * Signal of a server initiated event.
+	 *
+	 * @param event as an {@link EslEvent}
+	 */
+	void onEslEvent(Context ctx, EslEvent event);
 
 }
