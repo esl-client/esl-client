@@ -1,5 +1,6 @@
 package org.freeswitch.esl.client.dptools;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -101,6 +102,20 @@ public class Execute {
 	 * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bridge">FreeSWITCH wiki</a>
 	 */
 	public void bridge(String endpoint) throws ExecuteException {
+		sendExeMesg("bridge", endpoint);
+	}
+
+	/**
+	 * Provides the ability to bridge two endpoints. Generally used to route an
+	 * incoming call to one or more endpoints. Multiple endpoints can be dialed
+	 * simultaneously or sequentially using the comma and pipe delimiters,
+	 * respectively.
+	 *
+	 * @param endpoint endpoint
+	 * @param options
+	 * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bridge">FreeSWITCH wiki</a>
+	 */
+	public void bridge(String endpoint, BridgeOptions options) throws ExecuteException {
 		sendExeMesg("bridge", endpoint);
 	}
 
@@ -639,8 +654,7 @@ public class Execute {
 		CommandResponse resp = sendExeMesg("play_and_get_digits", sb.toString());
 
 		if (resp.isOk()) {
-			EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
-				+ " " + id);
+			EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid + " " + id);
 			if (eslMessage.getBodyLines().size() > 0)
 				return eslMessage.getBodyLines().get(0);
 		} else {
