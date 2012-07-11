@@ -265,4 +265,11 @@ public class Context implements IModEslApi {
 		}
 	}
 
+  public void closeChannel() {
+      try {
+          channel.close();
+      } catch (Throwable t) {
+          throw propagate(t);
+      }
+  }
 }
