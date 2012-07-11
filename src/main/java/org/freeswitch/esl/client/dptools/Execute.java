@@ -1115,6 +1115,25 @@ public class Execute {
         sendExeMesg("set", key + "=" + value);
     }
 
+    /**
+     * Immediately transfer the calling channel to a new context. If there happens to be an xml extension named <destination_number> then control is "warped" directly to that extension. Otherwise it goes through the entire context checking for a match.
+     * @param destinationNumber
+     * @param optionalDialplan
+     * @param optionalContext
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer
+     */
+    public void transfer(String destinationNumber, String optionalDialplan,
+            String optionalContext) throws ExecuteException {
+        StringBuilder sb = new StringBuilder(destinationNumber);
+        if(nn(optionalDialplan)) {
+            sb.append(" ").append(optionalDialplan);
+            if(nn(optionalContext))
+                sb.append(" ").append(optionalContext);
+        }
+        sendExeMesg("transfer", sb.toString());
+    }
+    
     private CommandResponse sendExeMesg(String app) throws ExecuteException {
         return sendExeMesg(app, null);
     }
