@@ -225,20 +225,50 @@ public class Execute {
      * @param path
      *            any sound format FreeSWITCH supports, wav, local_steam, shout
      *            etc.
-     * @param optionalFlags
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
+     */
+    public void displaceSession(String path) throws ExecuteException {
+        displaceSession(path, null, 0);
+    }
+    
+    /**
+     * Displace file. Plays a file or stream to a channel.
+     * 
+     * @param path
+     *            any sound format FreeSWITCH supports, wav, local_steam, shout
+     *            etc.
+     * @param flags
      *            flags to stream, null if none
-     * @param optionalTimeLimitMillis
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
+     */
+    public void displaceSession(String path, String flags)
+            throws ExecuteException {
+        displaceSession(path, flags, 0);
+       
+    }
+    
+    /**
+     * Displace file. Plays a file or stream to a channel.
+     * 
+     * @param path
+     *            any sound format FreeSWITCH supports, wav, local_steam, shout
+     *            etc.
+     * @param flags
+     *            flags to stream, null if none
+     * @param timeLimitMillis
      *            optional time limit, 0 for none
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
      */
-    public void displaceSession(String path, String optionalFlags,
-            long optionalTimeLimitMillis) throws ExecuteException {
+    public void displaceSession(String path, String flags,
+            long timeLimitMillis) throws ExecuteException {
         StringBuilder sb = new StringBuilder(path);
-        if(nn(optionalFlags))
-            sb.append(" ").append(optionalFlags);
-        if(optionalTimeLimitMillis > 0 )
-            sb.append(" +").append(optionalTimeLimitMillis);
+        if(nn(flags))
+            sb.append(" ").append(flags);
+        if(timeLimitMillis > 0 )
+            sb.append(" +").append(timeLimitMillis);
         
         sendExeMesg("displace_session",sb.toString());
     }
@@ -253,35 +283,150 @@ public class Execute {
      * 
      * @param uuid
      *            uuid of the call or 'all' for all
-     * @param optionalGroupId
-     *            if specified, eavesdrop only works with channels that have an
-     *            "eavesdrop_group" channel variable set to the same name.
-     * @param optionalFailedWav
-     *            ex: /sounds/failed.wav
-     * @param optionalNewChannelWav
-     *            ex: /sounds/new_chan_announce.wav
-     * @param optionalIdleWav
-     *            ex: /sounds/idle.wav
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     */
+    public void eavesdrop(String uuid)
+            throws ExecuteException {
+
+        eavesdrop(uuid, false, null, null, null, null);
+    }
+    
+    /**
+     * Provides the ability to spy on a channel. It often referred to as call
+     * barge. For persistent spying on a user see Mod_spy.
+     * 
+     * DTMF signals during eavesdrop, 2 to speak with the uuid, 1 to speak with
+     * the other half, 3 to engage a three way, 0 to restore eavesdrop, * to
+     * next channel.
+     * 
+     * @param uuid
+     *            uuid of the call or 'all' for all
      * @param enableDTMF
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
      */
-    public void eavesdrop(String uuid, String optionalGroupId,
-            String optionalFailedWav, String optionalNewChannelWav,
-            String optionalIdleWav, boolean enableDTMF) throws ExecuteException {
+    public void eavesdrop(String uuid, boolean enableDTMF)
+            throws ExecuteException {
 
-        if (nn(optionalGroupId))
-            set("eavesdrop_require_group", optionalGroupId);
-        if (nn(optionalFailedWav))
-            set("eavesdrop_indicate_failed", optionalFailedWav);
-        if (nn(optionalNewChannelWav))
-            set("eavesdrop_indicate_new", optionalNewChannelWav);
-        if (nn(optionalIdleWav))
-            set("eavesdrop_indicate_idle", optionalIdleWav);
+        eavesdrop(uuid, enableDTMF, null, null, null, null);
+    }
+
+    /**
+     * Provides the ability to spy on a channel. It often referred to as call
+     * barge. For persistent spying on a user see Mod_spy.
+     * 
+     * DTMF signals during eavesdrop, 2 to speak with the uuid, 1 to speak with
+     * the other half, 3 to engage a three way, 0 to restore eavesdrop, * to
+     * next channel.
+     * 
+     * @param uuid
+     *            uuid of the call or 'all' for all
+     * @param enableDTMF
+     * @param groupId
+     *            if specified, eavesdrop only works with channels that have an
+     *            "eavesdrop_group" channel variable set to the same name.
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     */
+    public void eavesdrop(String uuid, boolean enableDTMF, String groupId)
+            throws ExecuteException {
+
+        eavesdrop(uuid, enableDTMF, groupId, null, null, null);
+    }
+
+    /**
+     * Provides the ability to spy on a channel. It often referred to as call
+     * barge. For persistent spying on a user see Mod_spy.
+     * 
+     * DTMF signals during eavesdrop, 2 to speak with the uuid, 1 to speak with
+     * the other half, 3 to engage a three way, 0 to restore eavesdrop, * to
+     * next channel.
+     * 
+     * @param uuid
+     *            uuid of the call or 'all' for all
+     * @param enableDTMF
+     * @param groupId
+     *            if specified, eavesdrop only works with channels that have an
+     *            "eavesdrop_group" channel variable set to the same name.
+     * @param failedWav
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     */
+    public void eavesdrop(String uuid, boolean enableDTMF, String groupId,
+            String failedWav) throws ExecuteException {
+        eavesdrop(uuid, enableDTMF, groupId, failedWav, null, null);
+    }
+
+    /**
+     * Provides the ability to spy on a channel. It often referred to as call
+     * barge. For persistent spying on a user see Mod_spy.
+     * 
+     * DTMF signals during eavesdrop, 2 to speak with the uuid, 1 to speak with
+     * the other half, 3 to engage a three way, 0 to restore eavesdrop, * to
+     * next channel.
+     * 
+     * @param uuid
+     *            uuid of the call or 'all' for all
+     * @param enableDTMF
+     * @param groupId
+     *            if specified, eavesdrop only works with channels that have an
+     *            "eavesdrop_group" channel variable set to the same name.
+     * @param failedWav
+     *            ex: /sounds/failed.wav
+     * @param newChannelWav
+     *            ex: /sounds/new_chan_announce.wav
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     */
+    public void eavesdrop(String uuid, boolean enableDTMF, String groupId,
+            String failedWav, String newChannelWav) throws ExecuteException {
+
+        eavesdrop(uuid, enableDTMF, groupId, failedWav, newChannelWav, null);
+
+    }
+
+    /**
+     * Provides the ability to spy on a channel. It often referred to as call
+     * barge. For persistent spying on a user see Mod_spy.
+     * 
+     * DTMF signals during eavesdrop, 2 to speak with the uuid, 1 to speak with
+     * the other half, 3 to engage a three way, 0 to restore eavesdrop, * to
+     * next channel.
+     * 
+     * @param uuid
+     *            uuid of the call or 'all' for all
+     * @param enableDTMF
+     * @param groupId
+     *            if specified, eavesdrop only works with channels that have an
+     *            "eavesdrop_group" channel variable set to the same name.
+     * @param failedWav
+     *            ex: /sounds/failed.wav
+     * @param newChannelWav
+     *            ex: /sounds/new_chan_announce.wav
+     * @param idleWav
+     *            ex: /sounds/idle.wav
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     */
+    public void eavesdrop(String uuid, boolean enableDTMF, String groupId,
+            String failedWav, String newChannelWav, String idleWav)
+            throws ExecuteException {
+
+        if (nn(groupId))
+            set("eavesdrop_require_group", groupId);
+        if (nn(failedWav))
+            set("eavesdrop_indicate_failed", failedWav);
+        if (nn(newChannelWav))
+            set("eavesdrop_indicate_new", newChannelWav);
+        if (nn(idleWav))
+            set("eavesdrop_indicate_idle", idleWav);
+
         set("eavesdrop_enable_dtmf", String.valueOf(enableDTMF));
 
         sendExeMesg("eavesdrop", uuid);
     }
+    
 
     /**
      * Places the calling channel in loopback mode. It simply returns everything
@@ -340,20 +485,48 @@ public class Execute {
      * 
      * 
      * @param extension
-     * @param optionalDialplan
-     * @param optionalContext
+     * @throws ExecuteException
+     * @see http
+     *      ://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension
+     */
+    public void executeExtension(String extension) throws ExecuteException {
+        executeExtension(extension, null, null);
+    }
+    /**
+     * execute an extension from within another extension with this dialplan
+     * application.
+     * 
+     * 
+     * @param extension
+     * @param dialplan
+     * @throws ExecuteException
+     * @see http
+     *      ://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension
+     */
+    public void executeExtension(String extension, String dialplan) throws ExecuteException {
+        executeExtension(extension, dialplan, null);
+    }
+    
+    /**
+     * execute an extension from within another extension with this dialplan
+     * application.
+     * 
+     * 
+     * @param extension
+     * @param dialplan
+     * @param context
      *            (will only be set if optionalDialplan is not null)
      * @throws ExecuteException
      * @see http
      *      ://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension
      */
-    public void executeExtension(String extension, String optionalDialplan,
-            String optionalContext) throws ExecuteException {
+    public void executeExtension(String extension, String dialplan,
+            String context) throws ExecuteException {
         StringBuilder sb = new StringBuilder(extension);
-        if(nn(optionalDialplan)) {
-            sb.append(" ").append(optionalDialplan);
-            if(nn(optionalContext))
-                sb.append(" ").append(optionalContext);
+        if(nn(dialplan)) {
+            sb.append(" ").append(dialplan);
+            if(nn(context))
+                sb.append(" ").append(context);
         }
         sendExeMesg("execute_extension", sb.toString());
     }
@@ -414,16 +587,30 @@ public class Execute {
      * 
      * @param tone
      *            ex: Generate a 500ms beep at 800Hz, tone = "%(500,0,800)"
-     * @param optionalLoops
-     *            set to a non zero nu,ber, -1 for infinate loop
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_gentones
      * @see http://wiki.freeswitch.org/wiki/TGML
      */
-    public void gentones(String tone, int optionalLoops)
+    public void gentones(String tone)
+            throws ExecuteException {
+       gentones(tone, 0);
+    }
+    
+    /**
+     * Generate TGML tones.
+     * 
+     * @param tone
+     *            ex: Generate a 500ms beep at 800Hz, tone = "%(500,0,800)"
+     * @param loops
+     *            set to a non zero nuber, -1 for infinate loop
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_gentones
+     * @see http://wiki.freeswitch.org/wiki/TGML
+     */
+    public void gentones(String tone, int loops)
             throws ExecuteException {
         sendExeMesg("gentones", tone
-                + (optionalLoops != 0 ? "|" + optionalLoops : ""));
+                + (loops != 0 ? "|" + loops : ""));
     }
 
     /**
@@ -448,26 +635,46 @@ public class Execute {
     /**
      * Hangs up a channel, with an optional reason supplied.
      * 
-     * @param optionalReason
+     * @throws ExecuteException
+     * @http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_hangup
+     */
+    public void hangup() throws ExecuteException {
+        sendExeMesg("hangup", null);
+    }
+    
+    /**
+     * Hangs up a channel, with an optional reason supplied.
+     * 
+     * @param reason
      *            if not null the hangup reason, ex: USER_BUSY
      * @throws ExecuteException
      * @http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_hangup
      */
-    public void hangup(String optionalReason) throws ExecuteException {
-        sendExeMesg("hangup", optionalReason);
+    public void hangup(String reason) throws ExecuteException {
+        sendExeMesg("hangup", reason);
     }
 
     /**
      * Dumps channel information to console.
      * 
-     * @param optionalLevel
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_info
+     */
+    public void info() throws ExecuteException {
+        sendExeMesg("info", null);
+    }
+    
+    /**
+     * Dumps channel information to console.
+     * 
+     * @param level
      *            if not null the level to log. Ex: notice Ex:
      *            bridge_pre_execute_bleg_app=info
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_info
      */
-    public void info(String optionalLevel) throws ExecuteException {
-        sendExeMesg("info", optionalLevel);
+    public void info(String level) throws ExecuteException {
+        sendExeMesg("info", level);
     }
 
     /**
@@ -486,16 +693,29 @@ public class Execute {
     /**
      * Logs a string of text to the console
      * 
-     * @param optionalLevel
+     * @param message
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_log
+     * @see http://wiki.freeswitch.org/wiki/Mod_logfile
+     */
+    public void log(String message)
+            throws ExecuteException {
+       log(null,message);
+    }
+    
+    /**
+     * Logs a string of text to the console
+     * 
+     * @param level
      *            ex: DEBUG, INFO
      * @param message
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_log
      * @see http://wiki.freeswitch.org/wiki/Mod_logfile
      */
-    public void log(String optionalLevel, String message)
+    public void log(String level, String message)
             throws ExecuteException {
-        sendExeMesg("log", (nn(optionalLevel) ? optionalLevel + " " : "")
+        sendExeMesg("log", (nn(level) ? level + " " : "")
                 + message);
     }
 
@@ -566,18 +786,33 @@ public class Execute {
      * 
      * @param file
      * @param engine
-     * @param optionalParams
      * @param grammer
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_detect_speech
      */
     public String playAndDetectSpeech(String file, String engine,
-            String optionalParams, String grammer) throws ExecuteException {
+            String grammer) throws ExecuteException {
+        return playAndDetectSpeech(file, engine, null, grammer);
+    }
+    
+    /**
+     * Play while doing speech recognition. Result is stored in the
+     * detect_speech_result channel variable.
+     * 
+     * @param file
+     * @param engine
+     * @param grammer
+     * @param params
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_detect_speech
+     */
+    public String playAndDetectSpeech(String file, String engine,
+            String grammer, String params) throws ExecuteException {
         StringBuilder sb = new StringBuilder(file);
         sb.append(" detect:");
         sb.append(engine);
         sb.append(" {");
-        sb.append((nn(optionalParams) ? optionalParams : ""));
+        sb.append((nn(params) ? params : ""));
         sb.append("}");
         sb.append(grammer);
         CommandResponse resp = sendExeMesg("play_and_detect_speech",sb.toString());
@@ -640,18 +875,30 @@ public class Execute {
      * Plays a sound file on the current channel.
      * 
      * @param file
-     * @param optionalData
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_playback
+     */
+    public void playback(String file)
+            throws ExecuteException {
+        playback(file, null);
+    }
+    
+    /**
+     * Plays a sound file on the current channel.
+     * 
+     * @param file
+     * @param data
      *            ex: var1=val1,var2=val2 adds specific vars that will be sent
      *            in PLAYBACK_START and PLAYBACK_STOP events
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_playback
      */
-    public void playback(String file, String optionalData)
+    public void playback(String file, String data)
             throws ExecuteException {
         StringBuilder sb = new StringBuilder(file);
-        if(nn(optionalData)) {
+        if(nn(data)) {
             sb.append(" {");
-            sb.append(optionalData);
+            sb.append(data);
             sb.append("}");
         }
         sendExeMesg("playback",sb.toString());
@@ -714,15 +961,28 @@ public class Execute {
      * second delay and the character W for a 1 second delay.
      * 
      * @param digits
-     * @param optionalDurationsMillis ignored if <=0
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_queue_dtmf
      */
-    public void queueDTMF(String digits, int optionalDurationsMillis)
+    public void queueDTMF(String digits) throws ExecuteException {
+        queueDTMF(digits, 0);
+    }
+
+    /**
+     * Send DTMF digits after a bridge is successful from the session using the
+     * method(s) configured on the endpoint in use. use the character w for a .5
+     * second delay and the character W for a 1 second delay.
+     * 
+     * @param digits
+     * @param durationsMillis
+     *            ignored if <=0
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_queue_dtmf
+     */
+    public void queueDTMF(String digits, int durationsMillis)
             throws ExecuteException {
         sendExeMesg("dtmf_digits", digits
-                + (optionalDurationsMillis > 0 ? "@" + optionalDurationsMillis
-                        : ""));
+                + (durationsMillis > 0 ? "@" + durationsMillis : ""));
     }
 
     /**
@@ -773,14 +1033,24 @@ public class Execute {
      * application will record a file to file
      * 
      * @param file
-     * @param optionalTimeLimitSeconds
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     */
+    public void record(String file) throws ExecuteException {
+        record("record", null, 0, 0, 0, true, false, null, null, null, null,
+                null, null, 0);
+    }
+    
+    
+    /**
+     * Record is used for recording messages, like in a voicemail system. This
+     * application will record a file to file
+     * 
+     * @param file
+     * @param timeLimitSeconds
      *            the maximum duration of the recording.
-     * @param optionalSilenceThreshold
+     * @param silenceThreshold
      *            is the energy level.
-     * @param optionalSilenceHits
-     *            how many positive hits on being below that thresh you can
-     *            tolerate to stop default hits are sample rate * 3 / the number
-     *            of samples per frame so the default, if missing, is 3.
      * @param wateResources
      *            By default record doesn't send RTP packets. This is generally
      *            acceptable, but for longer recordings or depending on the RTP
@@ -789,57 +1059,68 @@ public class Execute {
      *            sending RTP even during recording. The value can be
      *            true/false/<desired silence factor>. By default the silence
      *            factor is 1400 if true
+     * @param silenceHits
+     *            how many positive hits on being below that thresh you can
+     *            tolerate to stop default hits are sample rate * 3 / the number
+     *            of samples per frame so the default, if missing, is 3.
+     * 
      * @param append
      *            append or overwite if file exists
-     * @param optionalRecordTile
+     * @param recordTile
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordCopyright
+     * @param recordCopyright
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordSoftware
+     * @param recordSoftware
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordArtist
+     * @param recordArtist
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordComment
+     * @param recordComment
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordDate
+     * @param recordDate
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordRate
+     * @param recordRate
      *            the sample rate of the recording.
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
      */
-    public void record(String file, int optionalTimeLimitSeconds,
-            int optionalSilenceThreshold, int optionalSilenceHits,
-            boolean wateResources, boolean append, String optionalRecordTile,
-            String optionalRecordCopyright, String optionalRecordSoftware,
-            String optionalRecordArtist, String optionalRecordComment,
-            String optionalRecordDate, int optionalRecordRate)
-            throws ExecuteException {
-        record("record", file, optionalTimeLimitSeconds,
-                optionalSilenceThreshold, optionalSilenceHits, wateResources,
-                append, optionalRecordTile, optionalRecordCopyright,
-                optionalRecordSoftware, optionalRecordArtist,
-                optionalRecordComment, optionalRecordDate, optionalRecordRate);
+    public void record(String file, boolean append, boolean wateResources,
+            int timeLimitSeconds, int silenceThreshold, int silenceHits,
+            String recordTile, String recordCopyright, String recordSoftware,
+            String recordArtist, String recordComment, String recordDate,
+            int recordRate) throws ExecuteException {
+        record("record", file, timeLimitSeconds, silenceThreshold, silenceHits,
+                wateResources, append, recordTile, recordCopyright,
+                recordSoftware, recordArtist, recordComment, recordDate,
+                recordRate);
     }
     
     /**
-     * Records an entire phone call or session.
+     *  Records an entire phone call or session.
      * 
      * @param file
-     * @param optionalTimeLimitSeconds
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     */
+    public void recordSession(String file) throws ExecuteException {
+        record("record_session", null, 0, 0, 0, true, false, null, null, null, null,
+                null, null, 0);
+    }
+    
+    
+    /**
+     *  Records an entire phone call or session.
+     * 
+     * @param file
+     * @param timeLimitSeconds
      *            the maximum duration of the recording.
-     * @param optionalSilenceThreshold
+     * @param silenceThreshold
      *            is the energy level.
-     * @param optionalSilenceHits
-     *            how many positive hits on being below that thresh you can
-     *            tolerate to stop default hits are sample rate * 3 / the number
-     *            of samples per frame so the default, if missing, is 3.
      * @param wateResources
      *            By default record doesn't send RTP packets. This is generally
      *            acceptable, but for longer recordings or depending on the RTP
@@ -848,45 +1129,47 @@ public class Execute {
      *            sending RTP even during recording. The value can be
      *            true/false/<desired silence factor>. By default the silence
      *            factor is 1400 if true
+     * @param silenceHits
+     *            how many positive hits on being below that thresh you can
+     *            tolerate to stop default hits are sample rate * 3 / the number
+     *            of samples per frame so the default, if missing, is 3.
+     * 
      * @param append
      *            append or overwite if file exists
-     * @param optionalRecordTile
+     * @param recordTile
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordCopyright
+     * @param recordCopyright
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordSoftware
+     * @param recordSoftware
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordArtist
+     * @param recordArtist
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordComment
+     * @param recordComment
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordDate
+     * @param recordDate
      *            store in the file header meta data (provided the file format
      *            supports meta headers).
-     * @param optionalRecordRate
+     * @param recordRate
      *            the sample rate of the recording.
      * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record_session
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
      */
-    public void recordSession(String file, int optionalTimeLimitSeconds,
-            int optionalSilenceThreshold, int optionalSilenceHits,
-            boolean wateResources, boolean append, String optionalRecordTile,
-            String optionalRecordCopyright, String optionalRecordSoftware,
-            String optionalRecordArtist, String optionalRecordComment,
-            String optionalRecordDate, int optionalRecordRate)
-            throws ExecuteException {
-        record("record_session", file, optionalTimeLimitSeconds,
-                optionalSilenceThreshold, optionalSilenceHits, wateResources,
-                append, optionalRecordTile, optionalRecordCopyright,
-                optionalRecordSoftware, optionalRecordArtist,
-                optionalRecordComment, optionalRecordDate, optionalRecordRate);
+    public void recordSession(String file, boolean append, boolean wateResources,
+            int timeLimitSeconds, int silenceThreshold, int silenceHits,
+            String recordTile, String recordCopyright, String recordSoftware,
+            String recordArtist, String recordComment, String recordDate,
+            int recordRate) throws ExecuteException {
+        record("record_session", file, timeLimitSeconds, silenceThreshold, silenceHits,
+                wateResources, append, recordTile, recordCopyright,
+                recordSoftware, recordArtist, recordComment, recordDate,
+                recordRate);
     }
-
+   
     private void record(String action, String file, int optionalTimeLimitSeconds,
             int optionalSilenceThreshold, int optionalSilenceHits,
             boolean wateResources, boolean append, String optionalRecordTile,
@@ -973,6 +1256,7 @@ public class Execute {
      * 
      * @param moduleName
      *            Module name is usually the channel language, e.g. "en" or "es"
+     * @param text
      * @param sayType
      *            Say type is one of the following NUMBER ITEMS PERSONS MESSAGES
      *            CURRENCY TIME_MEASUREMENT CURRENT_DATE CURRENT_TIME
@@ -982,23 +1266,52 @@ public class Execute {
      * @param sayMethod
      *            Say method is one of the following N/A PRONOUNCED ITERATED
      *            COUNTED
-     * @param optionalGender
+     * 
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_say
+     */
+    public void say(String moduleName, String text, String sayType,
+            String sayMethod) throws ExecuteException {
+
+        say(moduleName, text, sayType, sayMethod, null);
+    }
+
+    /**
+     * The say application will use the pre-recorded sound files to read or say
+     * various things like dates, times, digits, etc. The say application can
+     * read digits and numbers as well as dollar amounts, date/time values and
+     * IP addresses. It can also spell out alpha-numeric text, including
+     * punctuation marks. There's a transcript of the pre-recorded files in the
+     * sources under docs/phrase/phrase_en.xml
+     * 
+     * @param moduleName
+     *            Module name is usually the channel language, e.g. "en" or "es"
+     * @param text
+     * @param sayType
+     *            Say type is one of the following NUMBER ITEMS PERSONS MESSAGES
+     *            CURRENCY TIME_MEASUREMENT CURRENT_DATE CURRENT_TIME
+     *            CURRENT_DATE_TIME TELEPHONE_NUMBER TELEPHONE_EXTENSION URL
+     *            IP_ADDRESS EMAIL_ADDRESS POSTAL_ADDRESS ACCOUNT_NUMBER
+     *            NAME_SPELLED NAME_PHONETIC SHORT_DATE_TIME
+     * @param sayMethod
+     *            Say method is one of the following N/A PRONOUNCED ITERATED
+     *            COUNTED
+     * @param gender
      *            Say gender is one of the following (For languages with
      *            gender-specific grammar, like French and German) FEMININE
      *            MASCULINE NEUTER
      * 
-     * @param text
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_say
      */
-    public void say(String moduleName, String sayType, String sayMethod,
-            String optionalGender, String text) throws ExecuteException {
+    public void say(String moduleName, String text, String sayType,
+            String sayMethod, String gender) throws ExecuteException {
 
         StringBuilder sb = new StringBuilder(moduleName);
         sb.append(" ").append(sayType);
         sb.append(" ").append(sayMethod);
-        if (nn(optionalGender))
-            sb.append(" ").append(optionalGender);
+        if (nn(gender))
+            sb.append(" ").append(gender);
         sb.append(" ").append(text);
 
         sendExeMesg("say", sb.toString());
@@ -1038,18 +1351,35 @@ public class Execute {
      *            future
      * @param interval
      *            is the param seconds an epoc time or interval
-     * @param optionalCause
+     * @throws ExecuteException
+     */
+    public void schedHangup(long seconds, boolean interval)
+            throws ExecuteException {
+       schedHangup(seconds, interval, null);
+    }
+
+    
+    /**
+     * The sched_hangup application allows you to schedule a hangup action for a
+     * call, basically to limit call duration.
+     * 
+     * @param seconds
+     *            the epoc time in the future, or the number of seconds in the
+     *            future
+     * @param interval
+     *            is the param seconds an epoc time or interval
+     * @param cause
      *            ex:allotted_timeout
      * @throws ExecuteException
      */
-    public void schedHangup(long seconds, boolean interval, String optionalCause)
+    public void schedHangup(long seconds, boolean interval, String cause)
             throws ExecuteException {
         StringBuilder sb = new StringBuilder();
         if (interval)
             sb.append('+');
         sb.append(seconds);
-        if (nn(optionalCause))
-            sb.append(" ").append(optionalCause);
+        if (nn(cause))
+            sb.append(" ").append(cause);
         sendExeMesg("sched_hangup", sb.toString());
     }
 
@@ -1062,23 +1392,58 @@ public class Execute {
      * @param interval
      *            is the param seconds an epoc time or interval
      * @param extension
-     * @param optionalDialPlan
-     * @param optionalContext
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer
+     */
+    public void schedTransfer(long seconds, boolean interval, String extension)
+            throws ExecuteException {
+        schedTransfer(seconds, interval, extension, null, null);
+    }
+
+    /**
+     * Schedule a transfer in the future.
+     * 
+     * @param seconds
+     *            the epoc time in the future, or the number of seconds in the
+     *            future
+     * @param interval
+     *            is the param seconds an epoc time or interval
+     * @param extension
+     * @param dialPlan
+     * @param context
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer
      */
     public void schedTransfer(long seconds, boolean interval, String extension,
-            String optionalDialPlan, String optionalContext)
-            throws ExecuteException {
+            String dialPlan) throws ExecuteException {
+        schedTransfer(seconds, interval, extension, dialPlan, null);
+    }
+
+    /**
+     * Schedule a transfer in the future.
+     * 
+     * @param seconds
+     *            the epoc time in the future, or the number of seconds in the
+     *            future
+     * @param interval
+     *            is the param seconds an epoc time or interval
+     * @param extension
+     * @param dialPlan
+     * @param context
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer
+     */
+    public void schedTransfer(long seconds, boolean interval, String extension,
+            String dialPlan, String context) throws ExecuteException {
         StringBuilder sb = new StringBuilder();
         if (interval)
             sb.append('+');
         sb.append(seconds);
         sb.append(" ").append(extension);
-        if (nn(optionalDialPlan)) {
-            sb.append(" ").append(optionalDialPlan);
-            if (nn(optionalContext)) {
-                sb.append(" ").append(optionalContext);
+        if (nn(dialPlan)) {
+            sb.append(" ").append(dialPlan);
+            if (nn(context)) {
+                sb.append(" ").append(context);
             }
         }
         sendExeMesg("sched_transfer", sb.toString());
@@ -1090,14 +1455,26 @@ public class Execute {
      * character W for a 1 second delay.
      * 
      * @param digits
-     * @param optionalDurationMillis
      * @throws ExecuteException
      */
-    public void sendDTMF(String digits, int optionalToneDurationMillis)
+    public void sendDTMF(String digits)throws ExecuteException {
+        sendDTMF(digits, 0);
+    }
+    
+    /**
+     * Send DTMF digits from the session using the method(s) configured on the
+     * endpoint in use. Use the character w for a .5 second delay and the
+     * character W for a 1 second delay.
+     * 
+     * @param digits
+     * @param durationMillis
+     * @throws ExecuteException
+     */
+    public void sendDTMF(String digits, int durationMillis)
             throws ExecuteException {
         StringBuilder sb = new StringBuilder(digits);
-        if (nn(optionalToneDurationMillis))
-            sb.append('@').append(optionalToneDurationMillis);
+        if (durationMillis > 0)
+            sb.append('@').append(durationMillis);
 
         sendExeMesg("send_dtmf", sb.toString());
     }
@@ -1116,20 +1493,57 @@ public class Execute {
     }
 
     /**
-     * Immediately transfer the calling channel to a new context. If there happens to be an xml extension named <destination_number> then control is "warped" directly to that extension. Otherwise it goes through the entire context checking for a match.
+     * Immediately transfer the calling channel to a new context. If there
+     * happens to be an xml extension named <destination_number> then control is
+     * "warped" directly to that extension. Otherwise it goes through the entire
+     * context checking for a match.
+     * 
      * @param destinationNumber
-     * @param optionalDialplan
-     * @param optionalContext
+     * @param dialplan
+     * @param context
      * @throws ExecuteException
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer
      */
-    public void transfer(String destinationNumber, String optionalDialplan,
-            String optionalContext) throws ExecuteException {
+    public void transfer(String destinationNumber) throws ExecuteException {
+        transfer(destinationNumber, null, null);
+    }
+
+    /**
+     * Immediately transfer the calling channel to a new context. If there
+     * happens to be an xml extension named <destination_number> then control is
+     * "warped" directly to that extension. Otherwise it goes through the entire
+     * context checking for a match.
+     * 
+     * @param destinationNumber
+     * @param dialplan
+     * @param context
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer
+     */
+    public void transfer(String destinationNumber, String dialplan)
+            throws ExecuteException {
+        transfer(destinationNumber, dialplan, null);
+    }
+
+    /**
+     * Immediately transfer the calling channel to a new context. If there
+     * happens to be an xml extension named <destination_number> then control is
+     * "warped" directly to that extension. Otherwise it goes through the entire
+     * context checking for a match.
+     * 
+     * @param destinationNumber
+     * @param dialplan
+     * @param context
+     * @throws ExecuteException
+     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer
+     */
+    public void transfer(String destinationNumber, String dialplan,
+            String context) throws ExecuteException {
         StringBuilder sb = new StringBuilder(destinationNumber);
-        if(nn(optionalDialplan)) {
-            sb.append(" ").append(optionalDialplan);
-            if(nn(optionalContext))
-                sb.append(" ").append(optionalContext);
+        if (nn(dialplan)) {
+            sb.append(" ").append(dialplan);
+            if (nn(context))
+                sb.append(" ").append(context);
         }
         sendExeMesg("transfer", sb.toString());
     }
