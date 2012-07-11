@@ -903,7 +903,88 @@ public class Execute {
         }
         sendExeMesg("playback",sb.toString());
     }
-    
+
+    /**
+     * Manage the audio being played into a channel from a sound file
+     * 
+     * @param step
+     *            <+[step]>|<-[step]>
+     * @throws ExecuteException
+     * @see <a
+     *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
+     */
+    public void playbackSpeed(int step) throws ExecuteException {
+        playbackControl("speed " + step);
+    }
+
+    /**
+     * Manage the audio being played into a channel from a sound file
+     * 
+     * @param step
+     *            <+[step]>|<-[step]>
+     * @throws ExecuteException
+     * @see <a
+     *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
+     */
+    public void playbackVolume(int step) throws ExecuteException {
+        playbackControl("volume " + step);
+    }
+
+    /**
+     * Manage the audio being played into a channel from a sound file
+     * 
+     * @throws ExecuteException
+     * @see <a
+     *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
+     */
+    public void playbackPause() throws ExecuteException {
+        playbackControl("pause");
+    }
+
+    /**
+     * Manage the audio being played into a channel from a sound file
+     * 
+     * @throws ExecuteException
+     * @see <a
+     *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
+     */
+    public void playbackTruncate() throws ExecuteException {
+        playbackControl("truncate");
+    }
+
+    /**
+     * Manage the audio being played into a channel from a sound file
+     * 
+     * @throws ExecuteException
+     * @see <a
+     *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
+     */
+    public void playbackRestart() throws ExecuteException {
+        playbackControl("restart");
+    }
+
+    /**
+     * Manage the audio being played into a channel from a sound file
+     * 
+     * @param samples
+     *            <+[samples]>|<-[samples]> Samples are the literally the number
+     *            of samples in the file to jump forward or backward. In an 8kHz
+     *            file, 8000 samples would represent one second, in a 16kHz file
+     *            16000 samples would be one second, etc
+     * @throws ExecuteException
+     * @see <a
+     *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
+     */
+
+    public void playbackSeek(int samples) throws ExecuteException {
+        playbackControl("seek " + samples);
+    }
+
+    private void playbackControl(String cmd) throws ExecuteException {
+        EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid + " "
+                + cmd);
+    }
+
     /**
      * equivalent to a SIP status code 183 with SDP. (This is the same as cmd
      * Progress in Asterisk.) It establishes media (early media) but does not
