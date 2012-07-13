@@ -72,7 +72,7 @@ public class Execute {
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bind_meta_app
      * @throws ExecuteException
      */
-    public void bindMetaApp(char key, String leg, char flags,
+    public void bindMetaApp(String key, String leg, String flags,
             String application, String params) throws ExecuteException {
         StringBuilder sb = new StringBuilder(key);
         sb.append(" ").append(leg);
@@ -172,6 +172,55 @@ public class Execute {
         sendExeMesg("cng_plc");
     }
 
+    /**
+     * Start or join a conference
+     * @param name
+     * @throws ExecuteException
+     */
+    public void conference(String name) throws ExecuteException {
+       conference(name,null,null,null);
+    }
+    
+    /**
+     * Start or join a conference
+     * @param name
+     * @param profile
+     * @throws ExecuteException
+     */
+    public void conference(String name, String profile) throws ExecuteException {
+        conference(name,profile,null,null);
+    }
+    
+    /**
+     * Start or join a conference
+     * @param name
+     * @param profile
+     * @param pin
+     * @throws ExecuteException
+     */
+    public void conference(String name, String profile, String pin) throws ExecuteException {
+        conference(name,profile,pin,null);
+    }
+    
+    /**
+     * Start or join a conference
+     * @param name
+     * @param profile
+     * @param pin
+     * @param flags
+     * @throws ExecuteException
+     */
+    public void conference(String name, String profile, String pin, String flags) throws ExecuteException {
+        StringBuilder sb = new StringBuilder(name);
+        if(nn(profile))
+            sb.append("@").append(profile);
+        if(nn(pin))
+            sb.append("+").append(pin);
+        if(nn(flags))
+            sb.append("+flags{").append(flags).append("}");
+        sendExeMesg("conference", sb.toString());
+    }
+    
     /**
      * Deflect sends a Refer to the client. The deflect application allows
      * FreeSWITCH to be removed from the list of connection hops and tell the
@@ -842,12 +891,13 @@ public class Execute {
      * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_get_digits
      */
     public String playAndGetDigits(int min, int max, int tries, int timeout,
-            char terminator, String file, String invalidFile, String regexp,
+            String terminator, String file, String invalidFile, String regexp,
             int digitTimeout) throws ExecuteException {
 
         String id = UUID.randomUUID().toString();
 
-        StringBuilder sb = new StringBuilder(min);
+        StringBuilder sb = new StringBuilder();
+        sb.append(min);
         sb.append(" ").append(max);
         sb.append(" ").append(tries);
         sb.append(" ").append(timeout);
@@ -1089,7 +1139,8 @@ public class Execute {
 
         String id = UUID.randomUUID().toString();
 
-        StringBuilder sb = new StringBuilder(min);
+        StringBuilder sb = new StringBuilder();
+        sb.append(min);
         sb.append(" ").append(max);
         sb.append(" ").append(soundFile);
         sb.append(" ").append(id);

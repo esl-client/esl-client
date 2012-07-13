@@ -146,7 +146,11 @@ public class EslMessage {
    * @return true if reply equals +OK, false if not.
    */
   public boolean isReplyOk() {
-    return getHeaderValue(Name.REPLY_TEXT).trim().equals("+OK");
+      String reply = getHeaderValue(Name.REPLY_TEXT);
+      if(reply != null)
+          return reply.trim().equals("+OK");
+      else
+          return false;
   }
 
   @Override

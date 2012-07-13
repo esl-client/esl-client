@@ -38,7 +38,7 @@
   </logger>
 
   <root>
-    <level value="warn" />
+    <level value="info" />
     <appender-ref ref="STDOUT" />
   </root>
 
