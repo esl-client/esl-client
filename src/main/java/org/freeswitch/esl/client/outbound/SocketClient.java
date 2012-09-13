@@ -63,7 +63,7 @@ public class SocketClient extends AbstractService {
 		bootstrap.setOption("child.keepAlive", true);
 		serverChannel = bootstrap.bind(bindAddress);
 		notifyStarted();
-		log.info("SocketClient waiting for connections on port [{}] ...", bindAddress);
+		log.info("SocketClient waiting for connections on [{}] ...", bindAddress);
 	}
 
 	@Override

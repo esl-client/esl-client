@@ -78,7 +78,7 @@ class OutboundClientHandler extends AbstractEslClientHandler {
 					ctx.getChannel().close();
 					handleDisconnectionNotice();
 				}
-			}, callbackExecutor);
+			});
 	}
 
 	@Override
