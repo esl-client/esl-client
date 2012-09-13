@@ -68,7 +68,7 @@ public class OutboundTest {
                                         exe.answer();
 
                                         String digits = exe.playAndGetDigits(3,
-                                                5, 10, 10 * 1000, '#', prompt,
+                                                5, 10, 10 * 1000, "#", prompt,
                                                 failed, "^\\d+", 10 * 1000);
                                         logger.warn("Digits collected: {}",
                                                 digits);
