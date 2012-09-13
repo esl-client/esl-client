@@ -1623,6 +1623,13 @@ public class Execute {
     public void set(String key, String value) throws ExecuteException {
         sendExeMesg("set", key + "=" + value);
     }
+    
+    public void speak(String engine, String voice, String message) throws ExecuteException {
+        StringBuilder sb = new StringBuilder(engine);
+        sb.append("|").append(voice);
+        sb.append("|").append(message);
+        sendExeMesg("speak", sb.toString());
+    }
 
     /**
      * Immediately transfer the calling channel to a new context. If there
@@ -1680,6 +1687,14 @@ public class Execute {
         sendExeMesg("transfer", sb.toString());
     }
     
+    public String ApiCommand(String command, String args) {
+        EslMessage eslMessage = api.sendApiCommand(command, args);
+        StringBuilder sb = new StringBuilder();
+        for(String line : eslMessage.getBodyLines())
+            sb.append(line);
+        return sb.toString();
+    }
+    
     private CommandResponse sendExeMesg(String app) throws ExecuteException {
         return sendExeMesg(app, null);
     }
@@ -1697,6 +1712,7 @@ public class Execute {
         else
             return resp;
     }
+    
     
     private boolean nn(Object obj) {return obj != null;}
 
