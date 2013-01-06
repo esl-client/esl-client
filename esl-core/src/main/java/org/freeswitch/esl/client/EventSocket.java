@@ -4,9 +4,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 
+import java.io.Closeable;
 import java.io.IOException;
 
-public interface EventSocket {
+public interface EventSocket extends Closeable {
 
   CommandResponse makeApiCall(Command cmd, String args) throws InterruptedException, IOException;
 

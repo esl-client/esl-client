@@ -26,6 +26,10 @@ public class EventSocketConnectionImpl extends SimpleChannelUpstreamHandler impl
     this.channel = channel;
   }
 
+  public ListenableFuture<Boolean> login(String password) {
+    return null;
+  }
+
   @Override
   public ListenableFuture<CommandResponse> api(Command cmd, String arg) {
     return null;  //To change body of implemented methods use File | Settings | File Templates.
