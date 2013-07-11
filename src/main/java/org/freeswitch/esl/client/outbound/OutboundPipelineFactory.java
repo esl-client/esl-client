@@ -20,9 +20,6 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.codec.string.StringEncoder;
-import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedDownstreamThreadPoolExecutor;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,12 +49,6 @@ class OutboundPipelineFactory implements ChannelPipelineFactory {
 		pipeline.addLast("encoder", new StringEncoder());
 		// Note that outbound mode requires the decoder to treat many 'headers' as body lines
 		pipeline.addLast("decoder", new EslFrameDecoder(8092, true));
-		// Add an executor to ensure separate thread for each upstream message from here
-
-    pipeline.addLast("executor",
-      new ExecutionHandler(
-        new OrderedDownstreamThreadPoolExecutor(
-          Runtime.getRuntime().availableProcessors())));
 
 		// now the outbound client logic
 		pipeline.addLast("clientHandler",
