@@ -74,12 +74,7 @@ public class Execute {
      */
     public void bindMetaApp(String key, String leg, String flags,
             String application, String params) throws ExecuteException {
-        StringBuilder sb = new StringBuilder(key);
-        sb.append(" ").append(leg);
-        sb.append("").append(flags);
-        sb.append(" ").append(application);
-        sb.append("::").append(params);
-        sendExeMesg("bind_meta_app", sb.toString());
+        sendExeMesg("bind_meta_app", key + " " + leg + flags + " " + application + "::" + params);
     }
 
     /**
@@ -153,11 +148,7 @@ public class Execute {
      */
     public void chat(String proto, String from, String to, String message)
             throws ExecuteException {
-        StringBuilder sb = new StringBuilder(proto);
-        sb.append("|").append(from);
-        sb.append("|").append(to);
-        sb.append("|").append(message);
-        sendExeMesg("chat", sb.toString());
+        sendExeMesg("chat", proto + "|" + from + "|" + to + "|" + message);
     }
 
     /**
@@ -857,14 +848,8 @@ public class Execute {
      */
     public String playAndDetectSpeech(String file, String engine,
             String grammer, String params) throws ExecuteException {
-        StringBuilder sb = new StringBuilder(file);
-        sb.append(" detect:");
-        sb.append(engine);
-        sb.append(" {");
-        sb.append((nn(params) ? params : ""));
-        sb.append("}");
-        sb.append(grammer);
-        CommandResponse resp = sendExeMesg("play_and_detect_speech",sb.toString());
+        CommandResponse resp = sendExeMesg("play_and_detect_speech",
+                file + " detect:" + engine + " {" + (nn(params) ? params : "") + "}" + grammer);
         if (resp.isOk()) {
             EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
                     + " detect_speech_result");
@@ -896,19 +881,17 @@ public class Execute {
 
         String id = UUID.randomUUID().toString();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(min);
-        sb.append(" ").append(max);
-        sb.append(" ").append(tries);
-        sb.append(" ").append(timeout);
-        sb.append(" ").append(terminator);
-        sb.append(" ").append(file);
-        sb.append(" ").append(invalidFile);
-        sb.append(" ").append(id);
-        sb.append(" ").append(regexp);
-        sb.append(" ").append(digitTimeout);
-
-        CommandResponse resp = sendExeMesg("play_and_get_digits", sb.toString());
+        CommandResponse resp = sendExeMesg("play_and_get_digits",
+                String.valueOf(min)
+                        + " " + max
+                        + " " + tries
+                        + " " + timeout
+                        + " " + terminator
+                        + " " + file
+                        + " " + invalidFile
+                        + " " + id
+                        + " " + regexp
+                        + " " + digitTimeout);
 
         if (resp.isOk()) {
             EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
@@ -1066,12 +1049,8 @@ public class Execute {
      */
     public void presence(String user, boolean in, String rpid, String message)
             throws ExecuteException {
-        StringBuilder sb = new StringBuilder(in ? "in" : "out");
-        sb.append("|").append(user);
-        sb.append("|").append(rpid);
-        sb.append("|").append(message);
-        
-        sendExeMesg("presence", sb.toString());
+
+        sendExeMesg("presence", in ? "in" : "out" + "|" + user + "|" + rpid + "|" + message);
     }
 
     /**
@@ -1139,15 +1118,8 @@ public class Execute {
 
         String id = UUID.randomUUID().toString();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(min);
-        sb.append(" ").append(max);
-        sb.append(" ").append(soundFile);
-        sb.append(" ").append(id);
-        sb.append(" ").append(timeout);
-        sb.append(" ").append(terminators);
-
-        CommandResponse resp = sendExeMesg("read", sb.toString());
+        CommandResponse resp = sendExeMesg("read",
+                String.valueOf(min) + " " + max + " " + soundFile + " " + id + " " + timeout + " " + terminators);
 
         if (resp.isOk()) {
             EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
@@ -1625,10 +1597,7 @@ public class Execute {
     }
     
     public void speak(String engine, String voice, String message) throws ExecuteException {
-        StringBuilder sb = new StringBuilder(engine);
-        sb.append("|").append(voice);
-        sb.append("|").append(message);
-        sendExeMesg("speak", sb.toString());
+        sendExeMesg("speak", engine + "|" + voice + "|" + message);
     }
 
     /**
