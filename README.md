@@ -5,6 +5,9 @@ esl-client
 **esl-client** is a Java-based Event Socket Library for the
 [FreeSWITCH](https://freeswitch.org/) project.
 
+This project is a fork of the unmaintained, original project at
+<https://freeswitch.org/stash/projects/FS/repos/freeswitch-contrib/browse/dvarnes/java/esl-client>
+
 Status: In Progress...
 
 
