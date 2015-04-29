@@ -118,12 +118,13 @@ public class OutboundTest {
             sb.append(map.get(key));
             sb.append("\n");
         }
-        if (lines != null)
+        if (lines != null) {
             sb.append("Body Lines:\n");
             for (String line : lines) {
                 sb.append(line);
                 sb.append("\n");
             }
+        }
         return sb.toString();
     }
 }
