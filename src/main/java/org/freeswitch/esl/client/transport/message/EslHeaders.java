@@ -58,7 +58,7 @@ public class EslHeaders {
 
 		private final String literal;
 
-		private Name(String literal) {
+		Name(String literal) {
 			this.literal = literal;
 		}
 
