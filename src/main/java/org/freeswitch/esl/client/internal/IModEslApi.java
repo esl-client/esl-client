@@ -8,7 +8,7 @@ import org.freeswitch.esl.client.transport.message.EslMessage;
 
 public interface IModEslApi {
 
-	public enum EventFormat {
+	enum EventFormat {
 
 		PLAIN("plain"),
 		XML("xml");
@@ -28,7 +28,7 @@ public interface IModEslApi {
 
 	;
 
-	public enum LoggingLevel {
+	enum LoggingLevel {
 
 		CONSOLE("console"),
 		DEBUG("debug"),
