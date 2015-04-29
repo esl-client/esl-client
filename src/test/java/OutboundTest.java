@@ -54,7 +54,7 @@ public class OutboundTest {
                                     logger.warn(nameMapToString(eslEvent
                                             .getMessageHeaders(), eslEvent.getEventBodyLines()));
 
-                                    String uuid = eslEvent.getMessageHeaders()
+                                    String uuid = eslEvent.getEventHeaders()
                                             .get("unique-id");
 
                                     logger.warn(
