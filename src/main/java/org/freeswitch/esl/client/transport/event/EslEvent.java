@@ -187,16 +187,10 @@ public class EslEvent {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder("EslEvent: name=[");
-		sb.append(getEventName());
-		sb.append("] headers=");
-		sb.append(messageHeaders.size());
-		sb.append(", eventHeaders=");
-		sb.append(eventHeaders.size());
-		sb.append(", eventBody=");
-		sb.append(eventBody.size());
-		sb.append(" lines.");
-
-		return sb.toString();
+		return "EslEvent: " +
+				"name=[" + getEventName() + "] " +
+				"headers=" + messageHeaders.size() + ", " +
+				"eventHeaders=" + eventHeaders.size() + ", " +
+				"eventBody=" + eventBody.size() + " lines.";
 	}
 }

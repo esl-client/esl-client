@@ -178,11 +178,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
 		checkArgument(!isNullOrEmpty(command), "command may not be null or empty");
 		checkArgument(!isNullOrEmpty(arg), "arg may not be null or empty");
 
-		final StringBuilder sb = new StringBuilder();
-		sb.append("api ").append(command).append(' ').append(arg);
-
-		return sendApiSingleLineCommand(channel, sb.toString());
-
+		return sendApiSingleLineCommand(channel, "api " + command + ' ' + arg);
 	}
 
 	/**

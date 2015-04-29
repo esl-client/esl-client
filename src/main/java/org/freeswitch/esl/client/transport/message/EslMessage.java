@@ -151,15 +151,11 @@ public class EslMessage {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder("EslMessage: contentType=[");
-		sb.append(getContentType());
-		sb.append("] headers=");
-		sb.append(headers.size());
-		sb.append(", body=");
-		sb.append(body.size());
-		sb.append(" lines.");
 
-		return sb.toString();
+		return "EslMessage: " +
+				"contentType=[" + getContentType() + "] " +
+				"headers=" + headers.size() + ", " +
+				"body=" + body.size() + " lines.";
 	}
 
 }
