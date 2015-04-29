@@ -109,7 +109,7 @@ public class OutboundTest {
 
     public static String nameMapToString(Map<Name, String> map,
             List<String> lines) {
-        StringBuffer sb = new StringBuffer("\nHeaders:\n");
+        StringBuilder sb = new StringBuilder("\nHeaders:\n");
         for (Name key : map.keySet()) {
             if(key == null)
                 continue;
