@@ -1,6 +1,15 @@
-In Progress...
 
-A simple example of both inbound and outbound clients
+esl-client
+==============================================================================
+
+**esl-client** is a Java-based Event Socket Library for the
+[FreeSWITCH](https://freeswitch.org/) project.
+
+Status: In Progress...
+
+
+Example
+------------------------------------------------------------------------------
 
 ```java
 package com.ecovate.freeswitch.lb;
@@ -59,3 +68,15 @@ public class FreeSwitchEventListener {
 
 }
 ```
+
+Authors
+------------------------------------------------------------------------------
+
+- [Dan Cunningham](mailto:dan.cunningham@readytalk.com)
+- [Dave Rusek](mailto:dave.rusek@readytalk.com)
+- [David Varnes](mailto:david.varnes@gmail.com) (original author)
+
+License
+------------------------------------------------------------------------------
+
+**esl-client** is licensed under the [Apache License, version 2](LICENSE).
