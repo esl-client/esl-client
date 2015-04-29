@@ -27,8 +27,6 @@ import org.freeswitch.esl.client.transport.event.EslEvent;
  * This design ensures that incoming event processing is not blocked by any long-running listener process.
  * However multiple listeners will be notified sequentially, and so one slow listener can cause latency
  * to other listeners.
- *
- * @author david varnes
  */
 public interface IEslEventListener {
 	/**

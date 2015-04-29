@@ -45,8 +45,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * server, this client occurs as an inbound connection to the server.
  * <p/>
  * See <a href="http://wiki.freeswitch.org/wiki/Mod_event_socket">http://wiki.freeswitch.org/wiki/Mod_event_socket</a>
- *
- * @author david varnes
  */
 public class Client implements IModEslApi {
 

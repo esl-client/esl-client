@@ -35,7 +35,6 @@ import java.util.Map;
  * <p/>
  * Any Body lines are cached in a list.
  *
- * @author david varnes
  * @see EslHeaders.Name
  */
 public class EslMessage {

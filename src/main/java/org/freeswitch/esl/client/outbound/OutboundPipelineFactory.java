@@ -26,8 +26,6 @@ import java.util.concurrent.Executors;
 
 /**
  * An abstract factory to assemble a Netty processing pipeline for outbound clients.
- *
- * @author david varnes
  */
 class OutboundPipelineFactory implements ChannelPipelineFactory {
 

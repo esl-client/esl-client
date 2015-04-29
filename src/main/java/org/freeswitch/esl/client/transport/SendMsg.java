@@ -18,9 +18,6 @@ package org.freeswitch.esl.client.transport;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author david varnes
- */
 public class SendMsg {
 	private final List<String> msgLines = new ArrayList<String>();
 	private final boolean hasUuid;

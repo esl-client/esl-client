@@ -31,8 +31,6 @@ import java.util.concurrent.Executors;
  * End users of the {@link Client} should not need to use this class.
  * <p/>
  * Convenience factory to assemble a Netty processing pipeline for inbound clients.
- *
- * @author david varnes
  */
 class InboundPipelineFactory implements ChannelPipelineFactory {
 

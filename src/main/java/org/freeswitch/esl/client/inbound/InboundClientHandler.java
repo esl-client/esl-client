@@ -44,8 +44,6 @@ import static com.google.common.util.concurrent.Futures.addCallback;
  * Note: implementation requirement is that an {@link ExecutionHandler} is placed in the processing
  * pipeline prior to this handler. This will ensure that each incoming message is processed in its
  * own thread (although still guaranteed to be processed in the order of receipt).
- *
- * @author david varnes
  */
 class InboundClientHandler extends AbstractEslClientHandler {
 

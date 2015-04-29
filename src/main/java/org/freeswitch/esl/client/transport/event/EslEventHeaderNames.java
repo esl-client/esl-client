@@ -20,8 +20,6 @@ package org.freeswitch.esl.client.transport.event;
  * <p/>
  * These names are stored as strings (rather than an Enum) so that there is no necessity to keep up to
  * date with changes or additions to event header names.
- *
- * @author david varnes
  */
 public class EslEventHeaderNames {
 	/**

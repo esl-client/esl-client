@@ -43,8 +43,6 @@ import org.slf4j.LoggerFactory;
  *    Loop until receive buffer size is >= Content-length
  *    Extract content-length bytes from buffer and process
  * </pre>
- *
- * @author david varnes
  */
 public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 	/**
