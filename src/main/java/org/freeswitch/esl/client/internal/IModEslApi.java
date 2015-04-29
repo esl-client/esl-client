@@ -26,8 +26,6 @@ public interface IModEslApi {
 
 	}
 
-	;
-
 	enum LoggingLevel {
 
 		CONSOLE("console"),
