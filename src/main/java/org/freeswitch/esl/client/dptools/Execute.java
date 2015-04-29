@@ -1111,8 +1111,7 @@ public class Execute {
     }
 
     private void playbackControl(String cmd) throws ExecuteException {
-        EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid + " "
-                + cmd);
+        api.sendApiCommand("uuid_getvar", _uuid + " " + cmd);
     }
 
     /**
