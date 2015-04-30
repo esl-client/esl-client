@@ -118,8 +118,7 @@ public class Client implements IModEslApi {
 		final Channel channel = future.getChannel();
 		// But may have failed anyway
 		if (!future.isSuccess()) {
-			log.warn("Failed to connect to [{}]", clientAddress);
-			log.warn("  * reason: {}", future.getCause());
+			log.warn("Failed to connect to [{}]", clientAddress, future.getCause());
 
 			bootstrap.releaseExternalResources();
 
