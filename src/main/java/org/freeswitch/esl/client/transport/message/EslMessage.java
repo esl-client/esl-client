@@ -118,10 +118,7 @@ public class EslMessage {
 	}
 
 	/**
-	 * Used by the {@link EslMessageDecoder}.
-	 *
-	 * @param name
-	 * @param value
+	 * Used by the {@link EslFrameDecoder}.
 	 */
 	void addHeader(Name name, String value) {
 		log.debug("adding header [{}] [{}]", name, value);
@@ -129,9 +126,7 @@ public class EslMessage {
 	}
 
 	/**
-	 * Used by the {@link EslMessageDecoder}
-	 *
-	 * @param line
+	 * Used by the {@link EslFrameDecoder}
 	 */
 	void addBodyLine(String line) {
 		if (line == null) {
