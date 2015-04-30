@@ -122,20 +122,30 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
 		log.info("Received message: [{}]", message);
 		final String contentType = message.getContentType();
 
-		if (contentType.equals(Value.API_RESPONSE)) {
-			log.debug("Api response received [{}]", message);
-			apiCalls.poll().set(message);
-		} else if (contentType.equals(Value.COMMAND_REPLY)) {
-			log.debug("Command reply received [{}]", message);
-			apiCalls.poll().set(message);
-		} else if (contentType.equals(Value.AUTH_REQUEST)) {
-			log.debug("Auth request received [{}]", message);
-			handleAuthRequest(ctx);
-		} else if (contentType.equals(Value.TEXT_DISCONNECT_NOTICE)) {
-			log.debug("Disconnect notice received [{}]", message);
-			handleDisconnectionNotice();
-		} else {
-			log.warn("Unexpected message content type [{}]", contentType);
+		switch (contentType) {
+			case Value.API_RESPONSE:
+				log.debug("Api response received [{}]", message);
+				apiCalls.poll().set(message);
+				break;
+
+			case Value.COMMAND_REPLY:
+				log.debug("Command reply received [{}]", message);
+				apiCalls.poll().set(message);
+				break;
+
+			case Value.AUTH_REQUEST:
+				log.debug("Auth request received [{}]", message);
+				handleAuthRequest(ctx);
+				break;
+
+			case Value.TEXT_DISCONNECT_NOTICE:
+				log.debug("Disconnect notice received [{}]", message);
+				handleDisconnectionNotice();
+				break;
+
+			default:
+				log.warn("Unexpected message content type [{}]", contentType);
+				break;
 		}
 	}
 
