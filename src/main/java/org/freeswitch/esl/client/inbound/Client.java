@@ -97,6 +97,8 @@ public class Client implements IModEslApi {
 			close();
 		}
 
+		log.info("Connecting to {} ...", clientAddress);
+
 		// Configure this client
 		ClientBootstrap bootstrap = new ClientBootstrap(
 			new NioClientSocketChannelFactory(
@@ -125,6 +127,8 @@ public class Client implements IModEslApi {
 			throw new InboundConnectionFailure("Could not connect to " + clientAddress, future.getCause());
 		}
 
+		log.info("Connected to {}", clientAddress);
+
 		//  Wait for the authentication handshake to call back
 		while (!authenticatorResponded.get()) {
 			try {
@@ -139,6 +143,8 @@ public class Client implements IModEslApi {
 		if (!authenticated) {
 			throw new InboundConnectionFailure("Authentication failed: " + authenticationResponse.getReplyText());
 		}
+
+		log.info("Authenticated");
 	}
 
 	/**
