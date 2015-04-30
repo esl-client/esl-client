@@ -45,7 +45,6 @@ import java.util.Map;
  * <p/>
  * The messageHeader lines from the original message are cached in a map keyed by {@link EslHeaders.Name}.
  *
- * @author david varnes
  * @see EslEventHeaderNames
  */
 public class EslEvent {

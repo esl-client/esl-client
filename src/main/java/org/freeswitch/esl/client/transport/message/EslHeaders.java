@@ -18,16 +18,12 @@ package org.freeswitch.esl.client.transport.message;
 /**
  * Container class for enumeration of ESL message header names, and some commonly used
  * header string values.
- *
- * @author david varnes
  */
 public class EslHeaders {
 	/**
 	 * Standard ESL header names.
 	 * <p/>
 	 * Note this enum will need to be kept in synch with any new headers introduced on the server side.
-	 *
-	 * @author david varnes
 	 */
 	public enum Name {
 		/*
@@ -86,8 +82,6 @@ public class EslHeaders {
 	 * <p/>
 	 * This values are not coded as an enum to allow for the very large range of possible values,
 	 * since they are just Strings.
-	 *
-	 * @author david varnes
 	 */
 	public static final class Value {
 		/**

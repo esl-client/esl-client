@@ -17,8 +17,6 @@ package org.freeswitch.esl.client.inbound;
 
 /**
  * Checked exception to handle connection failures.
- *
- * @author david varnes
  */
 public class InboundConnectionFailure extends Exception {
 	private static final long serialVersionUID = 1L;

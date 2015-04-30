@@ -35,8 +35,6 @@ import java.util.concurrent.Executors;
  * server, this client accepts an outbound connection from the server module.
  * <p/>
  * See <a href="http://wiki.freeswitch.org/wiki/Mod_event_socket">http://wiki.freeswitch.org/wiki/Mod_event_socket</a>
- *
- * @author david varnes
  */
 public class SocketClient extends AbstractService {
 

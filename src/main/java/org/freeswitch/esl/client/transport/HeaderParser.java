@@ -23,9 +23,6 @@ import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
  * <p/>
  * This code was copied from the splitHeader() method in the {@link HttpMessageDecoder} class, which
  * is licensed under the Apache License version 2. (Original author: Trustin Lee.)
- *
- * @author david varnes
- * @author Trustin Lee
  */
 public class HeaderParser {
 	/**
