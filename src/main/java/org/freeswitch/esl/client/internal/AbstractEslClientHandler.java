@@ -69,10 +69,10 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
 	// used to preserve association between adding future to queue and sending message on channel
 	private final ReentrantLock syncLock = new ReentrantLock();
 	private final ConcurrentLinkedQueue<SettableFuture<EslMessage>> apiCalls =
-		new ConcurrentLinkedQueue<SettableFuture<EslMessage>>();
+			new ConcurrentLinkedQueue<>();
 
 	private final ConcurrentHashMap<String, SettableFuture<EslEvent>> backgroundJobs =
-		new ConcurrentHashMap<String, SettableFuture<EslEvent>>();
+			new ConcurrentHashMap<>();
 	private final ExecutorService backgroundJobExecutor = Executors.newCachedThreadPool();
 
 	@Override

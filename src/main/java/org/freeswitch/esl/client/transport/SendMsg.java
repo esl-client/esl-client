@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SendMsg {
-	private final List<String> msgLines = new ArrayList<String>();
+	private final List<String> msgLines = new ArrayList<>();
 	private final boolean hasUuid;
 
 	/**

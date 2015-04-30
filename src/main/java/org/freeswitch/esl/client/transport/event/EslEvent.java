@@ -63,8 +63,8 @@ public class EslEvent {
 
 	public EslEvent(EslMessage rawMessage, boolean parseCommandReply) {
 		messageHeaders = rawMessage.getHeaders();
-		eventHeaders = new HashMap<String, String>(rawMessage.getBodyLines().size());
-		eventBody = new ArrayList<String>();
+		eventHeaders = new HashMap<>(rawMessage.getBodyLines().size());
+		eventBody = new ArrayList<>();
 		// plain or xml body
 		if (rawMessage.getContentType().equals(Value.TEXT_EVENT_PLAIN)) {
 			parsePlainBody(rawMessage.getBodyLines());

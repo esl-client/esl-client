@@ -42,8 +42,8 @@ import static com.google.common.base.Objects.toStringHelper;
 public class EslMessage {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-	private final Map<Name, String> headers = new HashMap<Name, String>();
-	private final List<String> body = new ArrayList<String>();
+	private final Map<Name, String> headers = new HashMap<>();
+	private final List<String> body = new ArrayList<>();
 
 	private Integer contentLength = null;
 
