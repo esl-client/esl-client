@@ -15,7 +15,6 @@
  */
 package org.freeswitch.esl.client.inbound;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
@@ -26,6 +25,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import java8.util.Optional;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.internal.IModEslApi;
 import org.freeswitch.esl.client.transport.CommandResponse;
@@ -59,7 +59,7 @@ public class Client implements IModEslApi {
 
 	private boolean authenticated;
 	private CommandResponse authenticationResponse;
-	private Optional<Context> clientContext = Optional.absent();
+	private Optional<Context> clientContext = Optional.empty();
 	private ExecutorService callbackExecutor = Executors.newSingleThreadExecutor();
 
 	public void addEventListener(IEslEventListener listener) {
