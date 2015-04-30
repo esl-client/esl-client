@@ -35,6 +35,7 @@ class InboundPipelineFactory implements ChannelPipelineFactory {
 		this.handler = handler;
 	}
 
+	@Override
 	public ChannelPipeline getPipeline() throws Exception {
 		ChannelPipeline pipeline = Channels.pipeline();
 		pipeline.addLast("encoder", new StringEncoder());
