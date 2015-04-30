@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Objects.toStringHelper;
+
 /**
  * Basic FreeSWITCH Event Socket messages from the server are decoded into this data object.
  * <p/>
@@ -146,11 +148,11 @@ public class EslMessage {
 
 	@Override
 	public String toString() {
-
-		return "EslMessage: " +
-				"contentType=[" + getContentType() + "] " +
-				"headers=" + headers.size() + ", " +
-				"body=" + body.size() + " lines.";
+		return toStringHelper(this)
+				.add("contentType", getContentType())
+				.add("headers", headers.size())
+				.add("body", body.size() + " lines")
+				.toString();
 	}
 
 }
