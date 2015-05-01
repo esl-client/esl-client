@@ -17,14 +17,13 @@ package org.freeswitch.esl.client.inbound;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
+import io.netty.channel.ChannelHandlerContext;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslHeaders;
 import org.freeswitch.esl.client.transport.message.EslMessage;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.execution.ExecutionHandler;
 
 import static com.google.common.base.Throwables.propagate;
 import static com.google.common.util.concurrent.Futures.addCallback;
@@ -58,14 +57,14 @@ class InboundClientHandler extends AbstractEslClientHandler {
 	@Override
 	protected void handleEslEvent(ChannelHandlerContext ctx, EslEvent event) {
 		log.debug("Received event: [{}]", event);
-		listener.eventReceived(new Context(ctx.getChannel(), this), event);
+		listener.eventReceived(new Context(ctx.channel(), this), event);
 	}
 
 	@Override
 	protected void handleAuthRequest(ChannelHandlerContext ctx) {
 		log.debug("Auth requested, sending [auth {}]", "*****");
 
-		final ListenableFuture<EslMessage> authFuture = sendApiSingleLineCommand(ctx.getChannel(), "auth " + password);
+		final ListenableFuture<EslMessage> authFuture = sendApiSingleLineCommand(ctx.channel(), "auth " + password);
 
 		addCallback(
 			authFuture,

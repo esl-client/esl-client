@@ -16,15 +16,16 @@
 package org.freeswitch.esl.client.outbound;
 
 import com.google.common.util.concurrent.AbstractService;
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
-import java.util.concurrent.Executors;
 
 /**
  * Entry point to run a socket client that a running FreeSWITCH Event Socket Library module can
@@ -39,7 +40,8 @@ import java.util.concurrent.Executors;
 public class SocketClient extends AbstractService {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
-	private final ChannelFactory channelFactory;
+	private final EventLoopGroup bossGroup;
+	private final EventLoopGroup workerGroup;
 	private final IClientHandlerFactory clientHandlerFactory;
 	private final SocketAddress bindAddress;
 
@@ -48,18 +50,20 @@ public class SocketClient extends AbstractService {
 	public SocketClient(SocketAddress bindAddress, IClientHandlerFactory clientHandlerFactory) {
 		this.bindAddress = bindAddress;
 		this.clientHandlerFactory = clientHandlerFactory;
-		this.channelFactory = new NioServerSocketChannelFactory(
-			Executors.newCachedThreadPool(),
-			Executors.newCachedThreadPool());
+		this.bossGroup = new NioEventLoopGroup();
+		this.workerGroup = new NioEventLoopGroup();
 	}
 
 	@Override
 	protected void doStart() {
-		final ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
-		bootstrap.setPipelineFactory(new OutboundPipelineFactory(clientHandlerFactory));
-		bootstrap.setOption("child.tcpNoDelay", true);
-		bootstrap.setOption("child.keepAlive", true);
-		serverChannel = bootstrap.bind(bindAddress);
+		final ServerBootstrap bootstrap = new ServerBootstrap()
+				.group(bossGroup, workerGroup)
+				.channel(NioServerSocketChannel.class)
+				.childHandler(new OutboundChannelInitializer(clientHandlerFactory))
+				.childOption(ChannelOption.TCP_NODELAY, true)
+				.childOption(ChannelOption.SO_KEEPALIVE, true);
+
+		serverChannel = bootstrap.bind(bindAddress).syncUninterruptibly().channel();
 		notifyStarted();
 		log.info("SocketClient waiting for connections on [{}] ...", bindAddress);
 	}
@@ -69,7 +73,8 @@ public class SocketClient extends AbstractService {
 		if (null != serverChannel) {
 			serverChannel.close().awaitUninterruptibly();
 		}
-		channelFactory.releaseExternalResources();
+		workerGroup.shutdownGracefully();
+		bossGroup.shutdownGracefully();
 		notifyStopped();
 		log.info("SocketClient stopped");
 	}

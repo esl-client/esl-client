@@ -17,13 +17,11 @@ package org.freeswitch.esl.client.outbound;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
+import io.netty.channel.ChannelHandlerContext;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.handler.execution.ExecutionHandler;
 
 import java.util.concurrent.ExecutorService;
 
@@ -52,31 +50,33 @@ class OutboundClientHandler extends AbstractEslClientHandler {
 	}
 
 	@Override
-	public void channelConnected(final ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+	public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+		super.channelActive(ctx);
+
 		// Have received a connection from FreeSWITCH server, send connect response
 		log.debug("Received new connection from server, sending connect message");
 
-		final ListenableFuture<EslMessage> connectFuture = sendApiSingleLineCommand(ctx.getChannel(), "connect");
+		final ListenableFuture<EslMessage> connectFuture = sendApiSingleLineCommand(ctx.channel(), "connect");
 
 		addCallback(
-			connectFuture,
-			new FutureCallback<EslMessage>() {
-				@Override
-				public void onSuccess(EslMessage response) {
-					final EslEvent channelDataEvent = new EslEvent(response, true);
-					clientHandler.onConnect(
-						new Context(
-							ctx.getChannel(),
-							OutboundClientHandler.this),
-						channelDataEvent);
-				}
+				connectFuture,
+				new FutureCallback<EslMessage>() {
+					@Override
+					public void onSuccess(EslMessage response) {
+						final EslEvent channelDataEvent = new EslEvent(response, true);
+						clientHandler.onConnect(
+								new Context(
+										ctx.channel(),
+										OutboundClientHandler.this),
+								channelDataEvent);
+					}
 
-				@Override
-				public void onFailure(Throwable throwable) {
-					ctx.getChannel().close();
-					handleDisconnectionNotice();
-				}
-			});
+					@Override
+					public void onFailure(Throwable throwable) {
+						ctx.channel().close();
+						handleDisconnectionNotice();
+					}
+				});
 	}
 
 	@Override
@@ -84,13 +84,13 @@ class OutboundClientHandler extends AbstractEslClientHandler {
 		callbackExecutor.execute(new Runnable() {
 			@Override
 			public void run() {
-				clientHandler.onEslEvent(new Context(ctx.getChannel(), OutboundClientHandler.this), event);
+				clientHandler.onEslEvent(new Context(ctx.channel(), OutboundClientHandler.this), event);
 			}
 		});
 	}
 
 	@Override
-	protected void handleAuthRequest(ChannelHandlerContext ctx) {
+	protected void handleAuthRequest(io.netty.channel.ChannelHandlerContext ctx) {
 		// This should not happen in outbound mode
 		log.warn("Auth request received in outbound mode, ignoring");
 	}

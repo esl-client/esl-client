@@ -1,11 +1,11 @@
 package org.freeswitch.esl.client.internal;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import io.netty.channel.Channel;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
-import org.jboss.netty.channel.Channel;
 
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -25,7 +25,7 @@ public class Context implements IModEslApi {
 
 	@Override
 	public boolean canSend() {
-		return channel != null && channel.isConnected();
+		return channel != null && channel.isActive();
 	}
 
 	/**

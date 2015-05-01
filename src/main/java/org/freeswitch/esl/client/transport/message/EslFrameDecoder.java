@@ -15,15 +15,16 @@
  */
 package org.freeswitch.esl.client.transport.message;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ReplayingDecoder;
+import io.netty.handler.codec.TooLongFrameException;
 import org.freeswitch.esl.client.transport.HeaderParser;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.frame.TooLongFrameException;
-import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Decoder used by the IO processing pipeline. Client consumers should never need to use
@@ -76,8 +77,9 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 	}
 
 	@Override
-	protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer,
-	                        State state) throws Exception {
+	protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
+		State state = state();
+
 		log.trace("decode() : state [{}]", state);
 		switch (state) {
 			case READ_HEADER:
@@ -117,7 +119,7 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 					log.debug("have content-length, decoding body ..");
 					//  force the next section
 
-					return null;
+					break;
 				} else {
 					// end of message
 					checkpoint(State.READ_HEADER);
@@ -125,7 +127,8 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 					EslMessage decodedMessage = currentMessage;
 					currentMessage = null;
 
-					return decodedMessage;
+					out.add(decodedMessage);
+					break;
 				}
 
 			case READ_BODY:
@@ -133,10 +136,10 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 								*   read the content-length specified
 								*/
 				int contentLength = currentMessage.getContentLength();
-				ChannelBuffer bodyBytes = buffer.readBytes(contentLength);
+				ByteBuf bodyBytes = buffer.readBytes(contentLength);
 				log.debug("read [{}] body bytes", bodyBytes.writerIndex());
 				// most bodies are line based, so split on LF
-				while (bodyBytes.readable()) {
+				while (bodyBytes.isReadable()) {
 					String bodyLine = readLine(bodyBytes, contentLength);
 					log.debug("read body line [{}]", bodyLine);
 					currentMessage.addBodyLine(bodyLine);
@@ -148,14 +151,15 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 				EslMessage decodedMessage = currentMessage;
 				currentMessage = null;
 
-				return decodedMessage;
+				out.add(decodedMessage);
+				break;
 
 			default:
 				throw new Error("Illegal state: [" + state + ']');
 		}
 	}
 
-	private String readToLineFeedOrFail(ChannelBuffer buffer, int maxLineLegth) throws TooLongFrameException {
+	private String readToLineFeedOrFail(ByteBuf buffer, int maxLineLegth) throws TooLongFrameException {
 		StringBuilder sb = new StringBuilder(64);
 		while (true) {
 			// this read might fail
@@ -173,9 +177,9 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 		}
 	}
 
-	private String readLine(ChannelBuffer buffer, int maxLineLength) throws TooLongFrameException {
+	private String readLine(ByteBuf buffer, int maxLineLength) throws TooLongFrameException {
 		StringBuilder sb = new StringBuilder(64);
-		while (buffer.readable()) {
+		while (buffer.isReadable()) {
 			// this read should always succeed
 			byte nextByte = buffer.readByte();
 			if (nextByte == LF) {

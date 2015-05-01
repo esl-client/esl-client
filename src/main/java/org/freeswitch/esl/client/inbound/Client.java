@@ -19,16 +19,19 @@ import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.internal.IModEslApi;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,15 +102,17 @@ public class Client implements IModEslApi {
 
 		log.info("Connecting to {} ...", clientAddress);
 
+		EventLoopGroup workerGroup = new NioEventLoopGroup();
+
 		// Configure this client
-		ClientBootstrap bootstrap = new ClientBootstrap(
-			new NioClientSocketChannelFactory(
-				Executors.newCachedThreadPool(),
-				Executors.newCachedThreadPool()));
+		Bootstrap bootstrap = new Bootstrap()
+				.group(workerGroup)
+				.channel(NioSocketChannel.class)
+				.option(ChannelOption.SO_KEEPALIVE, true);
 
 		// Add ESL handler and factory
 		InboundClientHandler handler = new InboundClientHandler(password, protocolListener);
-		bootstrap.setPipelineFactory(new InboundPipelineFactory(handler));
+		bootstrap.handler(new InboundChannelInitializer(handler));
 
 		// Attempt connection
 		ChannelFuture future = bootstrap.connect(clientAddress);
@@ -117,14 +122,14 @@ public class Client implements IModEslApi {
 			throw new InboundConnectionFailure("Timeout connecting to " + clientAddress);
 		}
 		// Did not timeout
-		final Channel channel = future.getChannel();
+		final Channel channel = future.channel();
 		// But may have failed anyway
 		if (!future.isSuccess()) {
-			log.warn("Failed to connect to [{}]", clientAddress, future.getCause());
+			log.warn("Failed to connect to [{}]", clientAddress, future.cause());
 
-			bootstrap.releaseExternalResources();
+			workerGroup.shutdownGracefully();
 
-			throw new InboundConnectionFailure("Could not connect to " + clientAddress, future.getCause());
+			throw new InboundConnectionFailure("Could not connect to " + clientAddress, future.cause());
 		}
 
 		log.info("Connected to {}", clientAddress);

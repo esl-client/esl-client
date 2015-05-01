@@ -15,13 +15,11 @@
  */
 package org.freeswitch.esl.client.transport;
 
-import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
-
 /**
  * This parser provides a static helper method to split a standard Header field
  * into the name and value parts.
  * <p/>
- * This code was copied from the splitHeader() method in the {@link HttpMessageDecoder} class, which
+ * This code was copied from the splitHeader() method in the HttpMessageDecoder class, which
  * is licensed under the Apache License version 2. (Original author: Trustin Lee.)
  */
 public class HeaderParser {
