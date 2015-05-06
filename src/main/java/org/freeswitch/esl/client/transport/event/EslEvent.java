@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Objects.toStringHelper;
+
 /**
  * FreeSWITCH Event Socket <strong>events</strong> are decoded into this data object.
  * <p/>
@@ -187,16 +189,11 @@ public class EslEvent {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder("EslEvent: name=[");
-		sb.append(getEventName());
-		sb.append("] headers=");
-		sb.append(messageHeaders.size());
-		sb.append(", eventHeaders=");
-		sb.append(eventHeaders.size());
-		sb.append(", eventBody=");
-		sb.append(eventBody.size());
-		sb.append(" lines.");
-
-		return sb.toString();
+		return toStringHelper(this)
+				.add("name", getEventName())
+				.add("headers", messageHeaders.size())
+				.add("eventHeaders", eventHeaders.size())
+				.add("eventBody", eventBody.size() + " lines")
+				.toString();
 	}
 }

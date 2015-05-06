@@ -32,7 +32,7 @@ public class Context implements IModEslApi {
 	 * Sends a FreeSWITCH API command to the server and blocks, waiting for an immediate response from the
 	 * server.
 	 * <p/>
-	 * The outcome of the command from the server is retured in an {@link org.freeswitch.esl.client.transport.message.EslMessage} object.
+	 * The outcome of the command from the server is returned in an {@link org.freeswitch.esl.client.transport.message.EslMessage} object.
 	 *
 	 * @param command API command to send
 	 * @param arg     command arguments
@@ -62,7 +62,7 @@ public class Context implements IModEslApi {
 	 * Submit a FreeSWITCH API command to the server to be executed in background mode. A synchronous
 	 * response from the server provides a UUID to identify the job execution results. When the server
 	 * has completed the job execution it fires a BACKGROUND_JOB Event with the execution results.<p/>
-	 * Note that this Client must be subscribed in the normal way to BACKGOUND_JOB Events, in order to
+	 * Note that this Client must be subscribed in the normal way to BACKGROUND_JOB Events, in order to
 	 * receive this event.
 	 *
 	 * @param command API command to send
@@ -80,7 +80,7 @@ public class Context implements IModEslApi {
 			sb.append(' ').append(arg);
 		}
 
-		return handler.sendBackgroundApiCommand(channel, command);
+		return handler.sendBackgroundApiCommand(channel, sb.toString());
 	}
 
 	/**

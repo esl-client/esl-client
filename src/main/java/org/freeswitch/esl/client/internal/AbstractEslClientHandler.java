@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import org.freeswitch.esl.client.transport.event.EslEvent;
-import org.freeswitch.esl.client.transport.message.EslHeaders;
+import org.freeswitch.esl.client.transport.event.EslEventHeaderNames;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Value;
 import org.freeswitch.esl.client.transport.message.EslMessage;
@@ -102,7 +102,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
 				//  transform into an event
 				final EslEvent eslEvent = new EslEvent(message);
 				if (eslEvent.getEventName().equals("BACKGROUND_JOB")) {
-					final String backgroundUuid = eslEvent.getEventHeaders().get(EslHeaders.Name.JOB_UUID);
+					final String backgroundUuid = eslEvent.getEventHeaders().get(EslEventHeaderNames.JOB_UUID);
 					final SettableFuture<EslEvent> future = backgroundJobs.remove(backgroundUuid);
 					if (null != future) {
 						future.set(eslEvent);
@@ -178,11 +178,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
 		checkArgument(!isNullOrEmpty(command), "command may not be null or empty");
 		checkArgument(!isNullOrEmpty(arg), "arg may not be null or empty");
 
-		final StringBuilder sb = new StringBuilder();
-		sb.append("api ").append(command).append(' ').append(arg);
-
-		return sendApiSingleLineCommand(channel, sb.toString());
-
+		return sendApiSingleLineCommand(channel, "api " + command + ' ' + arg);
 	}
 
 	/**

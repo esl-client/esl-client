@@ -50,7 +50,7 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 	 */
 	static final byte LF = 10;
 
-	protected static enum State {
+	protected enum State {
 		READ_HEADER,
 		READ_BODY,
 	}

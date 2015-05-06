@@ -65,6 +65,7 @@ public class Client implements IModEslApi {
 		}
 	}
 
+	@Override
 	public boolean canSend() {
 		return clientContext.isPresent()
 			&& clientContext.get().canSend()
@@ -96,6 +97,8 @@ public class Client implements IModEslApi {
 			close();
 		}
 
+		log.info("Connecting to {} ...", clientAddress);
+
 		// Configure this client
 		ClientBootstrap bootstrap = new ClientBootstrap(
 			new NioClientSocketChannelFactory(
@@ -117,13 +120,14 @@ public class Client implements IModEslApi {
 		final Channel channel = future.getChannel();
 		// But may have failed anyway
 		if (!future.isSuccess()) {
-			log.warn("Failed to connect to [{}]", clientAddress);
-			log.warn("  * reason: {}", future.getCause());
+			log.warn("Failed to connect to [{}]", clientAddress, future.getCause());
 
 			bootstrap.releaseExternalResources();
 
 			throw new InboundConnectionFailure("Could not connect to " + clientAddress, future.getCause());
 		}
+
+		log.info("Connected to {}", clientAddress);
 
 		//  Wait for the authentication handshake to call back
 		while (!authenticatorResponded.get()) {
@@ -139,6 +143,8 @@ public class Client implements IModEslApi {
 		if (!authenticated) {
 			throw new InboundConnectionFailure("Authentication failed: " + authenticationResponse.getReplyText());
 		}
+
+		log.info("Authenticated");
 	}
 
 	/**
@@ -151,6 +157,7 @@ public class Client implements IModEslApi {
 	 * @param arg     command arguments
 	 * @return an {@link EslMessage} containing command results
 	 */
+	@Override
 	public EslMessage sendApiCommand(String command, String arg) {
 		checkConnected();
 		return clientContext.get().sendApiCommand(command, arg);
@@ -167,6 +174,7 @@ public class Client implements IModEslApi {
 	 * @param arg     command arguments
 	 * @return String Job-UUID that the server will tag result event with.
 	 */
+	@Override
 	public ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg) {
 		checkConnected();
 		return clientContext.get().sendBackgroundApiCommand(command, arg);
@@ -189,6 +197,7 @@ public class Client implements IModEslApi {
 	 * @param events { all | space separated list of events }
 	 * @return a {@link CommandResponse} with the server's response.
 	 */
+	@Override
 	public CommandResponse setEventSubscriptions(EventFormat format, String events) {
 		checkConnected();
 		return clientContext.get().setEventSubscriptions(format, events);
@@ -199,6 +208,7 @@ public class Client implements IModEslApi {
 	 *
 	 * @return a {@link CommandResponse} with the server's response.
 	 */
+	@Override
 	public CommandResponse cancelEventSubscriptions() {
 		checkConnected();
 		return clientContext.get().cancelEventSubscriptions();
@@ -224,6 +234,7 @@ public class Client implements IModEslApi {
 	 * @param valueToFilter the value to match
 	 * @return a {@link CommandResponse} with the server's response.
 	 */
+	@Override
 	public CommandResponse addEventFilter(String eventHeader, String valueToFilter) {
 		checkConnected();
 		return clientContext.get().addEventFilter(eventHeader, valueToFilter);
@@ -236,6 +247,7 @@ public class Client implements IModEslApi {
 	 * @param valueToFilter to remove
 	 * @return a {@link CommandResponse} with the server's response.
 	 */
+	@Override
 	public CommandResponse deleteEventFilter(String eventHeader, String valueToFilter) {
 		checkConnected();
 		return clientContext.get().deleteEventFilter(eventHeader, valueToFilter);
@@ -248,6 +260,7 @@ public class Client implements IModEslApi {
 	 * @param sendMsg a {@link SendMsg} with call UUID
 	 * @return a {@link CommandResponse} with the server's response.
 	 */
+	@Override
 	public CommandResponse sendMessage(SendMsg sendMsg) {
 		checkConnected();
 		return clientContext.get().sendMessage(sendMsg);
@@ -259,6 +272,7 @@ public class Client implements IModEslApi {
 	 * @param level using the same values as in console.conf
 	 * @return a {@link CommandResponse} with the server's response.
 	 */
+	@Override
 	public CommandResponse setLoggingLevel(LoggingLevel level) {
 		checkConnected();
 		return clientContext.get().setLoggingLevel(level);
@@ -269,6 +283,7 @@ public class Client implements IModEslApi {
 	 *
 	 * @return a {@link CommandResponse} with the server's response.
 	 */
+	@Override
 	public CommandResponse cancelLogging() {
 		checkConnected();
 		return clientContext.get().cancelLogging();
@@ -300,6 +315,7 @@ public class Client implements IModEslApi {
 		*/
 	private final IEslProtocolListener protocolListener = new IEslProtocolListener() {
 
+		@Override
 		public void authResponseReceived(CommandResponse response) {
 			authenticatorResponded.set(true);
 			authenticated = response.isOk();
@@ -307,6 +323,7 @@ public class Client implements IModEslApi {
 			log.debug("Auth response success={}, message=[{}]", authenticated, response.getReplyText());
 		}
 
+		@Override
 		public void eventReceived(final Context ctx, final EslEvent event) {
 			log.debug("Event received [{}]", event);
 			for (final IEslEventListener listener : eventListeners) {
@@ -319,6 +336,7 @@ public class Client implements IModEslApi {
 			}
 		}
 
+		@Override
 		public void disconnected() {
 			log.info("Disconnected ...");
 		}

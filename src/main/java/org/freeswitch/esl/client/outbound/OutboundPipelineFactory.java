@@ -41,6 +41,7 @@ class OutboundPipelineFactory implements ChannelPipelineFactory {
 		return this;
 	}
 
+	@Override
 	public ChannelPipeline getPipeline() throws Exception {
 		ChannelPipeline pipeline = Channels.pipeline();
 		// Add the text line codec combination first

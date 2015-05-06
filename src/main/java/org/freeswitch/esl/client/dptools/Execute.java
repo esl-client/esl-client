@@ -20,10 +20,12 @@ public class Execute {
     /**
      * Sends an info packet with a sipfrag. If the phone supports it will show
      * message on the display.
-     * 
+     *
      * @param message
      *            to display
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_Send_Display
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_Send_Display">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_Send_Display
+     *     </a>
      */
     public void sendDiplay(String message) throws ExecuteException {
         sendExeMesg("send_display", message);
@@ -31,8 +33,10 @@ public class Execute {
 
     /**
      * Answers an incoming call or session.
-     * 
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_answer
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_answer">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_answer
+     *     </a>
      */
     public void answer() throws ExecuteException {
         sendExeMesg("answer");
@@ -42,8 +46,10 @@ public class Execute {
     /**
      * Make an attended transfer.
      * 
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_att_xfer
-     * @param transfer
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_att_xfer">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_att_xfer
+     *     </a>
+     * @param channelUrl
      *            ex: sofia/default/${attxfer_callthis}
      */
     public void attAnswer(String channelUrl) throws ExecuteException {
@@ -69,17 +75,13 @@ public class Execute {
      * @param params
      *            are the arguments you want or need to provide to the
      *            APPLICATION.
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bind_meta_app
-     * @throws ExecuteException
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bind_meta_app">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bind_meta_app
+     *     </a>
      */
     public void bindMetaApp(String key, String leg, String flags,
             String application, String params) throws ExecuteException {
-        StringBuilder sb = new StringBuilder(key);
-        sb.append(" ").append(leg);
-        sb.append("").append(flags);
-        sb.append(" ").append(application);
-        sb.append("::").append(params);
-        sendExeMesg("bind_meta_app", sb.toString());
+        sendExeMesg("bind_meta_app", key + " " + leg + flags + " " + application + "::" + params);
     }
 
     /**
@@ -90,8 +92,9 @@ public class Execute {
      * @param all
      *            clear all unprocessed events (queued applications) on the
      *            channel, otherwise just the current application.
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_break
-     * @throws ExecuteException
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_break">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_break
+     *     </a>
      */
     public void breakChannel(boolean all) throws ExecuteException {
         sendExeMesg("break", all ? "all" : "");
@@ -103,9 +106,9 @@ public class Execute {
      * simultaneously or sequentially using the comma and pipe delimiters,
      * respectively.
      * 
-     * @param target
-     *            endpoint
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bridge
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bridge">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bridge
+     *     </a>
      */
     public void bridge(String endpoint) throws ExecuteException {
         sendExeMesg("bridge", endpoint);
@@ -123,8 +126,9 @@ public class Execute {
      *            channel variable value
      * @param local
      *            to only export to the B leg false, otherwise true
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bridge_export
-     * @throws ExecuteException
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bridge_export">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_bridge_export
+     *     </a>
      */
     public void bridgeExport(String key, String value, boolean local)
             throws ExecuteException {
@@ -148,16 +152,13 @@ public class Execute {
      *            ex: 1001@127.0.0.1
      * @param message
      *            ex: Hello chat from freeswitch
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_chat
-     * @throws ExecuteException
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_chat">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_chat
+     *     </a>
      */
     public void chat(String proto, String from, String to, String message)
             throws ExecuteException {
-        StringBuilder sb = new StringBuilder(proto);
-        sb.append("|").append(from);
-        sb.append("|").append(to);
-        sb.append("|").append(message);
-        sendExeMesg("chat", sb.toString());
+        sendExeMesg("chat", proto + "|" + from + "|" + to + "|" + message);
     }
 
     /**
@@ -165,8 +166,9 @@ public class Execute {
      * execute on originate. It is like execute on answer, etc. but only for
      * outbound calls during originate.
      * 
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_cng_plc
-     * @throws ExecuteException
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_cng_plc">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_cng_plc
+     *     </a>
      */
     public void cngPlc() throws ExecuteException {
         sendExeMesg("cng_plc");
@@ -174,8 +176,6 @@ public class Execute {
 
     /**
      * Start or join a conference
-     * @param name
-     * @throws ExecuteException
      */
     public void conference(String name) throws ExecuteException {
        conference(name,null,null,null);
@@ -183,9 +183,6 @@ public class Execute {
     
     /**
      * Start or join a conference
-     * @param name
-     * @param profile
-     * @throws ExecuteException
      */
     public void conference(String name, String profile) throws ExecuteException {
         conference(name,profile,null,null);
@@ -193,10 +190,6 @@ public class Execute {
     
     /**
      * Start or join a conference
-     * @param name
-     * @param profile
-     * @param pin
-     * @throws ExecuteException
      */
     public void conference(String name, String profile, String pin) throws ExecuteException {
         conference(name,profile,pin,null);
@@ -204,11 +197,6 @@ public class Execute {
     
     /**
      * Start or join a conference
-     * @param name
-     * @param profile
-     * @param pin
-     * @param flags
-     * @throws ExecuteException
      */
     public void conference(String name, String profile, String pin, String flags) throws ExecuteException {
         StringBuilder sb = new StringBuilder(name);
@@ -232,8 +220,10 @@ public class Execute {
      * 
      * @param endpoint
      *            SIP URI to contact (with or without "sip:")
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_deflect
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_deflect">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_deflect
+     *     </a>
      */
     public void deflect(String endpoint) throws ExecuteException {
         sendExeMesg("deflect", endpoint);
@@ -245,9 +235,9 @@ public class Execute {
      * [ms]. It is generally useful for checking if RTP audio path works both
      * ways. Normal echo app can fail when tested on speaker phone.
      * 
-     * @param ms
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_delay_echo
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_delay_echo">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_delay_echo
+     *     </a>
      */
     public void delayEcho(long ms) throws ExecuteException {
         sendExeMesg("delay_echo", ms + "");
@@ -261,8 +251,10 @@ public class Execute {
      *            <gram_name> [<path>] grammaron <gram_name> grammaroff
      *            <gram_name> grammarsalloff nogrammar <gram_name> param <name>
      *            <value> pause resume start_input_timers stop
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_detect_speech
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_detect_speech">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_detect_speech
+     *     </a>
      */
     public void detectSpeech(String args) throws ExecuteException {
         sendExeMesg("detect_speech", args);
@@ -274,8 +266,10 @@ public class Execute {
      * @param path
      *            any sound format FreeSWITCH supports, wav, local_steam, shout
      *            etc.
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
+     *     </a>
      */
     public void displaceSession(String path) throws ExecuteException {
         displaceSession(path, null, 0);
@@ -289,8 +283,10 @@ public class Execute {
      *            etc.
      * @param flags
      *            flags to stream, null if none
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
+     *     </a>
      */
     public void displaceSession(String path, String flags)
             throws ExecuteException {
@@ -308,8 +304,10 @@ public class Execute {
      *            flags to stream, null if none
      * @param timeLimitMillis
      *            optional time limit, 0 for none
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_displace_session
+     *     </a>
      */
     public void displaceSession(String path, String flags,
             long timeLimitMillis) throws ExecuteException {
@@ -332,8 +330,10 @@ public class Execute {
      * 
      * @param uuid
      *            uuid of the call or 'all' for all
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *     </a>
      */
     public void eavesdrop(String uuid)
             throws ExecuteException {
@@ -351,9 +351,10 @@ public class Execute {
      * 
      * @param uuid
      *            uuid of the call or 'all' for all
-     * @param enableDTMF
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *     </a>
      */
     public void eavesdrop(String uuid, boolean enableDTMF)
             throws ExecuteException {
@@ -371,12 +372,13 @@ public class Execute {
      * 
      * @param uuid
      *            uuid of the call or 'all' for all
-     * @param enableDTMF
      * @param groupId
      *            if specified, eavesdrop only works with channels that have an
      *            "eavesdrop_group" channel variable set to the same name.
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *     </a>
      */
     public void eavesdrop(String uuid, boolean enableDTMF, String groupId)
             throws ExecuteException {
@@ -394,13 +396,13 @@ public class Execute {
      * 
      * @param uuid
      *            uuid of the call or 'all' for all
-     * @param enableDTMF
      * @param groupId
      *            if specified, eavesdrop only works with channels that have an
      *            "eavesdrop_group" channel variable set to the same name.
-     * @param failedWav
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *     </a>
      */
     public void eavesdrop(String uuid, boolean enableDTMF, String groupId,
             String failedWav) throws ExecuteException {
@@ -417,7 +419,6 @@ public class Execute {
      * 
      * @param uuid
      *            uuid of the call or 'all' for all
-     * @param enableDTMF
      * @param groupId
      *            if specified, eavesdrop only works with channels that have an
      *            "eavesdrop_group" channel variable set to the same name.
@@ -425,8 +426,10 @@ public class Execute {
      *            ex: /sounds/failed.wav
      * @param newChannelWav
      *            ex: /sounds/new_chan_announce.wav
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *     </a>
      */
     public void eavesdrop(String uuid, boolean enableDTMF, String groupId,
             String failedWav, String newChannelWav) throws ExecuteException {
@@ -445,7 +448,6 @@ public class Execute {
      * 
      * @param uuid
      *            uuid of the call or 'all' for all
-     * @param enableDTMF
      * @param groupId
      *            if specified, eavesdrop only works with channels that have an
      *            "eavesdrop_group" channel variable set to the same name.
@@ -455,8 +457,10 @@ public class Execute {
      *            ex: /sounds/new_chan_announce.wav
      * @param idleWav
      *            ex: /sounds/idle.wav
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eavesdrop
+     *     </a>
      */
     public void eavesdrop(String uuid, boolean enableDTMF, String groupId,
             String failedWav, String newChannelWav, String idleWav)
@@ -482,8 +486,9 @@ public class Execute {
      * sent, including voice, DTMF, etc. Consider it an "echo test". It is
      * generally useful for checking delay in a call path.
      * 
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_echo
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_echo">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_echo
+     *     </a>
      */
     public void echo() throws ExecuteException {
         sendExeMesg("echo");
@@ -495,7 +500,6 @@ public class Execute {
      * 
      * @param file
      *            to play
-     * @throws ExecuteException
      */
     public void endlessPlayback(String file) throws ExecuteException {
         sendExeMesg("endless_playback", file);
@@ -507,8 +511,10 @@ public class Execute {
      * 
      * @param string
      *            to eval
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eval
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eval">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_eval
+     *     </a>
      */
     public void eval(String string) throws ExecuteException {
         sendExeMesg("eval", string);
@@ -521,8 +527,10 @@ public class Execute {
      *            to send ex:
      *            Event-Subclass=myevent::notify,Event-Name=CUSTOM,key1
      *            =value1,key2=value2
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_event
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_event">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_event
+     *     </a>
      */
     public void event(String event) throws ExecuteException {
         sendExeMesg("event", event);
@@ -534,9 +542,10 @@ public class Execute {
      * 
      * 
      * @param extension
-     * @throws ExecuteException
-     * @see http
-     *      ://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension
+     *     </a>
      */
     public void executeExtension(String extension) throws ExecuteException {
         executeExtension(extension, null, null);
@@ -545,12 +554,9 @@ public class Execute {
      * execute an extension from within another extension with this dialplan
      * application.
      * 
-     * 
-     * @param extension
-     * @param dialplan
-     * @throws ExecuteException
-     * @see http
-     *      ://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension
+     *     </a>
      */
     public void executeExtension(String extension, String dialplan) throws ExecuteException {
         executeExtension(extension, dialplan, null);
@@ -560,14 +566,12 @@ public class Execute {
      * execute an extension from within another extension with this dialplan
      * application.
      * 
-     * 
-     * @param extension
-     * @param dialplan
      * @param context
      *            (will only be set if optionalDialplan is not null)
-     * @throws ExecuteException
-     * @see http
-     *      ://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_execute_extension
+     *     </a>
      */
     public void executeExtension(String extension, String dialplan,
             String context) throws ExecuteException {
@@ -591,7 +595,9 @@ public class Execute {
      *            channel variable value
      * @param local
      *            to only export to the B leg false, otherwise true
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_export
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_export">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_export
+     *     </a>
      * @throws ExecuteException
      */
     public void export(String key, String value, boolean local)
@@ -608,10 +614,9 @@ public class Execute {
     /**
      * When a fax is detected, the call will be routed to the ext in the context
      * 
-     * @param context
-     * @param ext
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_fax_detect
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_fax_detect">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_fax_detect
+     *     </a>
      */
     public void faxDetect(String context, String ext) throws ExecuteException {
         sendExeMesg("tone_detect", "fax 1100 r +5000 transfer " + ext + " XML "
@@ -623,9 +628,10 @@ public class Execute {
      * have entered extra digits in one dialog and you want to flush them out
      * before sending them into another dialog.
      * 
-     * @throws ExecuteException
-     * @see PlayAndGetDigits
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_flush_dtmf
+     * @see #playAndGetDigits
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_flush_dtmf">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_flush_dtmf
+     *     </a>
      */
     public void flushDTMF() throws ExecuteException {
         sendExeMesg("flush_dtmf");
@@ -636,9 +642,13 @@ public class Execute {
      * 
      * @param tone
      *            ex: Generate a 500ms beep at 800Hz, tone = "%(500,0,800)"
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_gentones
-     * @see http://wiki.freeswitch.org/wiki/TGML
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_gentones">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_gentones
+     *     </a>
+     * @see <a href="http://wiki.freeswitch.org/wiki/TGML">
+     *     http://wiki.freeswitch.org/wiki/TGML
+     *     </a>
      */
     public void gentones(String tone)
             throws ExecuteException {
@@ -652,9 +662,13 @@ public class Execute {
      *            ex: Generate a 500ms beep at 800Hz, tone = "%(500,0,800)"
      * @param loops
      *            set to a non zero nuber, -1 for infinate loop
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_gentones
-     * @see http://wiki.freeswitch.org/wiki/TGML
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_gentones">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_gentones
+     *     </a>
+     * @see <a href="http://wiki.freeswitch.org/wiki/TGML">
+     *     http://wiki.freeswitch.org/wiki/TGML
+     *     </a>
      */
     public void gentones(String tone, int loops)
             throws ExecuteException {
@@ -674,7 +688,9 @@ public class Execute {
      * @param url
      *            ex: sofia/gateway/provider/0123456789
      * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_group
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_group">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_group
+     *     </a>
      */
     public void group(String action, String groupName, String url)
             throws ExecuteException {
@@ -684,8 +700,9 @@ public class Execute {
     /**
      * Hangs up a channel, with an optional reason supplied.
      * 
-     * @throws ExecuteException
-     * @http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_hangup
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_hangup">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_hangup
+     *     </a>
      */
     public void hangup() throws ExecuteException {
         sendExeMesg("hangup", null);
@@ -696,8 +713,10 @@ public class Execute {
      * 
      * @param reason
      *            if not null the hangup reason, ex: USER_BUSY
-     * @throws ExecuteException
-     * @http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_hangup
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_hangup">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_hangup
+     *     </a>
      */
     public void hangup(String reason) throws ExecuteException {
         sendExeMesg("hangup", reason);
@@ -706,8 +725,9 @@ public class Execute {
     /**
      * Dumps channel information to console.
      * 
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_info
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_info">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_info
+     *     </a>
      */
     public void info() throws ExecuteException {
         sendExeMesg("info", null);
@@ -719,8 +739,10 @@ public class Execute {
      * @param level
      *            if not null the level to log. Ex: notice Ex:
      *            bridge_pre_execute_bleg_app=info
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_info
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_info">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_info
+     *     </a>
      */
     public void info(String level) throws ExecuteException {
         sendExeMesg("info", level);
@@ -730,7 +752,6 @@ public class Execute {
      * Allows one channel to bridge itself to the a or b leg of another call.
      * The remaining leg of the original call gets hungup
      * 
-     * @param uuid
      * @param bleg
      *            intercept the b leg of the call
      * @throws ExecuteException
@@ -742,10 +763,12 @@ public class Execute {
     /**
      * Logs a string of text to the console
      * 
-     * @param message
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_log
-     * @see http://wiki.freeswitch.org/wiki/Mod_logfile
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_log">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_log
+     *     </a>
+     * @see <a href="http://wiki.freeswitch.org/wiki/Mod_logfile">
+     *     http://wiki.freeswitch.org/wiki/Mod_logfile
+     *     </a>
      */
     public void log(String message)
             throws ExecuteException {
@@ -757,10 +780,13 @@ public class Execute {
      * 
      * @param level
      *            ex: DEBUG, INFO
-     * @param message
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_log
-     * @see http://wiki.freeswitch.org/wiki/Mod_logfile
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_log">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_log
+     *     </a>
+     * @see <a href="http://wiki.freeswitch.org/wiki/Mod_logfile">
+     *     http://wiki.freeswitch.org/wiki/Mod_logfile
+     *     </a>
      */
     public void log(String level, String message)
             throws ExecuteException {
@@ -772,9 +798,9 @@ public class Execute {
      * Creates a directory. Also creates parent directories by default(When they
      * don't exist).
      * 
-     * @param path
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_mkdir
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_mkdir">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_mkdir
+     *     </a>
      */
     public void mkdir(String path) throws ExecuteException {
         sendExeMesg("mkdir", path);
@@ -793,7 +819,9 @@ public class Execute {
      * using 'park', see mod_fifo.
      * 
      * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_park
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_park">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_park
+     *     </a>
      */
     public void park() throws ExecuteException {
         sendExeMesg("park");
@@ -809,9 +837,10 @@ public class Execute {
      * 
      * @param macroName
      *            ex: spell, timespec, saydate
-     * @param data
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_phrase
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_phrase">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_phrase
+     *     </a>
      */
     public void phrase(String macroName, String data) throws ExecuteException {
         sendExeMesg("phrase", macroName + "," + data);
@@ -821,9 +850,9 @@ public class Execute {
      * Permits proper answering of multiple simultaneous calls to the same
      * pickup group.
      * 
-     * @param group
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_pickup
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_pickup">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_pickup
+     *     </a>
      */
     public void pickup(String group) throws ExecuteException {
         sendExeMesg("pickup", group);
@@ -833,11 +862,9 @@ public class Execute {
      * Play while doing speech recognition. Result is stored in the
      * detect_speech_result channel variable.
      * 
-     * @param file
-     * @param engine
-     * @param grammer
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_detect_speech
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_detect_speech">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_detect_speech
+     *     </a>
      */
     public String playAndDetectSpeech(String file, String engine,
             String grammer) throws ExecuteException {
@@ -848,23 +875,14 @@ public class Execute {
      * Play while doing speech recognition. Result is stored in the
      * detect_speech_result channel variable.
      * 
-     * @param file
-     * @param engine
-     * @param grammer
-     * @param params
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_detect_speech
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_detect_speech">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_detect_speech
+     *     </a>
      */
     public String playAndDetectSpeech(String file, String engine,
             String grammer, String params) throws ExecuteException {
-        StringBuilder sb = new StringBuilder(file);
-        sb.append(" detect:");
-        sb.append(engine);
-        sb.append(" {");
-        sb.append((nn(params) ? params : ""));
-        sb.append("}");
-        sb.append(grammer);
-        CommandResponse resp = sendExeMesg("play_and_detect_speech",sb.toString());
+        CommandResponse resp = sendExeMesg("play_and_detect_speech",
+                file + " detect:" + engine + " {" + (nn(params) ? params : "") + "}" + grammer);
         if (resp.isOk()) {
             EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
                     + " detect_speech_result");
@@ -879,16 +897,11 @@ public class Execute {
     /**
      * Play a prompt and get digits.
      * 
-     * @param min
-     * @param max
-     * @param tries
-     * @param terminator
-     * @param file
-     * @param invalidFile
-     * @param regexp
-     * @param timeout
      * @return collected digits or null if none
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_get_digits
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_get_digits">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_play_and_get_digits
+     *     </a>
      */
     public String playAndGetDigits(int min, int max, int tries, int timeout,
             String terminator, String file, String invalidFile, String regexp,
@@ -896,19 +909,17 @@ public class Execute {
 
         String id = UUID.randomUUID().toString();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(min);
-        sb.append(" ").append(max);
-        sb.append(" ").append(tries);
-        sb.append(" ").append(timeout);
-        sb.append(" ").append(terminator);
-        sb.append(" ").append(file);
-        sb.append(" ").append(invalidFile);
-        sb.append(" ").append(id);
-        sb.append(" ").append(regexp);
-        sb.append(" ").append(digitTimeout);
-
-        CommandResponse resp = sendExeMesg("play_and_get_digits", sb.toString());
+        CommandResponse resp = sendExeMesg("play_and_get_digits",
+                String.valueOf(min)
+                        + " " + max
+                        + " " + tries
+                        + " " + timeout
+                        + " " + terminator
+                        + " " + file
+                        + " " + invalidFile
+                        + " " + id
+                        + " " + regexp
+                        + " " + digitTimeout);
 
         if (resp.isOk()) {
             EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
@@ -924,9 +935,9 @@ public class Execute {
     /**
      * Plays a sound file on the current channel.
      * 
-     * @param file
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_playback
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_playback">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_playback
+     *     </a>
      */
     public void playback(String file)
             throws ExecuteException {
@@ -936,12 +947,13 @@ public class Execute {
     /**
      * Plays a sound file on the current channel.
      * 
-     * @param file
      * @param data
      *            ex: var1=val1,var2=val2 adds specific vars that will be sent
      *            in PLAYBACK_START and PLAYBACK_STOP events
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_playback
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_playback">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_playback
+     *     </a>
      */
     public void playback(String file, String data)
             throws ExecuteException {
@@ -959,7 +971,7 @@ public class Execute {
      * 
      * @param step
      *            <+[step]>|<-[step]>
-     * @throws ExecuteException
+     *
      * @see <a
      *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
      */
@@ -972,7 +984,7 @@ public class Execute {
      * 
      * @param step
      *            <+[step]>|<-[step]>
-     * @throws ExecuteException
+     *
      * @see <a
      *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
      */
@@ -983,7 +995,6 @@ public class Execute {
     /**
      * Manage the audio being played into a channel from a sound file
      * 
-     * @throws ExecuteException
      * @see <a
      *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
      */
@@ -994,7 +1005,6 @@ public class Execute {
     /**
      * Manage the audio being played into a channel from a sound file
      * 
-     * @throws ExecuteException
      * @see <a
      *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
      */
@@ -1005,7 +1015,6 @@ public class Execute {
     /**
      * Manage the audio being played into a channel from a sound file
      * 
-     * @throws ExecuteException
      * @see <a
      *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
      */
@@ -1021,7 +1030,7 @@ public class Execute {
      *            of samples in the file to jump forward or backward. In an 8kHz
      *            file, 8000 samples would represent one second, in a 16kHz file
      *            16000 samples would be one second, etc
-     * @throws ExecuteException
+     *
      * @see <a
      *      href="http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman">http://wiki.freeswitch.org/wiki/Mod_commands#uuid_fileman</a>
      */
@@ -1031,8 +1040,7 @@ public class Execute {
     }
 
     private void playbackControl(String cmd) throws ExecuteException {
-        EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid + " "
-                + cmd);
+        api.sendApiCommand("uuid_getvar", _uuid + " " + cmd);
     }
 
     /**
@@ -1042,8 +1050,9 @@ public class Execute {
      * the caller before disconnecting them (pre_answer, playback, reject with a
      * cause code of xxxx).
      * 
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_pre_answer
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_pre_answer">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_pre_answer
+     *     </a>
      */
     public void preAnswer() throws ExecuteException {
         sendExeMesg("pre_answer");
@@ -1055,23 +1064,19 @@ public class Execute {
      * affect the presence of hook state for use with BLF either, but sending an
      * event that expresses the user's hook state does.
      * 
-     * @param user
      * @param in
      *            true if in, false if out
      * @param rpid
      *            ex: dnd, unavailable
-     * @param message
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_presence
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_presence">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_presence
+     *     </a>
      */
     public void presence(String user, boolean in, String rpid, String message)
             throws ExecuteException {
-        StringBuilder sb = new StringBuilder(in ? "in" : "out");
-        sb.append("|").append(user);
-        sb.append("|").append(rpid);
-        sb.append("|").append(message);
-        
-        sendExeMesg("presence", sb.toString());
+
+        sendExeMesg("presence", in ? "in" : "out" + "|" + user + "|" + rpid + "|" + message);
     }
 
     /**
@@ -1079,8 +1084,10 @@ public class Execute {
      * 
      * @param type
      *            ex: no, yes, name, full, member
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_privacy
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_privacy">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_privacy
+     *     </a>
      */
     public void privacy(String type) throws ExecuteException {
         sendExeMesg("privacy", type);
@@ -1091,9 +1098,9 @@ public class Execute {
      * method(s) configured on the endpoint in use. use the character w for a .5
      * second delay and the character W for a 1 second delay.
      * 
-     * @param digits
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_queue_dtmf
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_queue_dtmf">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_queue_dtmf
+     *     </a>
      */
     public void queueDTMF(String digits) throws ExecuteException {
         queueDTMF(digits, 0);
@@ -1103,12 +1110,13 @@ public class Execute {
      * Send DTMF digits after a bridge is successful from the session using the
      * method(s) configured on the endpoint in use. use the character w for a .5
      * second delay and the character W for a 1 second delay.
-     * 
-     * @param digits
+     *
      * @param durationsMillis
      *            ignored if <=0
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_queue_dtmf
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_queue_dtmf">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_queue_dtmf
+     *     </a>
      */
     public void queueDTMF(String digits, int durationsMillis)
             throws ExecuteException {
@@ -1130,24 +1138,20 @@ public class Execute {
      * @param terminators
      *            Digits used to end input if less than <min> digits have been
      *            pressed. (Typically '#')
+     *
      * @return read string or null
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_read
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_read">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_read
+     *     </a>
      */
     public String read(int min, int max, String soundFile, long timeout,
             String terminators) throws ExecuteException {
 
         String id = UUID.randomUUID().toString();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(min);
-        sb.append(" ").append(max);
-        sb.append(" ").append(soundFile);
-        sb.append(" ").append(id);
-        sb.append(" ").append(timeout);
-        sb.append(" ").append(terminators);
-
-        CommandResponse resp = sendExeMesg("read", sb.toString());
+        CommandResponse resp = sendExeMesg("read",
+                String.valueOf(min) + " " + max + " " + soundFile + " " + id + " " + timeout + " " + terminators);
 
         if (resp.isOk()) {
             EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
@@ -1164,9 +1168,9 @@ public class Execute {
      * Record is used for recording messages, like in a voicemail system. This
      * application will record a file to file
      * 
-     * @param file
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     *     </a>
      */
     public void record(String file) throws ExecuteException {
         record("record", null, 0, 0, 0, true, false, null, null, null, null,
@@ -1178,7 +1182,6 @@ public class Execute {
      * Record is used for recording messages, like in a voicemail system. This
      * application will record a file to file
      * 
-     * @param file
      * @param timeLimitSeconds
      *            the maximum duration of the recording.
      * @param silenceThreshold
@@ -1195,7 +1198,6 @@ public class Execute {
      *            how many positive hits on being below that thresh you can
      *            tolerate to stop default hits are sample rate * 3 / the number
      *            of samples per frame so the default, if missing, is 3.
-     * 
      * @param append
      *            append or overwite if file exists
      * @param recordTile
@@ -1218,8 +1220,10 @@ public class Execute {
      *            supports meta headers).
      * @param recordRate
      *            the sample rate of the recording.
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     *     </a>
      */
     public void record(String file, boolean append, boolean wateResources,
             int timeLimitSeconds, int silenceThreshold, int silenceHits,
@@ -1235,9 +1239,9 @@ public class Execute {
     /**
      *  Records an entire phone call or session.
      * 
-     * @param file
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     *     </a>
      */
     public void recordSession(String file) throws ExecuteException {
         record("record_session", null, 0, 0, 0, true, false, null, null, null, null,
@@ -1248,7 +1252,6 @@ public class Execute {
     /**
      *  Records an entire phone call or session.
      * 
-     * @param file
      * @param timeLimitSeconds
      *            the maximum duration of the recording.
      * @param silenceThreshold
@@ -1288,8 +1291,10 @@ public class Execute {
      *            supports meta headers).
      * @param recordRate
      *            the sample rate of the recording.
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_record
+     *     </a>
      */
     public void recordSession(String file, boolean append, boolean wateResources,
             int timeLimitSeconds, int silenceThreshold, int silenceHits,
@@ -1350,8 +1355,10 @@ public class Execute {
      * 
      * @param endpoint
      *            ex:"sip:foo@bar.com " or "sip:foo@bar.com,sip:foo@end.com"
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_redirect
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_redirect">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_redirect
+     *     </a>
      */
     public void redirect(String endpoint) throws ExecuteException {
         sendExeMesg("redirect", endpoint);
@@ -1362,8 +1369,10 @@ public class Execute {
      * 
      * @param code
      *            ex: "407" or "480 Try again later"
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_respond
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_respond">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_respond
+     *     </a>
      */
     public void respond(String code) throws ExecuteException {
         sendExeMesg("respond", code);
@@ -1371,8 +1380,10 @@ public class Execute {
     
     /**
      * This causes an 180 Ringing to be sent to the originator.
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_ring_ready
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_ring_ready">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_ring_ready
+     *     </a>
      */
     public void ringReady() throws ExecuteException {
         sendExeMesg("ring_ready");
@@ -1388,7 +1399,6 @@ public class Execute {
      * 
      * @param moduleName
      *            Module name is usually the channel language, e.g. "en" or "es"
-     * @param text
      * @param sayType
      *            Say type is one of the following NUMBER ITEMS PERSONS MESSAGES
      *            CURRENCY TIME_MEASUREMENT CURRENT_DATE CURRENT_TIME
@@ -1399,8 +1409,9 @@ public class Execute {
      *            Say method is one of the following N/A PRONOUNCED ITERATED
      *            COUNTED
      * 
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_say
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_say">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_say
+     *     </a>
      */
     public void say(String moduleName, String text, String sayType,
             String sayMethod) throws ExecuteException {
@@ -1418,7 +1429,6 @@ public class Execute {
      * 
      * @param moduleName
      *            Module name is usually the channel language, e.g. "en" or "es"
-     * @param text
      * @param sayType
      *            Say type is one of the following NUMBER ITEMS PERSONS MESSAGES
      *            CURRENCY TIME_MEASUREMENT CURRENT_DATE CURRENT_TIME
@@ -1433,8 +1443,9 @@ public class Execute {
      *            gender-specific grammar, like French and German) FEMININE
      *            MASCULINE NEUTER
      * 
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_say
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_say">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_say
+     *     </a>
      */
     public void say(String moduleName, String text, String sayType,
             String sayMethod, String gender) throws ExecuteException {
@@ -1461,7 +1472,6 @@ public class Execute {
      *            ex: /tmp/howdy.wav
      * @param leg
      *            can be aleg,bleg,both
-     * @throws ExecuteException
      */
     public void schedBroadcast(long seconds, boolean interval, String path,
             String leg) throws ExecuteException {
@@ -1483,7 +1493,6 @@ public class Execute {
      *            future
      * @param interval
      *            is the param seconds an epoc time or interval
-     * @throws ExecuteException
      */
     public void schedHangup(long seconds, boolean interval)
             throws ExecuteException {
@@ -1502,7 +1511,6 @@ public class Execute {
      *            is the param seconds an epoc time or interval
      * @param cause
      *            ex:allotted_timeout
-     * @throws ExecuteException
      */
     public void schedHangup(long seconds, boolean interval, String cause)
             throws ExecuteException {
@@ -1523,9 +1531,10 @@ public class Execute {
      *            future
      * @param interval
      *            is the param seconds an epoc time or interval
-     * @param extension
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer
+     *     </a>
      */
     public void schedTransfer(long seconds, boolean interval, String extension)
             throws ExecuteException {
@@ -1540,11 +1549,10 @@ public class Execute {
      *            future
      * @param interval
      *            is the param seconds an epoc time or interval
-     * @param extension
-     * @param dialPlan
-     * @param context
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer
+     *     </a>
      */
     public void schedTransfer(long seconds, boolean interval, String extension,
             String dialPlan) throws ExecuteException {
@@ -1559,11 +1567,10 @@ public class Execute {
      *            future
      * @param interval
      *            is the param seconds an epoc time or interval
-     * @param extension
-     * @param dialPlan
-     * @param context
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer
+     *
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_sched_transfer
+     *     </a>
      */
     public void schedTransfer(long seconds, boolean interval, String extension,
             String dialPlan, String context) throws ExecuteException {
@@ -1585,9 +1592,6 @@ public class Execute {
      * Send DTMF digits from the session using the method(s) configured on the
      * endpoint in use. Use the character w for a .5 second delay and the
      * character W for a 1 second delay.
-     * 
-     * @param digits
-     * @throws ExecuteException
      */
     public void sendDTMF(String digits)throws ExecuteException {
         sendDTMF(digits, 0);
@@ -1597,10 +1601,6 @@ public class Execute {
      * Send DTMF digits from the session using the method(s) configured on the
      * endpoint in use. Use the character w for a .5 second delay and the
      * character W for a 1 second delay.
-     * 
-     * @param digits
-     * @param durationMillis
-     * @throws ExecuteException
      */
     public void sendDTMF(String digits, int durationMillis)
             throws ExecuteException {
@@ -1618,17 +1618,13 @@ public class Execute {
      *            channel_variable name
      * @param value
      *            channel_variable value
-     * @throws ExecuteException
      */
     public void set(String key, String value) throws ExecuteException {
         sendExeMesg("set", key + "=" + value);
     }
     
     public void speak(String engine, String voice, String message) throws ExecuteException {
-        StringBuilder sb = new StringBuilder(engine);
-        sb.append("|").append(voice);
-        sb.append("|").append(message);
-        sendExeMesg("speak", sb.toString());
+        sendExeMesg("speak", engine + "|" + voice + "|" + message);
     }
 
     /**
@@ -1637,11 +1633,9 @@ public class Execute {
      * "warped" directly to that extension. Otherwise it goes through the entire
      * context checking for a match.
      * 
-     * @param destinationNumber
-     * @param dialplan
-     * @param context
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer
+     *     </a>
      */
     public void transfer(String destinationNumber) throws ExecuteException {
         transfer(destinationNumber, null, null);
@@ -1653,11 +1647,9 @@ public class Execute {
      * "warped" directly to that extension. Otherwise it goes through the entire
      * context checking for a match.
      * 
-     * @param destinationNumber
-     * @param dialplan
-     * @param context
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer
+     *     </a>
      */
     public void transfer(String destinationNumber, String dialplan)
             throws ExecuteException {
@@ -1670,11 +1662,9 @@ public class Execute {
      * "warped" directly to that extension. Otherwise it goes through the entire
      * context checking for a match.
      * 
-     * @param destinationNumber
-     * @param dialplan
-     * @param context
-     * @throws ExecuteException
-     * @see http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer
+     * @see <a href="http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer">
+     *     http://wiki.freeswitch.org/wiki/Misc._Dialplan_Tools_transfer
+     *     </a>
      */
     public void transfer(String destinationNumber, String dialplan,
             String context) throws ExecuteException {

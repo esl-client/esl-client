@@ -54,7 +54,7 @@ public class OutboundTest {
                                     logger.warn(nameMapToString(eslEvent
                                             .getMessageHeaders(), eslEvent.getEventBodyLines()));
 
-                                    String uuid = eslEvent.getMessageHeaders()
+                                    String uuid = eslEvent.getEventHeaders()
                                             .get("unique-id");
 
                                     logger.warn(
@@ -109,7 +109,7 @@ public class OutboundTest {
 
     public static String nameMapToString(Map<Name, String> map,
             List<String> lines) {
-        StringBuffer sb = new StringBuffer("\nHeaders:\n");
+        StringBuilder sb = new StringBuilder("\nHeaders:\n");
         for (Name key : map.keySet()) {
             if(key == null)
                 continue;
@@ -118,12 +118,13 @@ public class OutboundTest {
             sb.append(map.get(key));
             sb.append("\n");
         }
-        if (lines != null)
+        if (lines != null) {
             sb.append("Body Lines:\n");
             for (String line : lines) {
                 sb.append(line);
                 sb.append("\n");
             }
+        }
         return sb.toString();
     }
 }
