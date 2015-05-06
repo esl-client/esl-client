@@ -81,6 +81,7 @@ Authors
 - [Dan Cunningham](mailto:dan.cunningham@readytalk.com)
 - [Dave Rusek](mailto:dave.rusek@readytalk.com)
 - [David Varnes](mailto:david.varnes@gmail.com) (original author)
+- [Tobias Bieniek](@turbo87)
 
 License
 ------------------------------------------------------------------------------
