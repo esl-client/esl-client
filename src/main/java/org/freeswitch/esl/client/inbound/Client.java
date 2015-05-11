@@ -49,10 +49,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Client implements IModEslApi {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
-	private final List<IEslEventListener> eventListeners = new CopyOnWriteArrayList<IEslEventListener>();
+	private final List<IEslEventListener> eventListeners = new CopyOnWriteArrayList<>();
 	private final AtomicBoolean authenticatorResponded = new AtomicBoolean(false);
 	private final ConcurrentHashMap<String, SettableFuture<EslEvent>> backgroundJobs =
-		new ConcurrentHashMap<String, SettableFuture<EslEvent>>();
+			new ConcurrentHashMap<>();
 
 	private boolean authenticated;
 	private CommandResponse authenticationResponse;

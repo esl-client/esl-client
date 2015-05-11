@@ -42,13 +42,13 @@ public class EslFrameDecoderTest
     @Before
     public void setupTest()
     {
-        embedder = new DecoderEmbedder<EslMessage>( new EslFrameDecoder( 64 ) );    
+        embedder = new DecoderEmbedder<>(new EslFrameDecoder(64));
     }
     
     @Test
     public void simpleMessage() throws Exception
     {
-        List<String> inputLines = new ArrayList<String>();
+        List<String> inputLines = new ArrayList<>();
         inputLines.add( "Content-Type: command/reply" );
         inputLines.add( "Reply-Text: +OK event listener enabled plain" );
         inputLines.add( "" );
@@ -66,7 +66,7 @@ public class EslFrameDecoderTest
     @Test
     public void simpleMessageWithContent() throws Exception
     {
-        List<String> inputLines = new ArrayList<String>();
+        List<String> inputLines = new ArrayList<>();
         inputLines.add( "Content-Type: api/response" );
         inputLines.add( "Content-Length: 694" );
         inputLines.add( "" );
@@ -93,7 +93,7 @@ public class EslFrameDecoderTest
     @Test
     public void eventWithSecondContentLength()
     {
-        List<String> inputLines = new ArrayList<String>();
+        List<String> inputLines = new ArrayList<>();
         inputLines.add( "Content-Length: 582" );
         inputLines.add( "Content-Type: text/event-plain" );
         inputLines.add( "" );
