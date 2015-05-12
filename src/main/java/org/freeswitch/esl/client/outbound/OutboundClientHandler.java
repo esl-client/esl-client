@@ -15,17 +15,15 @@
  */
 package org.freeswitch.esl.client.outbound;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.ListenableFuture;
 import io.netty.channel.ChannelHandlerContext;
+import java8.util.function.Consumer;
+import java8.util.function.Function;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
 
 import java.util.concurrent.ExecutorService;
-
-import static com.google.common.util.concurrent.Futures.addCallback;
 
 /**
  * Specialised {@link AbstractEslClientHandler} that implements the base connecction logic for an
@@ -56,27 +54,21 @@ class OutboundClientHandler extends AbstractEslClientHandler {
 		// Have received a connection from FreeSWITCH server, send connect response
 		log.debug("Received new connection from server, sending connect message");
 
-		final ListenableFuture<EslMessage> connectFuture = sendApiSingleLineCommand(ctx.channel(), "connect");
-
-		addCallback(
-				connectFuture,
-				new FutureCallback<EslMessage>() {
-					@Override
-					public void onSuccess(EslMessage response) {
-						final EslEvent channelDataEvent = new EslEvent(response, true);
-						clientHandler.onConnect(
-								new Context(
-										ctx.channel(),
-										OutboundClientHandler.this),
-								channelDataEvent);
-					}
-
-					@Override
-					public void onFailure(Throwable throwable) {
-						ctx.channel().close();
-						handleDisconnectionNotice();
-					}
-				});
+		sendApiSingleLineCommand(ctx.channel(), "connect").thenAccept(new Consumer<EslMessage>() {
+			@Override
+			public void accept(EslMessage response) {
+				clientHandler.onConnect(
+						new Context(ctx.channel(), OutboundClientHandler.this),
+						new EslEvent(response, true));
+			}
+		}).exceptionally(new Function<Throwable, Void>() {
+			@Override
+			public Void apply(Throwable throwable) {
+				ctx.channel().close();
+				handleDisconnectionNotice();
+				return null;
+			}
+		});
 	}
 
 	@Override

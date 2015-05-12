@@ -15,10 +15,7 @@
  */
 package org.freeswitch.esl.client.inbound;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -26,6 +23,8 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import java8.util.Optional;
+import java8.util.concurrent.CompletableFuture;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.internal.IModEslApi;
 import org.freeswitch.esl.client.transport.CommandResponse;
@@ -54,12 +53,12 @@ public class Client implements IModEslApi {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	private final List<IEslEventListener> eventListeners = new CopyOnWriteArrayList<>();
 	private final AtomicBoolean authenticatorResponded = new AtomicBoolean(false);
-	private final ConcurrentHashMap<String, SettableFuture<EslEvent>> backgroundJobs =
+	private final ConcurrentHashMap<String, CompletableFuture<EslEvent>> backgroundJobs =
 			new ConcurrentHashMap<>();
 
 	private boolean authenticated;
 	private CommandResponse authenticationResponse;
-	private Optional<Context> clientContext = Optional.absent();
+	private Optional<Context> clientContext = Optional.empty();
 	private ExecutorService callbackExecutor = Executors.newSingleThreadExecutor();
 
 	public void addEventListener(IEslEventListener listener) {
@@ -180,7 +179,7 @@ public class Client implements IModEslApi {
 	 * @return String Job-UUID that the server will tag result event with.
 	 */
 	@Override
-	public ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg) {
+	public CompletableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg) {
 		checkConnected();
 		return clientContext.get().sendBackgroundApiCommand(command, arg);
 	}
