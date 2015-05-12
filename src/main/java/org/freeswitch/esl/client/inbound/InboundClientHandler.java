@@ -15,18 +15,14 @@
  */
 package org.freeswitch.esl.client.inbound;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.ListenableFuture;
 import io.netty.channel.ChannelHandlerContext;
+import java8.util.function.Consumer;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslHeaders;
 import org.freeswitch.esl.client.transport.message.EslMessage;
-
-import static com.google.common.base.Throwables.propagate;
-import static com.google.common.util.concurrent.Futures.addCallback;
 
 /**
  * End users of the inbound {@link Client} should not need to use this class.
@@ -64,30 +60,20 @@ class InboundClientHandler extends AbstractEslClientHandler {
 	protected void handleAuthRequest(ChannelHandlerContext ctx) {
 		log.debug("Auth requested, sending [auth {}]", "*****");
 
-		final ListenableFuture<EslMessage> authFuture = sendApiSingleLineCommand(ctx.channel(), "auth " + password);
-
-		addCallback(
-			authFuture,
-			new FutureCallback<EslMessage>() {
-
-				@Override
-				public void onSuccess(EslMessage response) {
-					log.debug("Auth response [{}]", response);
-					if (response.getContentType().equals(EslHeaders.Value.COMMAND_REPLY)) {
-						final CommandResponse commandResponse = new CommandResponse("auth " + password, response);
-						listener.authResponseReceived(commandResponse);
-					} else {
-						log.error("Bad auth response message [{}]", response);
-						throw new IllegalStateException("Incorrect auth response");
+		sendApiSingleLineCommand(ctx.channel(), "auth " + password)
+				.thenAccept(new Consumer<EslMessage>() {
+					@Override
+					public void accept(EslMessage response) {
+						log.debug("Auth response [{}]", response);
+						if (response.getContentType().equals(EslHeaders.Value.COMMAND_REPLY)) {
+							final CommandResponse commandResponse = new CommandResponse("auth " + password, response);
+							listener.authResponseReceived(commandResponse);
+						} else {
+							log.error("Bad auth response message [{}]", response);
+							throw new IllegalStateException("Incorrect auth response");
+						}
 					}
-				}
-
-				@Override
-				public void onFailure(Throwable throwable) {
-					propagate(throwable);
-				}
-
-			});
+				});
 	}
 
 	@Override

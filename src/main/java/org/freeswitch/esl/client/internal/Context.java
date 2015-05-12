@@ -1,7 +1,7 @@
 package org.freeswitch.esl.client.internal;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import io.netty.channel.Channel;
+import java8.util.concurrent.CompletableFuture;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
@@ -70,7 +70,7 @@ public class Context implements IModEslApi {
 	 * @return String Job-UUID that the server will tag result event with.
 	 */
 	@Override
-	public ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg) {
+	public CompletableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg) {
 
 		checkArgument(!isNullOrEmpty(command), "command cannot be null or empty");
 

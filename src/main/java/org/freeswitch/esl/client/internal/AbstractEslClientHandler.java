@@ -15,12 +15,12 @@
  */
 package org.freeswitch.esl.client.internal;
 
-import com.google.common.util.concurrent.AsyncFunction;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import java8.util.concurrent.CompletableFuture;
+import java8.util.concurrent.CompletionStage;
+import java8.util.function.Function;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.event.EslEventHeaderNames;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
@@ -30,16 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
-import static com.google.common.util.concurrent.Futures.transform;
 
 /**
  * Specialised {@link SimpleChannelInboundHandler} that implements the logic of an ESL connection that
@@ -68,22 +63,22 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 	protected final Logger log = LoggerFactory.getLogger(this.getClass());
 	// used to preserve association between adding future to queue and sending message on channel
 	private final ReentrantLock syncLock = new ReentrantLock();
-	private final ConcurrentLinkedQueue<SettableFuture<EslMessage>> apiCalls =
+	private final ConcurrentLinkedQueue<CompletableFuture<EslMessage>> apiCalls =
 			new ConcurrentLinkedQueue<>();
 
-	private final ConcurrentHashMap<String, SettableFuture<EslEvent>> backgroundJobs =
+	private final ConcurrentHashMap<String, CompletableFuture<EslEvent>> backgroundJobs =
 			new ConcurrentHashMap<>();
 	private final ExecutorService backgroundJobExecutor = Executors.newCachedThreadPool();
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
 
-		for (final SettableFuture<EslMessage> apiCall : apiCalls) {
-			apiCall.setException(e.getCause());
+		for (final CompletableFuture<EslMessage> apiCall : apiCalls) {
+			apiCall.completeExceptionally(e.getCause());
 		}
 
-		for (final SettableFuture<EslEvent> backgroundJob : backgroundJobs.values()) {
-			backgroundJob.setException(e.getCause());
+		for (final CompletableFuture<EslEvent> backgroundJob : backgroundJobs.values()) {
+			backgroundJob.completeExceptionally(e.getCause());
 		}
 
 		ctx.close();
@@ -101,9 +96,9 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 			final EslEvent eslEvent = new EslEvent(message);
 			if (eslEvent.getEventName().equals("BACKGROUND_JOB")) {
 				final String backgroundUuid = eslEvent.getEventHeaders().get(EslEventHeaderNames.JOB_UUID);
-				final SettableFuture<EslEvent> future = backgroundJobs.remove(backgroundUuid);
+				final CompletableFuture<EslEvent> future = backgroundJobs.remove(backgroundUuid);
 				if (null != future) {
-					future.set(eslEvent);
+					future.complete(eslEvent);
 				}
 			} else {
 				handleEslEvent(ctx, eslEvent);
@@ -120,12 +115,12 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 		switch (contentType) {
 			case Value.API_RESPONSE:
 				log.debug("Api response received [{}]", message);
-				apiCalls.poll().set(message);
+				apiCalls.poll().complete(message);
 				break;
 
 			case Value.COMMAND_REPLY:
 				log.debug("Command reply received [{}]", message);
-				apiCalls.poll().set(message);
+				apiCalls.poll().complete(message);
 				break;
 
 			case Value.AUTH_REQUEST:
@@ -153,8 +148,8 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 	 * @param command single string to send
 	 * @return the {@link EslMessage} attached to this command's callback
 	 */
-	public ListenableFuture<EslMessage> sendApiSingleLineCommand(Channel channel, final String command) {
-		final SettableFuture<EslMessage> future = SettableFuture.create();
+	public CompletableFuture<EslMessage> sendApiSingleLineCommand(Channel channel, final String command) {
+		final CompletableFuture<EslMessage> future = new CompletableFuture<>();
 		try {
 			syncLock.lock();
 			apiCalls.add(future);
@@ -178,7 +173,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 	 * @param arg     command arguments
 	 * @return an {@link EslMessage} containing command results
 	 */
-	public ListenableFuture<EslMessage> sendSyncApiCommand(Channel channel, String command, String arg) {
+	public CompletableFuture<EslMessage> sendSyncApiCommand(Channel channel, String command, String arg) {
 
 		checkArgument(!isNullOrEmpty(command), "command may not be null or empty");
 		checkArgument(!isNullOrEmpty(arg), "arg may not be null or empty");
@@ -194,7 +189,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 	 * @param channel
 	 * @return the {@link EslMessage} attached to this command's callback
 	 */
-	public ListenableFuture<EslMessage> sendApiMultiLineCommand(Channel channel, final List<String> commandLines) {
+	public CompletableFuture<EslMessage> sendApiMultiLineCommand(Channel channel, final List<String> commandLines) {
 		//  Build command with double line terminator at the end
 		final StringBuilder sb = new StringBuilder();
 		for (final String line : commandLines) {
@@ -203,7 +198,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 		}
 		sb.append(LINE_TERMINATOR);
 
-		final SettableFuture<EslMessage> future = SettableFuture.create();
+		final CompletableFuture<EslMessage> future = new CompletableFuture<>();
 		try {
 			syncLock.lock();
 			apiCalls.add(future);
@@ -223,26 +218,24 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 	 * @param command
 	 * @return Job-UUID as a string
 	 */
-	public ListenableFuture<EslEvent> sendBackgroundApiCommand(Channel channel, final String command) {
+	public CompletableFuture<EslEvent> sendBackgroundApiCommand(Channel channel, final String command) {
 
-		final ListenableFuture<EslMessage> backgroundIdFuture = sendApiSingleLineCommand(channel, command);
-		final AsyncFunction<EslMessage, EslEvent> transformFunction =
-			new AsyncFunction<EslMessage, EslEvent>() {
-				@Override
-				public ListenableFuture<EslEvent> apply(EslMessage result) throws Exception {
-					if (result.hasHeader(Name.JOB_UUID)) {
-						final String jobId = result.getHeaderValue(Name.JOB_UUID);
-						final SettableFuture<EslEvent> resultFuture = SettableFuture.create();
-						backgroundJobs.put(jobId, resultFuture);
-						return resultFuture;
-					} else {
-						return immediateFailedFuture(new IllegalStateException("Missing Job-UUID header in bgapi response"));
+		return sendApiSingleLineCommand(channel, command)
+				.thenComposeAsync(new Function<EslMessage, CompletionStage<EslEvent>>() {
+					@Override
+					public CompletionStage<EslEvent> apply(EslMessage result) {
+						if (result.hasHeader(Name.JOB_UUID)) {
+							final String jobId = result.getHeaderValue(Name.JOB_UUID);
+							final CompletableFuture<EslEvent> resultFuture = new CompletableFuture<>();
+							backgroundJobs.put(jobId, resultFuture);
+							return resultFuture;
+						} else {
+							final CompletableFuture<EslEvent> resultFuture = new CompletableFuture<>();
+							resultFuture.completeExceptionally(new IllegalStateException("Missing Job-UUID header in bgapi response"));
+							return resultFuture;
+						}
 					}
-				}
-			};
-
-		return transform(backgroundIdFuture, transformFunction, backgroundJobExecutor);
-
+				}, backgroundJobExecutor);
 	}
 
 	protected abstract void handleEslEvent(ChannelHandlerContext ctx, EslEvent event);

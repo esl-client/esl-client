@@ -1,6 +1,6 @@
 package org.freeswitch.esl.client.internal;
 
-import com.google.common.util.concurrent.ListenableFuture;
+import java8.util.concurrent.CompletableFuture;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
@@ -54,7 +54,7 @@ public interface IModEslApi {
 
 	EslMessage sendApiCommand(String command, String arg);
 
-	ListenableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg);
+	CompletableFuture<EslEvent> sendBackgroundApiCommand(String command, String arg);
 
 	CommandResponse setEventSubscriptions(EventFormat format, String events);
 
