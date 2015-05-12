@@ -18,13 +18,14 @@ package org.freeswitch.esl.client.internal;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.event.EslEventHeaderNames;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Value;
 import org.freeswitch.esl.client.transport.message.EslMessage;
-import org.jboss.netty.channel.*;
-import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,10 +40,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.util.concurrent.Futures.immediateFailedFuture;
 import static com.google.common.util.concurrent.Futures.transform;
-import static org.jboss.netty.channel.Channels.close;
 
 /**
- * Specialised {@link ChannelUpstreamHandler} that implements the logic of an ESL connection that
+ * Specialised {@link SimpleChannelInboundHandler} that implements the logic of an ESL connection that
  * is common to both inbound and outbound clients. This
  * handler expects to receive decoded {@link EslMessage} or {@link EslEvent} objects. The key
  * responsibilities for this class are:
@@ -60,7 +60,7 @@ import static org.jboss.netty.channel.Channels.close;
  * pipeline prior to this handler. This will ensure that each incoming message is processed in its
  * own thread (although still guaranteed to be processed in the order of receipt).
  */
-public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHandler {
+public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandler<EslMessage> {
 
 	public static final String MESSAGE_TERMINATOR = "\n\n";
 	public static final String LINE_TERMINATOR = "\n";
@@ -76,7 +76,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
 	private final ExecutorService backgroundJobExecutor = Executors.newCachedThreadPool();
 
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
 
 		for (final SettableFuture<EslMessage> apiCall : apiCalls) {
 			apiCall.setException(e.getCause());
@@ -86,35 +86,30 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
 			backgroundJob.setException(e.getCause());
 		}
 
-		close(ctx.getChannel());
+		ctx.close();
 
-		ctx.sendUpstream(e);
+		ctx.fireExceptionCaught(e);
 
 	}
 
 	@Override
-	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-		if (e.getMessage() instanceof EslMessage) {
-			final EslMessage message = (EslMessage) e.getMessage();
-			final String contentType = message.getContentType();
-			if (contentType.equals(Value.TEXT_EVENT_PLAIN) ||
+	protected void channelRead0(ChannelHandlerContext ctx, EslMessage message) throws Exception {
+		final String contentType = message.getContentType();
+		if (contentType.equals(Value.TEXT_EVENT_PLAIN) ||
 				contentType.equals(Value.TEXT_EVENT_XML)) {
-				//  transform into an event
-				final EslEvent eslEvent = new EslEvent(message);
-				if (eslEvent.getEventName().equals("BACKGROUND_JOB")) {
-					final String backgroundUuid = eslEvent.getEventHeaders().get(EslEventHeaderNames.JOB_UUID);
-					final SettableFuture<EslEvent> future = backgroundJobs.remove(backgroundUuid);
-					if (null != future) {
-						future.set(eslEvent);
-					}
-				} else {
-					handleEslEvent(ctx, eslEvent);
+			//  transform into an event
+			final EslEvent eslEvent = new EslEvent(message);
+			if (eslEvent.getEventName().equals("BACKGROUND_JOB")) {
+				final String backgroundUuid = eslEvent.getEventHeaders().get(EslEventHeaderNames.JOB_UUID);
+				final SettableFuture<EslEvent> future = backgroundJobs.remove(backgroundUuid);
+				if (null != future) {
+					future.set(eslEvent);
 				}
 			} else {
-				handleEslMessage(ctx, (EslMessage) e.getMessage());
+				handleEslEvent(ctx, eslEvent);
 			}
 		} else {
-			throw new IllegalStateException("Unexpected message type: " + e.getMessage().getClass());
+			handleEslMessage(ctx, message);
 		}
 	}
 
@@ -163,7 +158,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelUpstreamHand
 		try {
 			syncLock.lock();
 			apiCalls.add(future);
-			channel.write(command + MESSAGE_TERMINATOR);
+			channel.writeAndFlush(command + MESSAGE_TERMINATOR);
 		} finally {
 			syncLock.unlock();
 		}

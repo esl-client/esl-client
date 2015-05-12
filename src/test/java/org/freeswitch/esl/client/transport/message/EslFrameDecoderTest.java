@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.handler.codec.embedder.DecoderEmbedder;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,12 +37,12 @@ public class EslFrameDecoderTest
 {
     private final Logger log = LoggerFactory.getLogger( this.getClass() );
     
-    private DecoderEmbedder<EslMessage> embedder;
+    private EmbeddedChannel embedder;
 
     @Before
     public void setupTest()
     {
-        embedder = new DecoderEmbedder<>(new EslFrameDecoder(64));
+        embedder = new EmbeddedChannel(new EslFrameDecoder(64));
     }
     
     @Test
@@ -53,10 +53,10 @@ public class EslFrameDecoderTest
         inputLines.add( "Reply-Text: +OK event listener enabled plain" );
         inputLines.add( "" );
         
-        embedder.offer( createInputBuffer( inputLines, true ) );
+        embedder.writeInbound(createInputBuffer(inputLines, true));
         embedder.finish();
         
-        EslMessage result = embedder.poll();
+        EslMessage result = (EslMessage) embedder.readInbound();
         
         assertNotNull( result );
         assertEquals( 2, result.getHeaders().size() );
@@ -79,9 +79,9 @@ public class EslFrameDecoderTest
         inputLines.add( "              192.168.1.1  alias                             internal  ALIASED" );
         inputLines.add( "=================================================================================================" );
         
-        embedder.offer( createInputBuffer( inputLines, true ) );
+        embedder.writeInbound(createInputBuffer(inputLines, true));
         
-        EslMessage result = embedder.poll();
+        EslMessage result = (EslMessage) embedder.readInbound();
         embedder.finish();
         
         assertNotNull( result );
@@ -115,13 +115,13 @@ public class EslFrameDecoderTest
         inputLines.add( "" );
         inputLines.add( "+OK 7f4de4bc-17d7-11dd-b7a0-db4edd065621" );
         
-        embedder.offer( createInputBuffer( inputLines, false ) );
+        embedder.writeInbound(createInputBuffer(inputLines, false));
 
         /*
          *  NB .. there is no trailing '\n' in this event  
          */
         
-        EslMessage result = embedder.poll();
+        EslMessage result = (EslMessage) embedder.readInbound();
         embedder.finish();
         
         assertNotNull( result );
@@ -131,9 +131,9 @@ public class EslFrameDecoderTest
     }
 
     
-    private ChannelBuffer createInputBuffer( List<String> inputLines, boolean terminateLastLine )
+    private ByteBuf createInputBuffer( List<String> inputLines, boolean terminateLastLine )
     {
-        ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
+        ByteBuf buffer = Unpooled.buffer();
         
         Iterator<String> it = inputLines.iterator();
         while ( it.hasNext() )

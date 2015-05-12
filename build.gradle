@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    compile 'io.netty:netty:3.5.7.Final'
+    compile 'io.netty:netty-all:4.0.27.Final'
     compile 'com.google.guava:guava:11.0'
     compile 'org.slf4j:slf4j-api:1.6.1'
     runtime 'ch.qos.logback:logback-classic:1.0.0'
