@@ -16,13 +16,14 @@
 package org.freeswitch.esl.client.inbound;
 
 import io.netty.channel.ChannelHandlerContext;
-import java8.util.function.Consumer;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslHeaders;
 import org.freeswitch.esl.client.transport.message.EslMessage;
+
+import java.util.function.Consumer;
 
 /**
  * End users of the inbound {@link Client} should not need to use this class.

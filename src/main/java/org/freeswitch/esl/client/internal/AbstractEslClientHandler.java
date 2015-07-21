@@ -18,9 +18,6 @@ package org.freeswitch.esl.client.internal;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import java8.util.concurrent.CompletableFuture;
-import java8.util.concurrent.CompletionStage;
-import java8.util.function.Function;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.event.EslEventHeaderNames;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
@@ -32,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;

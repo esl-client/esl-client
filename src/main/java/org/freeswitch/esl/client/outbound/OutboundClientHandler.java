@@ -16,14 +16,14 @@
 package org.freeswitch.esl.client.outbound;
 
 import io.netty.channel.ChannelHandlerContext;
-import java8.util.function.Consumer;
-import java8.util.function.Function;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
 
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Specialised {@link AbstractEslClientHandler} that implements the base connecction logic for an

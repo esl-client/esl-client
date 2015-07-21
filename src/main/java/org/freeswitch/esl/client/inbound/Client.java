@@ -23,8 +23,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import java8.util.Optional;
-import java8.util.concurrent.CompletableFuture;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.internal.IModEslApi;
 import org.freeswitch.esl.client.transport.CommandResponse;
@@ -36,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
