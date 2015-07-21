@@ -22,8 +22,6 @@ import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
 
 import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Specialised {@link AbstractEslClientHandler} that implements the base connecction logic for an
@@ -54,31 +52,21 @@ class OutboundClientHandler extends AbstractEslClientHandler {
 		// Have received a connection from FreeSWITCH server, send connect response
 		log.debug("Received new connection from server, sending connect message");
 
-		sendApiSingleLineCommand(ctx.channel(), "connect").thenAccept(new Consumer<EslMessage>() {
-			@Override
-			public void accept(EslMessage response) {
-				clientHandler.onConnect(
+		sendApiSingleLineCommand(ctx.channel(), "connect")
+				.thenAccept(response -> clientHandler.onConnect(
 						new Context(ctx.channel(), OutboundClientHandler.this),
-						new EslEvent(response, true));
-			}
-		}).exceptionally(new Function<Throwable, Void>() {
-			@Override
-			public Void apply(Throwable throwable) {
-				ctx.channel().close();
-				handleDisconnectionNotice();
-				return null;
-			}
-		});
+						new EslEvent(response, true)))
+				.exceptionally(throwable -> {
+					ctx.channel().close();
+					handleDisconnectionNotice();
+					return null;
+				});
 	}
 
 	@Override
 	protected void handleEslEvent(final ChannelHandlerContext ctx, final EslEvent event) {
-		callbackExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
-				clientHandler.onEslEvent(new Context(ctx.channel(), OutboundClientHandler.this), event);
-			}
-		});
+		callbackExecutor.execute(() -> clientHandler.onEslEvent(
+				new Context(ctx.channel(), OutboundClientHandler.this), event));
 	}
 
 	@Override

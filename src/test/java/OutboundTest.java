@@ -3,10 +3,8 @@ import com.google.common.base.Throwables;
 import org.freeswitch.esl.client.dptools.Execute;
 import org.freeswitch.esl.client.dptools.ExecuteException;
 import org.freeswitch.esl.client.inbound.Client;
-import org.freeswitch.esl.client.inbound.IEslEventListener;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.outbound.IClientHandler;
-import org.freeswitch.esl.client.outbound.IClientHandlerFactory;
 import org.freeswitch.esl.client.outbound.SocketClient;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
@@ -30,74 +28,62 @@ public class OutboundTest {
         try {
 
             final Client inboudClient = new Client();
-            inboudClient.connect(new InetSocketAddress("localhost", 8021),
-                    "ClueCon", 10);
-            inboudClient.addEventListener(new IEslEventListener() {
+            inboudClient.connect(new InetSocketAddress("localhost", 8021), "ClueCon", 10);
+            inboudClient.addEventListener((ctx, event) -> logger.info("INBOUND onEslEvent: {}", event.getEventName()));
 
-                @Override
-                public void onEslEvent(Context ctx, EslEvent event) {
-                    logger.info("INBOUND onEslEvent: {}", event.getEventName());
-
-                }
-            });
             final SocketClient outboundServer = new SocketClient(
                     new InetSocketAddress("localhost", 8084),
-                    new IClientHandlerFactory() {
+                    () -> new IClientHandler() {
                         @Override
-                        public IClientHandler createClientHandler() {
-                            return new IClientHandler() {
-                                @Override
-                                public void onConnect(Context context,
-                                        EslEvent eslEvent) {
+                        public void onConnect(Context context,
+                                EslEvent eslEvent) {
 
 
-                                    logger.warn(nameMapToString(eslEvent
-                                            .getMessageHeaders(), eslEvent.getEventBodyLines()));
+                            logger.warn(nameMapToString(eslEvent
+                                    .getMessageHeaders(), eslEvent.getEventBodyLines()));
 
-                                    String uuid = eslEvent.getEventHeaders()
-                                            .get("unique-id");
+                            String uuid = eslEvent.getEventHeaders()
+                                    .get("unique-id");
 
-                                    logger.warn(
-                                            "Creating execute app for uuid {}",
-                                            uuid);
+                            logger.warn(
+                                    "Creating execute app for uuid {}",
+                                    uuid);
 
-                                    Execute exe = new Execute(context, uuid);
+                            Execute exe = new Execute(context, uuid);
 
-                                    try {
+                            try {
 
-                                        exe.answer();
+                                exe.answer();
 
-                                        String digits = exe.playAndGetDigits(3,
-                                                5, 10, 10 * 1000, "#", prompt,
-                                                failed, "^\\d+", 10 * 1000);
-                                        logger.warn("Digits collected: {}",
-                                                digits);
-                                        
-                                        
-                                    } catch (ExecuteException e) {
-                                        logger.error(
-                                                "Could not prompt for digits",
-                                                e);
-                                      
-                                    } finally {
-                                        try {
-                                            exe.hangup(null);
-                                        } catch (ExecuteException e) {
-                                            logger.error(
-                                                    "Could not hangup",e);
-                                        }
-                                    }
+                                String digits = exe.playAndGetDigits(3,
+                                        5, 10, 10 * 1000, "#", prompt,
+                                        failed, "^\\d+", 10 * 1000);
+                                logger.warn("Digits collected: {}",
+                                        digits);
 
+
+                            } catch (ExecuteException e) {
+                                logger.error(
+                                        "Could not prompt for digits",
+                                        e);
+
+                            } finally {
+                                try {
+                                    exe.hangup(null);
+                                } catch (ExecuteException e) {
+                                    logger.error(
+                                            "Could not hangup",e);
                                 }
+                            }
 
-                                @Override
-                                public void onEslEvent(Context ctx,
-                                        EslEvent event) {
-                                    logger.info("OUTBOUND onEslEvent: {}",
-                                            event.getEventName());
+                        }
 
-                                }
-                            };
+                        @Override
+                        public void onEslEvent(Context ctx,
+                                EslEvent event) {
+                            logger.info("OUTBOUND onEslEvent: {}",
+                                    event.getEventName());
+
                         }
                     });
             outboundServer.start();

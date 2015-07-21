@@ -330,12 +330,7 @@ public class Client implements IModEslApi {
 		public void eventReceived(final Context ctx, final EslEvent event) {
 			log.debug("Event received [{}]", event);
 			for (final IEslEventListener listener : eventListeners) {
-				callbackExecutor.execute(new Runnable() {
-					@Override
-					public void run() {
-						listener.onEslEvent(ctx, event);
-					}
-				});
+				callbackExecutor.execute(() -> listener.onEslEvent(ctx, event));
 			}
 		}
 

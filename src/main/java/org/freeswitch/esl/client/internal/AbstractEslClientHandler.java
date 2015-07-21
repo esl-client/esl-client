@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -219,19 +218,16 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 	public CompletableFuture<EslEvent> sendBackgroundApiCommand(Channel channel, final String command) {
 
 		return sendApiSingleLineCommand(channel, command)
-				.thenComposeAsync(new Function<EslMessage, CompletionStage<EslEvent>>() {
-					@Override
-					public CompletionStage<EslEvent> apply(EslMessage result) {
-						if (result.hasHeader(Name.JOB_UUID)) {
-							final String jobId = result.getHeaderValue(Name.JOB_UUID);
-							final CompletableFuture<EslEvent> resultFuture = new CompletableFuture<>();
-							backgroundJobs.put(jobId, resultFuture);
-							return resultFuture;
-						} else {
-							final CompletableFuture<EslEvent> resultFuture = new CompletableFuture<>();
-							resultFuture.completeExceptionally(new IllegalStateException("Missing Job-UUID header in bgapi response"));
-							return resultFuture;
-						}
+				.thenComposeAsync(result -> {
+					if (result.hasHeader(Name.JOB_UUID)) {
+						final String jobId = result.getHeaderValue(Name.JOB_UUID);
+						final CompletableFuture<EslEvent> resultFuture = new CompletableFuture<>();
+						backgroundJobs.put(jobId, resultFuture);
+						return resultFuture;
+					} else {
+						final CompletableFuture<EslEvent> resultFuture = new CompletableFuture<>();
+						resultFuture.completeExceptionally(new IllegalStateException("Missing Job-UUID header in bgapi response"));
+						return resultFuture;
 					}
 				}, backgroundJobExecutor);
 	}
