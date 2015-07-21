@@ -4,8 +4,8 @@ apply plugin: 'maven'
 group = 'org.freeswitch.esl.client'
 version = '0.10.0-SNAPSHOT'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
      maven { url "http://repo.maven.apache.org/maven2" }
