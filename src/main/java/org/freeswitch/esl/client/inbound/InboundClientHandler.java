@@ -16,13 +16,11 @@
 package org.freeswitch.esl.client.inbound;
 
 import io.netty.channel.ChannelHandlerContext;
-import java8.util.function.Consumer;
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslHeaders;
-import org.freeswitch.esl.client.transport.message.EslMessage;
 
 /**
  * End users of the inbound {@link Client} should not need to use this class.
@@ -61,17 +59,14 @@ class InboundClientHandler extends AbstractEslClientHandler {
 		log.debug("Auth requested, sending [auth {}]", "*****");
 
 		sendApiSingleLineCommand(ctx.channel(), "auth " + password)
-				.thenAccept(new Consumer<EslMessage>() {
-					@Override
-					public void accept(EslMessage response) {
-						log.debug("Auth response [{}]", response);
-						if (response.getContentType().equals(EslHeaders.Value.COMMAND_REPLY)) {
-							final CommandResponse commandResponse = new CommandResponse("auth " + password, response);
-							listener.authResponseReceived(commandResponse);
-						} else {
-							log.error("Bad auth response message [{}]", response);
-							throw new IllegalStateException("Incorrect auth response");
-						}
+				.thenAccept(response -> {
+					log.debug("Auth response [{}]", response);
+					if (response.getContentType().equals(EslHeaders.Value.COMMAND_REPLY)) {
+						final CommandResponse commandResponse = new CommandResponse("auth " + password, response);
+						listener.authResponseReceived(commandResponse);
+					} else {
+						log.error("Bad auth response message [{}]", response);
+						throw new IllegalStateException("Incorrect auth response");
 					}
 				});
 	}

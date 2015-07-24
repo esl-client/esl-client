@@ -4,8 +4,8 @@ apply plugin: 'maven'
 group = 'org.freeswitch.esl.client'
 version = '0.10.0-SNAPSHOT'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
      maven { url "http://repo.maven.apache.org/maven2" }
@@ -14,7 +14,6 @@ repositories {
 dependencies {
     compile 'io.netty:netty-all:4.0.27.Final'
     compile 'com.google.guava:guava:11.0'
-    compile 'net.sourceforge.streamsupport:streamsupport:1.2.1'
     compile 'org.slf4j:slf4j-api:1.6.1'
     runtime 'ch.qos.logback:logback-classic:1.0.0'
     testCompile 'junit:junit:4.8.1'

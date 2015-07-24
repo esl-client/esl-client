@@ -1,10 +1,11 @@
 package org.freeswitch.esl.client.internal;
 
-import java8.util.concurrent.CompletableFuture;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
+
+import java.util.concurrent.CompletableFuture;
 
 public interface IModEslApi {
 

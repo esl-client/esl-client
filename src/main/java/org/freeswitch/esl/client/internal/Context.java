@@ -1,11 +1,12 @@
 package org.freeswitch.esl.client.internal;
 
 import io.netty.channel.Channel;
-import java8.util.concurrent.CompletableFuture;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.SendMsg;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
+
+import java.util.concurrent.CompletableFuture;
 
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.isNullOrEmpty;

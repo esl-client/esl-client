@@ -23,8 +23,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import java8.util.Optional;
-import java8.util.concurrent.CompletableFuture;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.internal.IModEslApi;
 import org.freeswitch.esl.client.transport.CommandResponse;
@@ -36,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -331,12 +330,7 @@ public class Client implements IModEslApi {
 		public void eventReceived(final Context ctx, final EslEvent event) {
 			log.debug("Event received [{}]", event);
 			for (final IEslEventListener listener : eventListeners) {
-				callbackExecutor.execute(new Runnable() {
-					@Override
-					public void run() {
-						listener.onEslEvent(ctx, event);
-					}
-				});
+				callbackExecutor.execute(() -> listener.onEslEvent(ctx, event));
 			}
 		}
 

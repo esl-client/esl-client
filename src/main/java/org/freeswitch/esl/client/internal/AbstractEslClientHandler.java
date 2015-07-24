@@ -18,9 +18,6 @@ package org.freeswitch.esl.client.internal;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import java8.util.concurrent.CompletableFuture;
-import java8.util.concurrent.CompletionStage;
-import java8.util.function.Function;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.event.EslEventHeaderNames;
 import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
@@ -221,19 +218,16 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 	public CompletableFuture<EslEvent> sendBackgroundApiCommand(Channel channel, final String command) {
 
 		return sendApiSingleLineCommand(channel, command)
-				.thenComposeAsync(new Function<EslMessage, CompletionStage<EslEvent>>() {
-					@Override
-					public CompletionStage<EslEvent> apply(EslMessage result) {
-						if (result.hasHeader(Name.JOB_UUID)) {
-							final String jobId = result.getHeaderValue(Name.JOB_UUID);
-							final CompletableFuture<EslEvent> resultFuture = new CompletableFuture<>();
-							backgroundJobs.put(jobId, resultFuture);
-							return resultFuture;
-						} else {
-							final CompletableFuture<EslEvent> resultFuture = new CompletableFuture<>();
-							resultFuture.completeExceptionally(new IllegalStateException("Missing Job-UUID header in bgapi response"));
-							return resultFuture;
-						}
+				.thenComposeAsync(result -> {
+					if (result.hasHeader(Name.JOB_UUID)) {
+						final String jobId = result.getHeaderValue(Name.JOB_UUID);
+						final CompletableFuture<EslEvent> resultFuture = new CompletableFuture<>();
+						backgroundJobs.put(jobId, resultFuture);
+						return resultFuture;
+					} else {
+						final CompletableFuture<EslEvent> resultFuture = new CompletableFuture<>();
+						resultFuture.completeExceptionally(new IllegalStateException("Missing Job-UUID header in bgapi response"));
+						return resultFuture;
 					}
 				}, backgroundJobExecutor);
 	}
