@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,9 +40,9 @@ import static com.google.common.base.Objects.toStringHelper;
  * @see EslHeaders.Name
  */
 public class EslMessage {
-	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private static final Logger log = LoggerFactory.getLogger(EslMessage.class);
 
-	private final Map<Name, String> headers = new HashMap<>();
+   private final Map<Name,String> headers = new EnumMap<>(Name.class);
 	private final List<String> body = new ArrayList<>();
 
 	private Integer contentLength = null;

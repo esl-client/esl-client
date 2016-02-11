@@ -21,7 +21,7 @@ package org.freeswitch.esl.client.transport.event;
  * These names are stored as strings (rather than an Enum) so that there is no necessity to keep up to
  * date with changes or additions to event header names.
  */
-public class EslEventHeaderNames {
+public final class EslEventHeaderNames {
 	/**
 	 * {@code "Event-Name"}
 	 */
@@ -80,6 +80,6 @@ public class EslEventHeaderNames {
 	public static final String JOB_UUID = "Job-UUID";
 
 	private EslEventHeaderNames() {
-		/* private class */
+		/* final class with private constructor */
 	}
 }

@@ -50,7 +50,7 @@ import static com.google.common.base.Objects.toStringHelper;
  * @see EslEventHeaderNames
  */
 public class EslEvent {
-	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private static final Logger log = LoggerFactory.getLogger(EslEvent.class);
 
 	private final Map<Name, String> messageHeaders;
 	private final Map<String, String> eventHeaders;

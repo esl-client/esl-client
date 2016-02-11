@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 public class EslFrameDecoderTest
 {
-    private final Logger log = LoggerFactory.getLogger( this.getClass() );
+    private static final Logger log = LoggerFactory.getLogger( EslFrameDecoderTest.class );
     
     private EmbeddedChannel embedder;
 

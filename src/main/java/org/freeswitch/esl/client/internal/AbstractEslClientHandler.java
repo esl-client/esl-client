@@ -57,7 +57,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 	public static final String MESSAGE_TERMINATOR = "\n\n";
 	public static final String LINE_TERMINATOR = "\n";
 
-	protected final Logger log = LoggerFactory.getLogger(this.getClass());
+	private static final Logger log = LoggerFactory.getLogger(AbstractEslClientHandler.class);
 	// used to preserve association between adding future to queue and sending message on channel
 	private final ReentrantLock syncLock = new ReentrantLock();
 	private final ConcurrentLinkedQueue<CompletableFuture<EslMessage>> apiCalls =

@@ -49,7 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Client implements IModEslApi {
 
-	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private static final Logger log = LoggerFactory.getLogger(Client.class);
 	private final List<IEslEventListener> eventListeners = new CopyOnWriteArrayList<>();
 	private final AtomicBoolean authenticatorResponded = new AtomicBoolean(false);
 	private final ConcurrentHashMap<String, CompletableFuture<EslEvent>> backgroundJobs =
@@ -154,7 +154,7 @@ public class Client implements IModEslApi {
 	 * Sends a FreeSWITCH API command to the server and blocks, waiting for an immediate response from the
 	 * server.
 	 * <p/>
-	 * The outcome of the command from the server is retured in an {@link EslMessage} object.
+	 * The outcome of the command from the server is returned in an {@link EslMessage} object.
 	 *
 	 * @param command API command to send
 	 * @param arg     command arguments

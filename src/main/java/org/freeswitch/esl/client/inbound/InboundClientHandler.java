@@ -16,11 +16,14 @@
 package org.freeswitch.esl.client.inbound;
 
 import io.netty.channel.ChannelHandlerContext;
+
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.CommandResponse;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * End users of the inbound {@link Client} should not need to use this class.
@@ -39,6 +42,8 @@ import org.freeswitch.esl.client.transport.message.EslHeaders;
  * own thread (although still guaranteed to be processed in the order of receipt).
  */
 class InboundClientHandler extends AbstractEslClientHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(InboundClientHandler.class);
 
 	private final String password;
 	private final IEslProtocolListener listener;
