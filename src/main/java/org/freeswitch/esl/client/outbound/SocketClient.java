@@ -39,7 +39,7 @@ import java.net.SocketAddress;
  */
 public class SocketClient extends AbstractService {
 
-	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private static final Logger log = LoggerFactory.getLogger(SocketClient.class);
 	private final EventLoopGroup bossGroup;
 	private final EventLoopGroup workerGroup;
 	private final IClientHandlerFactory clientHandlerFactory;

@@ -56,7 +56,7 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 		READ_BODY,
 	}
 
-	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private static final Logger log = LoggerFactory.getLogger(EslFrameDecoder.class);
 	private final int maxHeaderSize;
 	private EslMessage currentMessage;
 	private boolean treatUnknownHeadersAsBody = false;
@@ -87,8 +87,8 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 					currentMessage = new EslMessage();
 				}
 				/*
-								*  read '\n' terminated lines until reach a single '\n'
-								*/
+				 *  read '\n' terminated lines until reach a single '\n'
+				 */
 				boolean reachedDoubleLF = false;
 				while (!reachedDoubleLF) {
 					// this will read or fail
@@ -133,8 +133,8 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 
 			case READ_BODY:
 				/*
-								*   read the content-length specified
-								*/
+				 *   read the content-length specified
+				 */
 				int contentLength = currentMessage.getContentLength();
 				ByteBuf bodyBytes = buffer.readBytes(contentLength);
 				log.debug("read [{}] body bytes", bodyBytes.writerIndex());
@@ -154,8 +154,6 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 				out.add(decodedMessage);
 				break;
 
-			default:
-				throw new Error("Illegal state: [" + state + ']');
 		}
 	}
 

@@ -16,15 +16,18 @@
 package org.freeswitch.esl.client.outbound;
 
 import io.netty.channel.ChannelHandlerContext;
+
 import org.freeswitch.esl.client.internal.AbstractEslClientHandler;
 import org.freeswitch.esl.client.internal.Context;
 import org.freeswitch.esl.client.transport.event.EslEvent;
 import org.freeswitch.esl.client.transport.message.EslMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 
 /**
- * Specialised {@link AbstractEslClientHandler} that implements the base connecction logic for an
+ * Specialized {@link AbstractEslClientHandler} that implements the base connection logic for an
  * 'Outbound' FreeSWITCH Event Socket connection.  The responsibilities for this class are:
  * <ul><li>
  * To send a 'connect' command when the FreeSWITCH server first establishes a new connection with
@@ -36,6 +39,8 @@ import java.util.concurrent.ExecutorService;
  * own thread (although still guaranteed to be processed in the order of receipt).
  */
 class OutboundClientHandler extends AbstractEslClientHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(OutboundClientHandler.class);
 
 	private final IClientHandler clientHandler;
 	private final ExecutorService callbackExecutor;

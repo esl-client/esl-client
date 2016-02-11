@@ -19,7 +19,7 @@ package org.freeswitch.esl.client.transport.message;
  * Container class for enumeration of ESL message header names, and some commonly used
  * header string values.
  */
-public class EslHeaders {
+public final class EslHeaders {
 	/**
 	 * Standard ESL header names.
 	 * <p/>
@@ -27,9 +27,9 @@ public class EslHeaders {
 	 */
 	public enum Name {
 		/*
-				*  Minor optimization - put most often used headers at the top for fastest resolution
-				*  in static fromLiteral().
-				*/
+		 *  Minor optimization - put most often used headers at the top for fastest resolution
+		 *  in static fromLiteral().
+		 */
 
 		/**
 		 * {@code "Content-Type"}
@@ -116,6 +116,14 @@ public class EslHeaders {
 		 * {@code "-ERR invalid"}
 		 */
 		public static final String ERR_INVALID = "-ERR invalid";
+
+		private Value() {
+			/* final class with private constructor */
+		}
+
 	}
 
+	private EslHeaders() {
+		/* final class with private constructor */
+	}
 }
