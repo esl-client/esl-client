@@ -200,6 +200,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 			syncLock.lock();
 			apiCalls.add(future);
 			channel.write(sb.toString());
+            channel.flush();
 		} finally {
 			syncLock.unlock();
 		}
