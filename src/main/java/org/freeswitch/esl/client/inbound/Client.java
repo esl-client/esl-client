@@ -302,7 +302,7 @@ public class Client implements IModEslApi {
 
 		try {
 			if (clientContext.isPresent()) {
-				return new CommandResponse("exit", clientContext.get().sendApiCommand("exit", null));
+				return new CommandResponse("exit", clientContext.get().sendCommand("exit"));
 			} else {
 				throw new IllegalStateException("not connected/authenticated");
 			}
