@@ -44,7 +44,7 @@ public class Context implements IModEslApi {
 
 		try {
 
-			return getUnchecked(handler.sendApiSingleLineCommand(channel, command.toUpperCase().trim()));
+			return getUnchecked(handler.sendApiSingleLineCommand(channel, command.toLowerCase().trim()));
 
 		} catch (Throwable t) {
 			throw propagate(t);
