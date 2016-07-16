@@ -35,7 +35,7 @@ public class Context implements IModEslApi {
 	 * <p/>
 	 * The outcome of the command from the server is returned in an {@link org.freeswitch.esl.client.transport.message.EslMessage} object.
 	 *
-	 * @param command API command to send
+	 * @param command a mod_event_socket command to send
 	 * @return an {@link org.freeswitch.esl.client.transport.message.EslMessage} containing command results
 	 */
 	public EslMessage sendCommand(String command) {
