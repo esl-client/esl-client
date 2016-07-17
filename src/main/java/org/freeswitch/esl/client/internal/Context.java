@@ -30,6 +30,28 @@ public class Context implements IModEslApi {
 	}
 
 	/**
+	 * Sends a mod_event_socket command to FreeSWITCH server and blocks, waiting for an immediate response from the
+	 * server.
+	 * <p/>
+	 * The outcome of the command from the server is returned in an {@link org.freeswitch.esl.client.transport.message.EslMessage} object.
+	 *
+	 * @param command a mod_event_socket command to send
+	 * @return an {@link org.freeswitch.esl.client.transport.message.EslMessage} containing command results
+	 */
+	public EslMessage sendCommand(String command) {
+
+		checkArgument(!isNullOrEmpty(command), "command cannot be null or empty");
+
+		try {
+
+			return getUnchecked(handler.sendApiSingleLineCommand(channel, command.toLowerCase().trim()));
+
+		} catch (Throwable t) {
+			throw propagate(t);
+		}
+	}
+
+	/**
 	 * Sends a FreeSWITCH API command to the server and blocks, waiting for an immediate response from the
 	 * server.
 	 * <p/>
