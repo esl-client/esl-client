@@ -27,6 +27,8 @@ public class ClientExample {
             client.connect(new InetSocketAddress("localhost", 8021), password, 10);
             client.setEventSubscriptions(IModEslApi.EventFormat.PLAIN, "all");
 
+            // test close connection
+            // client.close();
         } catch (Throwable t) {
             Throwables.propagate(t);
         }
