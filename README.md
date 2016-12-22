@@ -23,6 +23,7 @@ package com.ecovate.freeswitch.lb;
 import com.google.common.base.Throwables;
 import org.freeswitch.esl.client.inbound.Client;
 import org.freeswitch.esl.client.inbound.IEslEventListener;
+import org.freeswitch.esl.client.internal.IModEslApi.EventFormat;
 import org.freeswitch.esl.client.outbound.Context;
 import org.freeswitch.esl.client.outbound.IClientHandler;
 import org.freeswitch.esl.client.outbound.IClientHandlerFactory;
@@ -48,6 +49,7 @@ public class FreeSwitchEventListener {
 
         }
       });
+      inboudClient.setEventSubscriptions(EventFormat.PLAIN, "all");
 
       final SocketClient outboundServer = new SocketClient(
         new InetSocketAddress("localhost", 8084),

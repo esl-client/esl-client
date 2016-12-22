@@ -2,7 +2,7 @@ package org.freeswitch.esl.client;
 
 import com.google.common.base.Throwables;
 import org.freeswitch.esl.client.inbound.Client;
-import org.freeswitch.esl.client.internal.IModEslApi;
+import org.freeswitch.esl.client.internal.IModEslApi.EventFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +25,8 @@ public class ClientExample {
             client.addEventListener((ctx, event) -> L.info("Received event: {}", event.getEventName()));
 
             client.connect(new InetSocketAddress("localhost", 8021), password, 10);
-            client.setEventSubscriptions(IModEslApi.EventFormat.PLAIN, "all");
+            client.setEventSubscriptions(EventFormat.PLAIN, "all");
 
-            // test close connection
-            // client.close();
         } catch (Throwable t) {
             Throwables.propagate(t);
         }
