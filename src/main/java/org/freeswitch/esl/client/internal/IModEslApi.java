@@ -12,7 +12,8 @@ public interface IModEslApi {
 	enum EventFormat {
 
 		PLAIN("plain"),
-		XML("xml");
+		XML("xml"),
+		JSON("json");
 
 		private final String text;
 

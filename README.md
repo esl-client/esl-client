@@ -44,7 +44,7 @@ public class FreeSwitchEventListener {
       inboudClient.connect(new InetSocketAddress("localhost", 8021), "ClueCon", 10);
       inboudClient.addEventListener(new IEslEventListener() {
         @Override
-        public void eventReceived(EslEvent eslEvent) {
+        public void onEslEvent(EslEvent eslEvent) {
 
         }
       });
