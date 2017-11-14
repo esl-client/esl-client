@@ -86,7 +86,7 @@ public class OutboundTest {
 
                         }
                     });
-            outboundServer.start();
+            outboundServer.startAsync();
 
         } catch (Throwable t) {
             Throwables.propagate(t);
