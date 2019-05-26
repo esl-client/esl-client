@@ -198,7 +198,6 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 		final CompletableFuture<EslMessage> future = new CompletableFuture<>();
 		try {
 			syncLock.lock();
-			log.debug("Putting into apiCalls");
 			apiCalls.add(future);
 			channel.write(sb.toString());
             channel.flush();
