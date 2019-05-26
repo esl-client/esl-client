@@ -52,15 +52,16 @@ class OutboundClientHandler extends AbstractEslClientHandler {
 		// Have received a connection from FreeSWITCH server, send connect response
 		log.debug("Received new connection from server, sending connect message");
 
-		sendApiSingleLineCommand(ctx.channel(), "connect")
-				.thenAccept(response -> clientHandler.onConnect(
-						new Context(ctx.channel(), OutboundClientHandler.this),
-						new EslEvent(response, true)))
-				.exceptionally(throwable -> {
-					ctx.channel().close();
-					handleDisconnectionNotice();
-					return null;
-				});
+        sendApiSingleLineCommand(ctx.channel(), "connect")
+                .thenAccept(response ->
+                        callbackExecutor.execute(() -> clientHandler.onConnect(
+                                new Context(ctx.channel(), OutboundClientHandler.this),
+                                new EslEvent(response, true)))
+                ).exceptionally(throwable -> {
+            ctx.channel().close();
+            handleDisconnectionNotice();
+            return null;
+        });
 	}
 
 	@Override
