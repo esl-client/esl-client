@@ -15,6 +15,7 @@
  */
 package org.freeswitch.esl.client.transport.message;
 
+import com.google.common.primitives.Bytes;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
@@ -24,6 +25,7 @@ import org.freeswitch.esl.client.transport.message.EslHeaders.Name;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -160,40 +162,39 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 	}
 
 	private String readToLineFeedOrFail(ByteBuf buffer, int maxLineLegth) throws TooLongFrameException {
-		StringBuilder sb = new StringBuilder(64);
+		List<Byte> byteList = new ArrayList<>();
 		while (true) {
 			// this read might fail
 			byte nextByte = buffer.readByte();
 			if (nextByte == LF) {
-				return sb.toString();
+				return new String(Bytes.toArray(byteList));
 			} else {
 				// Abort decoding if the decoded line is too large.
-				if (sb.length() >= maxLineLegth) {
+				if (byteList.size() >= maxLineLegth) {
 					throw new TooLongFrameException(
-						"ESL header line is longer than " + maxLineLegth + " bytes.");
+							"ESL header line is longer than " + maxLineLegth + " bytes.");
 				}
-				sb.append((char) nextByte);
+				byteList.add(nextByte);
 			}
 		}
 	}
 
 	private String readLine(ByteBuf buffer, int maxLineLength) throws TooLongFrameException {
-		StringBuilder sb = new StringBuilder(64);
+		List<Byte> byteList = new ArrayList<>();
 		while (buffer.isReadable()) {
 			// this read should always succeed
 			byte nextByte = buffer.readByte();
 			if (nextByte == LF) {
-				return sb.toString();
+				return new String(Bytes.toArray(byteList));
 			} else {
 				// Abort decoding if the decoded line is too large.
-				if (sb.length() >= maxLineLength) {
+				if (byteList.size() >= maxLineLength) {
 					throw new TooLongFrameException(
-						"ESL message line is longer than " + maxLineLength + " bytes.");
+							"ESL message line is longer than " + maxLineLength + " bytes.");
 				}
-				sb.append((char) nextByte);
+				byteList.add(nextByte);
 			}
 		}
-
-		return sb.toString();
+		return new String(Bytes.toArray(byteList));
 	}
 }
