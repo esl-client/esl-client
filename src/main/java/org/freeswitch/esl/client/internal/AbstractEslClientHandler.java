@@ -69,13 +69,13 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
-
+		Throwable cause = e.getCause() == null ?  e : e.getCause();
 		for (final CompletableFuture<EslMessage> apiCall : apiCalls) {
-			apiCall.completeExceptionally(e.getCause());
+			apiCall.completeExceptionally(cause);
 		}
 
 		for (final CompletableFuture<EslEvent> backgroundJob : backgroundJobs.values()) {
-			backgroundJob.completeExceptionally(e.getCause());
+			backgroundJob.completeExceptionally(cause);
 		}
 
 		ctx.close();
