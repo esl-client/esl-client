@@ -2,14 +2,14 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group = 'org.freeswitch.esl.client'
-version = '0.10.0-SNAPSHOT'
+version = '0.10.1'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
-     maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
-     maven { url "http://repo.maven.apache.org/maven2" }
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
+    maven { url "http://repo.maven.apache.org/maven2" }
 }
 
 dependencies {

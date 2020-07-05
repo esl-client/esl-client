@@ -43,13 +43,14 @@ public class FreeSwitchEventListener {
 
       final Client inboudClient = new Client();
       inboudClient.connect(new InetSocketAddress("localhost", 8021), "ClueCon", 10);
+      inboudClient.setEventSubscriptions(EventFormat.PLAIN, "all");
       inboudClient.addEventListener(new IEslEventListener() {
         @Override
         public void onEslEvent(EslEvent eslEvent) {
 
         }
       });
-      inboudClient.setEventSubscriptions(EventFormat.PLAIN, "all");
+      
 
       final SocketClient outboundServer = new SocketClient(
         new InetSocketAddress("localhost", 8084),
@@ -57,17 +58,18 @@ public class FreeSwitchEventListener {
           @Override
           public IClientHandler createClientHandler() {
             return new IClientHandler() {
-              @Override
-              public void handleEslEvent(Context context, EslEvent eslEvent) {
-              }
 
               @Override
               public void onConnect(Context context, EslEvent eslEvent) {
               }
+
+              @Override
+              public void handleEslEvent(Context context, EslEvent eslEvent) {
+              }
+
             };
           }
         });
-
 
     } catch (Throwable t) {
       Throwables.propagate(t);
@@ -84,6 +86,7 @@ Authors
 - [Dave Rusek](mailto:dave.rusek@readytalk.com)
 - [David Varnes](mailto:david.varnes@gmail.com) (original author)
 - [Tobias Bieniek](https://github.com/Turbo87)
+- [yjmyzz](https://github.com/Turbo87)
 
 License
 ------------------------------------------------------------------------------

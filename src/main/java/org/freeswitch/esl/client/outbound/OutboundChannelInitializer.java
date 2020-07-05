@@ -13,21 +13,16 @@ public class OutboundChannelInitializer extends ChannelInitializer<SocketChannel
 
     private final IClientHandlerFactory clientHandlerFactory;
 
-    private ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+    private static ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
             .setNameFormat("outbound-pool-%d").build();
 
-    private ExecutorService callbackExecutor = new ThreadPoolExecutor(1, 4,
+    private static ExecutorService callbackExecutor = new ThreadPoolExecutor(1, 4,
             1000L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<Runnable>(1024), namedThreadFactory, new ThreadPoolExecutor.DiscardOldestPolicy());
 
 
     public OutboundChannelInitializer(IClientHandlerFactory clientHandlerFactory) {
         this.clientHandlerFactory = clientHandlerFactory;
-    }
-
-    public OutboundChannelInitializer setCallbackExecutor(ExecutorService callbackExecutor) {
-        this.callbackExecutor = callbackExecutor;
-        return this;
     }
 
     @Override
@@ -40,8 +35,7 @@ public class OutboundChannelInitializer extends ChannelInitializer<SocketChannel
 
         // now the outbound client logic
         pipeline.addLast("clientHandler",
-                new OutboundClientHandler(
-                        clientHandlerFactory.createClientHandler(),
-                        callbackExecutor));
+                new OutboundClientHandler(clientHandlerFactory.createClientHandler(), callbackExecutor));
+
     }
 }
