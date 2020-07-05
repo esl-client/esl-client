@@ -86,7 +86,7 @@ Authors
 - [Dave Rusek](mailto:dave.rusek@readytalk.com)
 - [David Varnes](mailto:david.varnes@gmail.com) (original author)
 - [Tobias Bieniek](https://github.com/Turbo87)
-- [yjmyzz](https://github.com/Turbo87)
+- [yjmyzz](http://yjmyzz.cnblogs.com)
 
 License
 ------------------------------------------------------------------------------
