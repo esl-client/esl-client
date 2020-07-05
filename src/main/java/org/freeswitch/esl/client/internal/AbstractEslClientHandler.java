@@ -91,7 +91,7 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 				contentType.equals(Value.TEXT_EVENT_XML)) {
 			//  transform into an event
 			final EslEvent eslEvent = new EslEvent(message);
-			if (eslEvent.getEventName().equals("BACKGROUND_JOB")) {
+			if ("BACKGROUND_JOB".equals(eslEvent.getEventName())) {
 				final String backgroundUuid = eslEvent.getEventHeaders().get(EslEventHeaderNames.JOB_UUID);
 				final CompletableFuture<EslEvent> future = backgroundJobs.remove(backgroundUuid);
 				if (null != future) {
@@ -147,8 +147,8 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 	 */
 	public CompletableFuture<EslMessage> sendApiSingleLineCommand(Channel channel, final String command) {
 		final CompletableFuture<EslMessage> future = new CompletableFuture<>();
+		syncLock.lock();
 		try {
-			syncLock.lock();
 			apiCalls.add(future);
 			channel.writeAndFlush(command + MESSAGE_TERMINATOR);
 		} finally {
@@ -196,8 +196,8 @@ public abstract class AbstractEslClientHandler extends SimpleChannelInboundHandl
 		sb.append(LINE_TERMINATOR);
 
 		final CompletableFuture<EslMessage> future = new CompletableFuture<>();
+		syncLock.lock();
 		try {
-			syncLock.lock();
 			apiCalls.add(future);
 			channel.write(sb.toString());
             channel.flush();

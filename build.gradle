@@ -8,13 +8,14 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
+     maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
      maven { url "http://repo.maven.apache.org/maven2" }
 }
 
 dependencies {
-    compile 'io.netty:netty-all:4.1.17.Final'
-    compile 'com.google.guava:guava:23.4-jre'
-    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'io.netty:netty-all:4.1.50.Final'
+    compile 'com.google.guava:guava:29.0-jre'
+    compile 'org.slf4j:slf4j-api:1.7.30'
     runtime 'ch.qos.logback:logback-classic:1.2.3'
-    testCompile 'junit:junit:4.8.1'
+    testCompile 'junit:junit:4.13'
 }
