@@ -10,9 +10,9 @@ import java.util.concurrent.CompletableFuture;
 
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.base.Throwables.propagate;
+import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.google.common.util.concurrent.Futures.getUnchecked;
-import static org.freeswitch.esl.client.internal.IModEslApi.EventFormat.*;
+import static org.freeswitch.esl.client.internal.IModEslApi.EventFormat.PLAIN;
 
 public class Context implements IModEslApi {
 
@@ -47,7 +47,8 @@ public class Context implements IModEslApi {
 			return getUnchecked(handler.sendApiSingleLineCommand(channel, command.toLowerCase().trim()));
 
 		} catch (Throwable t) {
-			throw propagate(t);
+			throwIfUnchecked(t);
+			throw t;
 		}
 	}
 
@@ -77,7 +78,8 @@ public class Context implements IModEslApi {
 			return getUnchecked(handler.sendApiSingleLineCommand(channel, sb.toString()));
 
 		} catch (Throwable t) {
-			throw propagate(t);
+			throwIfUnchecked(t);
+			throw t;
 		}
 	}
 
@@ -141,7 +143,8 @@ public class Context implements IModEslApi {
 			return new CommandResponse(sb.toString(), response);
 
 		} catch (Throwable t) {
-			throw propagate(t);
+			throwIfUnchecked(t);
+			throw t;
 		}
 
 	}
@@ -158,7 +161,8 @@ public class Context implements IModEslApi {
 			final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, "noevents"));
 			return new CommandResponse("noevents", response);
 		} catch (Throwable t) {
-			throw propagate(t);
+			throwIfUnchecked(t);
+			throw t;
 		}
 	}
 
@@ -198,7 +202,8 @@ public class Context implements IModEslApi {
 			return new CommandResponse(sb.toString(), response);
 
 		} catch (Throwable t) {
-			throw propagate(t);
+			throwIfUnchecked(t);
+			throw t;
 		}
 	}
 
@@ -226,7 +231,8 @@ public class Context implements IModEslApi {
 			return new CommandResponse(sb.toString(), response);
 
 		} catch (Throwable t) {
-			throw propagate(t);
+			throwIfUnchecked(t);
+			throw t;
 		}
 	}
 
@@ -246,7 +252,8 @@ public class Context implements IModEslApi {
 			final EslMessage response = getUnchecked(handler.sendApiMultiLineCommand(channel, sendMsg.getMsgLines()));
 			return new CommandResponse(sendMsg.toString(), response);
 		} catch (Throwable t) {
-			throw propagate(t);
+			throwIfUnchecked(t);
+			throw t;
 		}
 
 	}
@@ -267,7 +274,8 @@ public class Context implements IModEslApi {
 			final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, sb.toString()));
 			return new CommandResponse(sb.toString(), response);
 		} catch (Throwable t) {
-			throw propagate(t);
+			throwIfUnchecked(t);
+			throw t;
 		}
 
 	}
@@ -284,16 +292,19 @@ public class Context implements IModEslApi {
 			final EslMessage response = getUnchecked(handler.sendApiSingleLineCommand(channel, "nolog"));
 			return new CommandResponse("nolog", response);
 		} catch (Throwable t) {
-			throw propagate(t);
+			throwIfUnchecked(t);
+			throw t;
 		}
 	}
 
   public void closeChannel() {
       try {
-          if(channel != null && channel.isOpen())
+          if(channel != null && channel.isOpen()) {
               channel.close();
+          }
       } catch (Throwable t) {
-          throw propagate(t);
+		  throwIfUnchecked(t);
+		  throw t;
       }
   }
 }

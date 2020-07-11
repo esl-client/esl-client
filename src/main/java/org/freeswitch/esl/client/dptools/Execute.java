@@ -10,11 +10,11 @@ import org.freeswitch.esl.client.transport.message.EslMessage;
 public class Execute {
 
     IModEslApi api;
-    String _uuid;
+    String uuid;
 
     public Execute(IModEslApi api, String uuid) {
         this.api = api;
-        this._uuid = uuid;
+        this.uuid = uuid;
     }
 
     /**
@@ -133,8 +133,9 @@ public class Execute {
     public void bridgeExport(String key, String value, boolean local)
             throws ExecuteException {
         StringBuilder sb = new StringBuilder();
-        if(!local)
+        if(!local) {
             sb.append("nolocal:");
+        }
         sb.append(key);
         sb.append("=");
         sb.append(value);
@@ -200,12 +201,15 @@ public class Execute {
      */
     public void conference(String name, String profile, String pin, String flags) throws ExecuteException {
         StringBuilder sb = new StringBuilder(name);
-        if(nn(profile))
+        if(nn(profile)) {
             sb.append("@").append(profile);
-        if(nn(pin))
+        }
+        if(nn(pin)) {
             sb.append("+").append(pin);
-        if(nn(flags))
+        }
+        if(nn(flags)) {
             sb.append("+flags{").append(flags).append("}");
+        }
         sendExeMesg("conference", sb.toString());
     }
     
@@ -312,10 +316,12 @@ public class Execute {
     public void displaceSession(String path, String flags,
             long timeLimitMillis) throws ExecuteException {
         StringBuilder sb = new StringBuilder(path);
-        if(nn(flags))
+        if(nn(flags)) {
             sb.append(" ").append(flags);
-        if(timeLimitMillis > 0 )
+        }
+        if(timeLimitMillis > 0 ) {
             sb.append(" +").append(timeLimitMillis);
+        }
         
         sendExeMesg("displace_session",sb.toString());
     }
@@ -466,14 +472,18 @@ public class Execute {
             String failedWav, String newChannelWav, String idleWav)
             throws ExecuteException {
 
-        if (nn(groupId))
+        if (nn(groupId)) {
             set("eavesdrop_require_group", groupId);
-        if (nn(failedWav))
+        }
+        if (nn(failedWav)) {
             set("eavesdrop_indicate_failed", failedWav);
-        if (nn(newChannelWav))
+        }
+        if (nn(newChannelWav)) {
             set("eavesdrop_indicate_new", newChannelWav);
-        if (nn(idleWav))
+        }
+        if (nn(idleWav)) {
             set("eavesdrop_indicate_idle", idleWav);
+        }
 
         set("eavesdrop_enable_dtmf", String.valueOf(enableDTMF));
 
@@ -578,8 +588,9 @@ public class Execute {
         StringBuilder sb = new StringBuilder(extension);
         if(nn(dialplan)) {
             sb.append(" ").append(dialplan);
-            if(nn(context))
+            if(nn(context)) {
                 sb.append(" ").append(context);
+            }
         }
         sendExeMesg("execute_extension", sb.toString());
     }
@@ -603,8 +614,9 @@ public class Execute {
     public void export(String key, String value, boolean local)
             throws ExecuteException {
         StringBuilder sb = new StringBuilder();
-        if(!local)
+        if(!local) {
             sb.append("nolocal:");
+        }
         sb.append(key);
         sb.append("=");
         sb.append(value);
@@ -884,10 +896,11 @@ public class Execute {
         CommandResponse resp = sendExeMesg("play_and_detect_speech",
                 file + " detect:" + engine + " {" + (nn(params) ? params : "") + "}" + grammer);
         if (resp.isOk()) {
-            EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
+            EslMessage eslMessage = api.sendApiCommand("uuid_getvar", uuid
                     + " detect_speech_result");
-            if (eslMessage.getBodyLines().size() > 0)
+            if (eslMessage.getBodyLines().size() > 0) {
                 return eslMessage.getBodyLines().get(0);
+            }
         } else {
             throw new ExecuteException(resp.getReplyText());
         }
@@ -922,10 +935,11 @@ public class Execute {
                         + " " + digitTimeout);
 
         if (resp.isOk()) {
-            EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
+            EslMessage eslMessage = api.sendApiCommand("uuid_getvar", uuid
                     + " " + id);
-            if (eslMessage.getBodyLines().size() > 0)
+            if (eslMessage.getBodyLines().size() > 0) {
                 return eslMessage.getBodyLines().get(0);
+            }
         } else {
             throw new ExecuteException(resp.getReplyText());
         }
@@ -1040,7 +1054,7 @@ public class Execute {
     }
 
     private void playbackControl(String cmd) throws ExecuteException {
-        api.sendApiCommand("uuid_getvar", _uuid + " " + cmd);
+        api.sendApiCommand("uuid_getvar", uuid + " " + cmd);
     }
 
     /**
@@ -1154,10 +1168,11 @@ public class Execute {
                 String.valueOf(min) + " " + max + " " + soundFile + " " + id + " " + timeout + " " + terminators);
 
         if (resp.isOk()) {
-            EslMessage eslMessage = api.sendApiCommand("uuid_getvar", _uuid
+            EslMessage eslMessage = api.sendApiCommand("uuid_getvar", uuid
                     + " " + id);
-            if (eslMessage.getBodyLines().size() > 0)
+            if (eslMessage.getBodyLines().size() > 0) {
                 return eslMessage.getBodyLines().get(0);
+            }
         } else {
             throw new ExecuteException(resp.getReplyText());
         }
@@ -1315,20 +1330,27 @@ public class Execute {
             String optionalRecordDate, int optionalRecordRate)
             throws ExecuteException {
 
-        if (nn(optionalRecordTile))
+        if (nn(optionalRecordTile)) {
             set("RECORD_TITLE", optionalRecordTile);
-        if (nn(optionalRecordCopyright))
+        }
+        if (nn(optionalRecordCopyright)) {
             set("RECORD_COPYRIGHT", optionalRecordCopyright);
-        if (nn(optionalRecordSoftware))
+        }
+        if (nn(optionalRecordSoftware)) {
             set("RECORD_SOFTWARE", optionalRecordSoftware);
-        if (nn(optionalRecordArtist))
+        }
+        if (nn(optionalRecordArtist)) {
             set("RECORD_ARTIST", optionalRecordArtist);
-        if (nn(optionalRecordComment))
+        }
+        if (nn(optionalRecordComment)) {
             set("RECORD_COMMENT", optionalRecordComment);
-        if (nn(optionalRecordDate))
+        }
+        if (nn(optionalRecordDate)) {
             set("RECORD_DATE", optionalRecordDate);
-        if (optionalRecordRate > 0)
+        }
+        if (optionalRecordRate > 0) {
             set("record_sample_rate", String.valueOf(optionalRecordRate));
+        }
 
         set("RECORD_APPEND", String.valueOf(append));
         set("record_waste_resources", String.valueOf(wateResources));
@@ -1453,8 +1475,9 @@ public class Execute {
         StringBuilder sb = new StringBuilder(moduleName);
         sb.append(" ").append(sayType);
         sb.append(" ").append(sayMethod);
-        if (nn(gender))
+        if (nn(gender)) {
             sb.append(" ").append(gender);
+        }
         sb.append(" ").append(text);
 
         sendExeMesg("say", sb.toString());
@@ -1476,8 +1499,9 @@ public class Execute {
     public void schedBroadcast(long seconds, boolean interval, String path,
             String leg) throws ExecuteException {
         StringBuilder sb = new StringBuilder();
-        if (interval)
+        if (interval) {
             sb.append('+');
+        }
         sb.append(seconds);
         sb.append(" ").append(path);
         sb.append(" ").append(leg);
@@ -1515,11 +1539,13 @@ public class Execute {
     public void schedHangup(long seconds, boolean interval, String cause)
             throws ExecuteException {
         StringBuilder sb = new StringBuilder();
-        if (interval)
+        if (interval) {
             sb.append('+');
+        }
         sb.append(seconds);
-        if (nn(cause))
+        if (nn(cause)) {
             sb.append(" ").append(cause);
+        }
         sendExeMesg("sched_hangup", sb.toString());
     }
 
@@ -1575,8 +1601,9 @@ public class Execute {
     public void schedTransfer(long seconds, boolean interval, String extension,
             String dialPlan, String context) throws ExecuteException {
         StringBuilder sb = new StringBuilder();
-        if (interval)
+        if (interval) {
             sb.append('+');
+        }
         sb.append(seconds);
         sb.append(" ").append(extension);
         if (nn(dialPlan)) {
@@ -1605,8 +1632,9 @@ public class Execute {
     public void sendDTMF(String digits, int durationMillis)
             throws ExecuteException {
         StringBuilder sb = new StringBuilder(digits);
-        if (durationMillis > 0)
+        if (durationMillis > 0) {
             sb.append('@').append(durationMillis);
+        }
 
         sendExeMesg("send_dtmf", sb.toString());
     }
@@ -1671,8 +1699,9 @@ public class Execute {
         StringBuilder sb = new StringBuilder(destinationNumber);
         if (nn(dialplan)) {
             sb.append(" ").append(dialplan);
-            if (nn(context))
+            if (nn(context)) {
                 sb.append(" ").append(context);
+            }
         }
         sendExeMesg("transfer", sb.toString());
     }
@@ -1680,8 +1709,9 @@ public class Execute {
     public String ApiCommand(String command, String args) {
         EslMessage eslMessage = api.sendApiCommand(command, args);
         StringBuilder sb = new StringBuilder();
-        for(String line : eslMessage.getBodyLines())
+        for(String line : eslMessage.getBodyLines()) {
             sb.append(line);
+        }
         return sb.toString();
     }
     
@@ -1694,13 +1724,15 @@ public class Execute {
         SendMsg msg = new SendMsg();
         msg.addCallCommand("execute");
         msg.addExecuteAppName(app);
-        if (nn(args))
+        if (nn(args)) {
             msg.addExecuteAppArg(args);
+        }
         CommandResponse resp = api.sendMessage(msg);
-        if (!resp.isOk())
+        if (!resp.isOk()) {
             throw new ExecuteException(resp.getReplyText());
-        else
+        } else {
             return resp;
+        }
     }
     
     
