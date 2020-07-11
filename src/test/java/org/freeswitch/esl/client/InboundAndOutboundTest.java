@@ -45,10 +45,10 @@ public class InboundAndOutboundTest {
             outboundServer.startAsync();
 
             //inbound test
-            final Client inboundClient = new Client();
-            inboundClient.connect(new InetSocketAddress("localhost", 8021), "ClueCon", 10);
-            inboundClient.addEventListener((ctx, event) -> logger.info("INBOUND onEslEvent: {}", event.getEventName()));
-            inboundClient.sendApiCommand("originate user/1000", null);
+//            final Client inboundClient = new Client();
+//            inboundClient.connect(new InetSocketAddress("localhost", 8021), "ClueCon", 10);
+//            inboundClient.addEventListener((ctx, event) -> logger.info("INBOUND onEslEvent: {}", event.getEventName()));
+//            inboundClient.sendApiCommand("originate user/1000", null);
 
         } catch (Throwable t) {
             throwIfUnchecked(t);
@@ -94,6 +94,10 @@ public class InboundAndOutboundTest {
         @Override
         public void onConnect(Context context, EslEvent eslEvent) {
 
+            long threadId = Thread.currentThread().getId();
+            System.out.println(threadId);
+
+
             poolExecutor.submit(() -> {
 
                 logger.warn(nameMapToString(eslEvent.getMessageHeaders(), eslEvent.getEventBodyLines()));
@@ -102,8 +106,11 @@ public class InboundAndOutboundTest {
                 logger.info("Creating execute app for uuid {}", uuid);
                 Execute exe = new Execute(context, uuid);
 
+
 //                boolean hangup = false;
                 try {
+
+                    System.out.println("onConnect=>" + Thread.currentThread().getId());
                     //subscribe event
                     EslMessage eslMessage = context.sendCommand("event plain ALL");
                     if (eslMessage.getHeaderValue(Name.REPLY_TEXT).startsWith("+OK")) {
@@ -169,6 +176,10 @@ public class InboundAndOutboundTest {
 
         @Override
         public void onEslEvent(Context ctx, EslEvent event) {
+//            long threadId = Thread.currentThread().getId();
+//            System.out.println(threadId);
+
+//            System.out.println("onEslEvent=>" + Thread.currentThread().getId());
             logger.info("OUTBOUND onEslEvent: {}", event.getEventName());
             if (event.getEventName().equalsIgnoreCase("PLAYBACK_STOP")) {
                 String uuid = event.getEventHeaders().get("Unique-ID");
