@@ -16,9 +16,9 @@ public class OutboundChannelInitializer extends ChannelInitializer<SocketChannel
     private static ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
             .setNameFormat("outbound-pool-%d").build();
 
-    private static ExecutorService callbackExecutor = new ThreadPoolExecutor(1, 4,
-            1000L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(1024), namedThreadFactory, new ThreadPoolExecutor.DiscardOldestPolicy());
+    private static ExecutorService callbackExecutor = new ThreadPoolExecutor(1, 1,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(100000), namedThreadFactory);
 
 
     public OutboundChannelInitializer(IClientHandlerFactory clientHandlerFactory) {
