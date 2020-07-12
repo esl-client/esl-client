@@ -5,6 +5,8 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 import org.freeswitch.esl.client.transport.message.EslFrameDecoder;
 
 import java.util.concurrent.*;
@@ -30,6 +32,12 @@ public class OutboundChannelInitializer extends ChannelInitializer<SocketChannel
 
     public OutboundChannelInitializer(IClientHandlerFactory clientHandlerFactory) {
         this.clientHandlerFactory = clientHandlerFactory;
+    }
+
+    public OutboundChannelInitializer(IClientHandlerFactory clientHandlerFactory, ExecutorService connExecutor, ExecutorService eslExecutor) {
+        this.clientHandlerFactory = clientHandlerFactory;
+        onEslExecutor = eslExecutor;
+        onConnectExecutor = connExecutor;
     }
 
     @Override

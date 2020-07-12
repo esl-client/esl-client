@@ -5,6 +5,7 @@ import org.freeswitch.esl.client.dptools.Execute;
 import org.freeswitch.esl.client.dptools.ExecuteException;
 import org.freeswitch.esl.client.inbound.Client;
 import org.freeswitch.esl.client.internal.Context;
+import org.freeswitch.esl.client.internal.IModEslApi;
 import org.freeswitch.esl.client.outbound.IClientHandler;
 import org.freeswitch.esl.client.outbound.IClientHandlerFactory;
 import org.freeswitch.esl.client.outbound.SocketClient;
@@ -25,13 +26,6 @@ public class InboundAndOutboundTest {
     private static Logger logger = LoggerFactory.getLogger(InboundAndOutboundTest.class);
     private static String music = "/usr/local/freeswitch/sounds/music/8000/ponce-preludio-in-e-major.wav";
 
-    private static ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
-            .setNameFormat("outbound-test-%d").build();
-
-    private static ExecutorService poolExecutor = new ThreadPoolExecutor(4, 512,
-            1000L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(1024), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
-
     public static void main(String[] args) {
         new InboundAndOutboundTest();
     }
@@ -40,15 +34,20 @@ public class InboundAndOutboundTest {
         try {
             //outbound test
             final SocketClient outboundServer = new SocketClient(
-                    new InetSocketAddress("localhost", 8160),
+                    new InetSocketAddress("localhost", 8086),
                     new OutboundHandlerFactory());
             outboundServer.startAsync();
 
             //inbound test
             final Client inboundClient = new Client();
             inboundClient.connect(new InetSocketAddress("localhost", 8021), "ClueCon", 10);
-            inboundClient.addEventListener((ctx, event) -> logger.info("INBOUND onEslEvent: {}", event.getEventName()));
-            inboundClient.sendApiCommand("originate user/1000", null);
+            inboundClient.setEventSubscriptions(IModEslApi.EventFormat.PLAIN, "ALL");
+            inboundClient.addEventListener((ctx, event) ->
+                    {
+                        long threadId = Thread.currentThread().getId();
+                        logger.info("INBOUND onEslEvent: {},threadId:" + threadId, event.getEventName());
+                    }
+            );
 
         } catch (Throwable t) {
             throwIfUnchecked(t);
@@ -95,95 +94,74 @@ public class InboundAndOutboundTest {
         public void onConnect(Context context, EslEvent eslEvent) {
 
             long threadId = Thread.currentThread().getId();
-            System.out.println(threadId);
+
             String uuid = eslEvent.getEventHeaders().get("Unique-ID");
-            Execute exe = new Execute(context, uuid);
+            logger.warn(nameMapToString(eslEvent.getMessageHeaders(), eslEvent.getEventBodyLines()));
+            logger.info("Creating execute app for uuid {},threadId:" + threadId, uuid);
+
             try {
-                exe.answer();
-            } catch (Exception e) {
 
-            }
+                Execute exe = new Execute(context, uuid);
 
-
-            poolExecutor.submit(() -> {
-
-                logger.warn(nameMapToString(eslEvent.getMessageHeaders(), eslEvent.getEventBodyLines()));
-                logger.info("Creating execute app for uuid {}", uuid);
-
-//                boolean hangup = false;
-                try {
-
-                    System.out.println("onConnect=>" + Thread.currentThread().getId());
-                    //subscribe event
-                    EslMessage eslMessage = context.sendCommand("event plain ALL");
-                    if (eslMessage.getHeaderValue(Name.REPLY_TEXT).startsWith("+OK")) {
-                        logger.info("subscribe event success!");
-                    }
-
-                    //linger 10 seconds
-                    eslMessage = context.sendCommand("linger 10");
-                    if (eslMessage.getHeaderValue(Name.REPLY_TEXT).startsWith("+OK")) {
-                        logger.info("linger success!");
-                    }
-
-                    String dest = eslEvent.getEventHeaders().get("Channel-Destination-Number");
-                    if (!dest.startsWith("400")) {
-                        exe.bridge("user/" + dest);
-                        return;
-                    }
-
-                    exe.answer();
-
-
-                    exe.playback(music);
-                    String musicKey = uuid + ":" + music;
-                    checkMusic.put(musicKey, false);
-
-                    // check music is over ?
-                    long timeout = 60 * 5 * 1000;
-                    long start = System.currentTimeMillis();
-                    while (true) {
-                        if (checkMusic.get(musicKey)) {
-                            checkMusic.remove(musicKey);
-                            exe.hangup("playback over ,auto hangup");
-//                            hangup = true;
-                            break;
-                        }
-                        long elapsed = System.currentTimeMillis() - start;
-                        if (elapsed > timeout) {
-                            logger.warn("music playback timeout!");
-                            break;
-                        }
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                } catch (ExecuteException e) {
-                    logger.error("Could not prompt for digits", e);
-                } finally {
-//                    try {
-//                        if (!hangup) {
-//                            exe.hangup(null);
-//                        }
-//                    } catch (ExecuteException e) {
-//                        logger.error("Could not hangup", e);
-//                    }
-                    context.closeChannel();
+                //subscribe event
+                EslMessage eslMessage = context.sendCommand("event plain ALL");
+                if (eslMessage.getHeaderValue(Name.REPLY_TEXT).startsWith("+OK")) {
+                    logger.info("subscribe event success!");
                 }
-            });
+
+                //linger 10 seconds
+                eslMessage = context.sendCommand("linger 10");
+                if (eslMessage.getHeaderValue(Name.REPLY_TEXT).startsWith("+OK")) {
+                    logger.info("linger success!");
+                }
+
+                exe.answer();
+
+                String dest = eslEvent.getEventHeaders().get("Channel-Destination-Number");
+                if (!dest.startsWith("400")) {
+                    exe.bridge("user/" + dest);
+                    return;
+                }
+
+                exe.playback(music);
+                String musicKey = uuid + ":" + music;
+                checkMusic.put(musicKey, false);
+
+                // check music is over ?
+                long timeout = 60 * 5 * 1000;
+                long start = System.currentTimeMillis();
+                while (true) {
+                    if (checkMusic.get(musicKey)) {
+                        checkMusic.remove(musicKey);
+                        exe.hangup("playback over ,auto hangup");
+//                            hangup = true;
+                        break;
+                    }
+                    long elapsed = System.currentTimeMillis() - start;
+                    if (elapsed > timeout) {
+                        logger.warn("music playback timeout!");
+                        break;
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            } catch (ExecuteException e) {
+                logger.error("Could not prompt for digits", e);
+            } finally {
+
+                context.closeChannel();
+            }
 
         }
 
         @Override
         public void onEslEvent(Context ctx, EslEvent event) {
-//            long threadId = Thread.currentThread().getId();
-//            System.out.println(threadId);
-
-//            System.out.println("onEslEvent=>" + Thread.currentThread().getId());
-            logger.info("OUTBOUND onEslEvent: {}", event.getEventName());
+            long threadId = Thread.currentThread().getId();
+            logger.info("OUTBOUND onEslEvent: {},threadId:" + threadId, event.getEventName());
             if (event.getEventName().equalsIgnoreCase("PLAYBACK_STOP")) {
                 String uuid = event.getEventHeaders().get("Unique-ID");
                 String music = event.getEventHeaders().get("Playback-File-Path");

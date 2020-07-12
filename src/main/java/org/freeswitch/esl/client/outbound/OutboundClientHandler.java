@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutorService;
  * the socket client in Outbound mode.  This will result in an incoming {@link EslMessage} that is
  * transformed into an {@link EslEvent} that sub classes can handle.
  * </ul>
- * Note: implementation requirement is that an {@link ExecutionHandler} is placed in the processing
+ * Note: implementation requirement is that an {@link ExecutorService} is placed in the processing
  * pipeline prior to this handler. This will ensure that each incoming message is processed in its
  * own thread (although still guaranteed to be processed in the order of receipt).
  */
@@ -53,7 +53,8 @@ class OutboundClientHandler extends AbstractEslClientHandler {
         super.channelActive(ctx);
 
         // Have received a connection from FreeSWITCH server, send connect response
-        log.debug("Received new connection from server, sending connect message");
+        long threadId = Thread.currentThread().getId();
+        log.debug("Received new connection from server, sending connect message,threadId:" + threadId);
 
         sendApiSingleLineCommand(ctx.channel(), "connect")
                 .thenAccept(response ->
