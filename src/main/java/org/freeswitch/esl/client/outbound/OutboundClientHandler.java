@@ -1,15 +1,15 @@
 /*
  * Copyright 2010 david varnes.
  *
- * Licensed under the Apache License, version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
+ * Licensed under the Apache License, version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at:
  *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -37,46 +37,51 @@ import java.util.concurrent.ExecutorService;
  */
 class OutboundClientHandler extends AbstractEslClientHandler {
 
-	private final IClientHandler clientHandler;
-	private final ExecutorService callbackExecutor;
+    private final IClientHandler clientHandler;
+    private final ExecutorService onEslEventExecutor;
+    private final ExecutorService onConnectExecutor;
 
-	public OutboundClientHandler(IClientHandler clientHandler, ExecutorService callbackExecutor) {
-		this.clientHandler = clientHandler;
-		this.callbackExecutor = callbackExecutor;
-	}
 
-	@Override
-	public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-		super.channelActive(ctx);
+    public OutboundClientHandler(IClientHandler clientHandler, ExecutorService onEslEventExecutor, ExecutorService onConnectExecutor) {
+        this.clientHandler = clientHandler;
+        this.onEslEventExecutor = onEslEventExecutor;
+        this.onConnectExecutor = onConnectExecutor;
+    }
 
-		// Have received a connection from FreeSWITCH server, send connect response
-		log.debug("Received new connection from server, sending connect message");
+    @Override
+    public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
 
-		sendApiSingleLineCommand(ctx.channel(), "connect")
-				.thenAccept(response -> clientHandler.onConnect(
-						new Context(ctx.channel(), OutboundClientHandler.this),
-						new EslEvent(response, true)))
-				.exceptionally(throwable -> {
-					ctx.channel().close();
-					handleDisconnectionNotice();
-					return null;
-				});
-	}
+        // Have received a connection from FreeSWITCH server, send connect response
+        log.debug("Received new connection from server, sending connect message");
 
-	@Override
-	protected void handleEslEvent(final ChannelHandlerContext ctx, final EslEvent event) {
-		callbackExecutor.execute(() -> clientHandler.onEslEvent(
-				new Context(ctx.channel(), OutboundClientHandler.this), event));
-	}
+        sendApiSingleLineCommand(ctx.channel(), "connect")
+                .thenAccept(response ->
+                        onConnectExecutor.execute(() -> clientHandler.onConnect(
+                                new Context(ctx.channel(), OutboundClientHandler.this),
+                                new EslEvent(response, true)))
+                )
+                .exceptionally(throwable -> {
+                    ctx.channel().close();
+                    handleDisconnectionNotice();
+                    return null;
+                });
+    }
 
-	@Override
-	protected void handleAuthRequest(io.netty.channel.ChannelHandlerContext ctx) {
-		// This should not happen in outbound mode
-		log.warn("Auth request received in outbound mode, ignoring");
-	}
+    @Override
+    protected void handleEslEvent(final ChannelHandlerContext ctx, final EslEvent event) {
+        onEslEventExecutor.execute(() -> clientHandler.onEslEvent(
+                new Context(ctx.channel(), OutboundClientHandler.this), event));
+    }
 
-	@Override
-	protected void handleDisconnectionNotice() {
-		log.debug("Received disconnection notice");
-	}
+    @Override
+    protected void handleAuthRequest(io.netty.channel.ChannelHandlerContext ctx) {
+        // This should not happen in outbound mode
+        log.warn("Auth request received in outbound mode, ignoring");
+    }
+
+    @Override
+    protected void handleDisconnectionNotice() {
+        log.debug("Received disconnection notice");
+    }
 }

@@ -13,12 +13,19 @@ public class OutboundChannelInitializer extends ChannelInitializer<SocketChannel
 
     private final IClientHandlerFactory clientHandlerFactory;
 
-    private static ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
-            .setNameFormat("outbound-pool-%d").build();
+    private static ThreadFactory onEslThreadFactory = new ThreadFactoryBuilder()
+            .setNameFormat("outbound-onEsl-pool-%d").build();
 
-    private static ExecutorService callbackExecutor = new ThreadPoolExecutor(1, 1,
+    private static ExecutorService onEslExecutor = new ThreadPoolExecutor(1, 1,
             0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(100000), namedThreadFactory);
+            new LinkedBlockingQueue<>(100000), onEslThreadFactory);
+
+    private static ThreadFactory onConnectThreadFactory = new ThreadFactoryBuilder()
+            .setNameFormat("outbound-onConnect-pool-%d").build();
+
+    private static ExecutorService onConnectExecutor = new ThreadPoolExecutor(32, 512,
+            60L, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(2048), onConnectThreadFactory);
 
 
     public OutboundChannelInitializer(IClientHandlerFactory clientHandlerFactory) {
@@ -35,7 +42,7 @@ public class OutboundChannelInitializer extends ChannelInitializer<SocketChannel
 
         // now the outbound client logic
         pipeline.addLast("clientHandler",
-                new OutboundClientHandler(clientHandlerFactory.createClientHandler(), callbackExecutor));
+                new OutboundClientHandler(clientHandlerFactory.createClientHandler(), onEslExecutor, onConnectExecutor));
 
     }
 }

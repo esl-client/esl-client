@@ -40,15 +40,15 @@ public class InboundAndOutboundTest {
         try {
             //outbound test
             final SocketClient outboundServer = new SocketClient(
-                    new InetSocketAddress("localhost", 8086),
+                    new InetSocketAddress("localhost", 8160),
                     new OutboundHandlerFactory());
             outboundServer.startAsync();
 
             //inbound test
-//            final Client inboundClient = new Client();
-//            inboundClient.connect(new InetSocketAddress("localhost", 8021), "ClueCon", 10);
-//            inboundClient.addEventListener((ctx, event) -> logger.info("INBOUND onEslEvent: {}", event.getEventName()));
-//            inboundClient.sendApiCommand("originate user/1000", null);
+            final Client inboundClient = new Client();
+            inboundClient.connect(new InetSocketAddress("localhost", 8021), "ClueCon", 10);
+            inboundClient.addEventListener((ctx, event) -> logger.info("INBOUND onEslEvent: {}", event.getEventName()));
+            inboundClient.sendApiCommand("originate user/1000", null);
 
         } catch (Throwable t) {
             throwIfUnchecked(t);
@@ -96,16 +96,19 @@ public class InboundAndOutboundTest {
 
             long threadId = Thread.currentThread().getId();
             System.out.println(threadId);
+            String uuid = eslEvent.getEventHeaders().get("Unique-ID");
+            Execute exe = new Execute(context, uuid);
+            try {
+                exe.answer();
+            } catch (Exception e) {
+
+            }
 
 
             poolExecutor.submit(() -> {
 
                 logger.warn(nameMapToString(eslEvent.getMessageHeaders(), eslEvent.getEventBodyLines()));
-
-                String uuid = eslEvent.getEventHeaders().get("Unique-ID");
                 logger.info("Creating execute app for uuid {}", uuid);
-                Execute exe = new Execute(context, uuid);
-
 
 //                boolean hangup = false;
                 try {
