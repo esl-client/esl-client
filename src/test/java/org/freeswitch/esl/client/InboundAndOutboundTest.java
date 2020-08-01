@@ -1,6 +1,5 @@
 package org.freeswitch.esl.client;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.freeswitch.esl.client.dptools.Execute;
 import org.freeswitch.esl.client.dptools.ExecuteException;
 import org.freeswitch.esl.client.inbound.Client;
@@ -18,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.google.common.base.Throwables.throwIfUnchecked;
 
