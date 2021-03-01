@@ -48,9 +48,10 @@ public class CustomEventTest {
                     {
 //                        String eventName = event.getEventName();
 //                        if (eventName.equalsIgnoreCase("CUSTOM") || eventName.contains("HANGUP_COMPLETE")) {
-                            String ani = event.getEventHeaders().get("Caller-ANI");
-                            String myvar = event.getEventHeaders().get("MY-VAR-1");
-                            System.out.println("INBOUND=> eventName: " + event.getEventName() + ", ani = " + ani + ", myvar = " + myvar);
+                        String ani = event.getEventHeaders().get("Caller-ANI");
+                        String myvar = event.getEventHeaders().get("MY-VAR-1");
+                        String myvar2 = event.getEventHeaders().get("variable_MY-VAR-2");
+                        System.out.println("INBOUND=> eventName: " + event.getEventName() + ", ani = " + ani + ", myvar = " + myvar + " , myvar2=" + myvar2);
 //                        }
                     }
             );
@@ -86,6 +87,9 @@ public class CustomEventTest {
                 sbEvent.append("MY-VAR-1=").append("abcdefg").append(",");
                 //触发自定义事件
                 exe.event(sbEvent.toString());
+
+                //导出变量（会在后续所有事件中都一直存在）
+                exe.export("MY-VAR-2", "something", true);
 
                 //其它处理（这里只是示例调用了echo）
                 exe.echo();
