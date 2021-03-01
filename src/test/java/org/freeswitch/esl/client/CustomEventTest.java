@@ -40,19 +40,20 @@ public class CustomEventTest {
             //            inboundClient.setEventSubscriptions(IModEslApi.EventFormat.PLAIN, "CHANNEL_HANGUP_COMPLETE CUSTOM");
 
 //inbound test
-final Client inboundClient = new Client();
-inboundClient.connect(new InetSocketAddress("localhost", 8021), "ClueCon", 10);
-inboundClient.setEventSubscriptions(IModEslApi.EventFormat.PLAIN, "ALL");
-inboundClient.addEventListener((ctx, event) ->
-        {
-            String eventName = event.getEventName();
-            if (eventName.equalsIgnoreCase("CUSTOM") || eventName.contains("HANGUP_COMPLETE")) {
-                String ani = event.getEventHeaders().get("Caller-ANI");
-                String myvar = event.getEventHeaders().get("MY-VAR-1");
-                System.out.println("INBOUND=> eventName: " + event.getEventName() + ", ani = " + ani + ", myvar = " + myvar);
-            }
-        }
-);
+            final Client inboundClient = new Client();
+            inboundClient.connect(new InetSocketAddress("localhost", 8021), "ClueCon", 10);
+//            inboundClient.setEventSubscriptions(IModEslApi.EventFormat.PLAIN, "ALL");
+            inboundClient.setEventSubscriptions(IModEslApi.EventFormat.PLAIN, "CHANNEL_CREATE CHANNEL_HANGUP CHANNEL_HANGUP_COMPLETE CHANNEL_DESTROY CUSTOM");
+            inboundClient.addEventListener((ctx, event) ->
+                    {
+//                        String eventName = event.getEventName();
+//                        if (eventName.equalsIgnoreCase("CUSTOM") || eventName.contains("HANGUP_COMPLETE")) {
+                            String ani = event.getEventHeaders().get("Caller-ANI");
+                            String myvar = event.getEventHeaders().get("MY-VAR-1");
+                            System.out.println("INBOUND=> eventName: " + event.getEventName() + ", ani = " + ani + ", myvar = " + myvar);
+//                        }
+                    }
+            );
 
         } catch (Throwable t) {
             throwIfUnchecked(t);
@@ -72,28 +73,28 @@ inboundClient.addEventListener((ctx, event) ->
     public class OutboundHandler implements IClientHandler {
 
 
-@Override
-public void onConnect(Context context, EslEvent eslEvent) {
-    try {
-        Execute exe = new Execute(context, null);
-        StringBuilder sbEvent = new StringBuilder();
-        sbEvent.append("Event-Name=").append("CUSTOM").append(",");
-        sbEvent.append("Event-Subclass=").append("callcenter::info").append(",");
-        //自定义事件中的变量（根据业务需求，可自行添加，注：系统变量并不能覆盖，比如下面的Caller-ANI）
-        sbEvent.append("Caller-ANI=").append("999999").append(",");
-        //只有业务新增的变量，赋值才有意义
-        sbEvent.append("MY-VAR-1=").append("abcdefg").append(",");
-        //触发自定义事件
-        exe.event(sbEvent.toString());
+        @Override
+        public void onConnect(Context context, EslEvent eslEvent) {
+            try {
+                Execute exe = new Execute(context, null);
+                StringBuilder sbEvent = new StringBuilder();
+                sbEvent.append("Event-Name=").append("CUSTOM").append(",");
+                sbEvent.append("Event-Subclass=").append("callcenter::info").append(",");
+                //自定义事件中的变量（根据业务需求，可自行添加，注：系统变量并不能覆盖，比如下面的Caller-ANI）
+                sbEvent.append("Caller-ANI=").append("999999").append(",");
+                //只有业务新增的变量，赋值才有意义
+                sbEvent.append("MY-VAR-1=").append("abcdefg").append(",");
+                //触发自定义事件
+                exe.event(sbEvent.toString());
 
-        //其它处理（这里只是示例调用了echo）
-        exe.echo();
-    } catch (ExecuteException e) {
-        e.printStackTrace();
-    } finally {
-        context.closeChannel();
-    }
-}
+                //其它处理（这里只是示例调用了echo）
+                exe.echo();
+            } catch (ExecuteException e) {
+                e.printStackTrace();
+            } finally {
+                context.closeChannel();
+            }
+        }
 
 
         @Override
