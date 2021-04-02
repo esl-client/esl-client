@@ -18,14 +18,14 @@ package org.freeswitch.esl.client.inbound;
 /**
  * Checked exception to handle connection failures.
  */
-public class InboundConnectionFailure extends Exception {
+public class InboundConnectionException extends Exception {
 	private static final long serialVersionUID = 1L;
 
-	public InboundConnectionFailure(String message) {
+	public InboundConnectionException(String message) {
 		super(message);
 	}
 
-	public InboundConnectionFailure(String message, Throwable cause) {
+	public InboundConnectionException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }
