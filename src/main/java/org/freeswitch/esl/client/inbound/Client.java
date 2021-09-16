@@ -98,6 +98,9 @@ public class Client implements IModEslApi {
 			close();
 		}
 
+		// Set or reset authentication status
+		authenticated = false;
+
 		log.info("Connecting to {} ...", clientAddress);
 
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
