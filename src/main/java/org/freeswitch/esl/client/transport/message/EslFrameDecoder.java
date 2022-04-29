@@ -136,7 +136,7 @@ public class EslFrameDecoder extends ReplayingDecoder<EslFrameDecoder.State> {
 								*   read the content-length specified
 								*/
 				int contentLength = currentMessage.getContentLength();
-				ByteBuf bodyBytes = buffer.readBytes(contentLength);
+				ByteBuf bodyBytes = buffer.readSlice(contentLength);
 				log.debug("read [{}] body bytes", bodyBytes.writerIndex());
 				// most bodies are line based, so split on LF
 				while (bodyBytes.isReadable()) {
