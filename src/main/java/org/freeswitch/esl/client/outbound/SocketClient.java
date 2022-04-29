@@ -40,10 +40,12 @@ import java.net.SocketAddress;
 public class SocketClient extends AbstractService {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private static final int DEFAULT_OUTBOUND_EVENT_EXECUTOR_THREAD_COUNT = 32;
 	private final EventLoopGroup bossGroup;
 	private final EventLoopGroup workerGroup;
 	private final IClientHandlerFactory clientHandlerFactory;
 	private final SocketAddress bindAddress;
+	private final int outboundEventExecutorThreadCount;
 
 	private Channel serverChannel;
 
@@ -52,6 +54,14 @@ public class SocketClient extends AbstractService {
 		this.clientHandlerFactory = clientHandlerFactory;
 		this.bossGroup = new NioEventLoopGroup();
 		this.workerGroup = new NioEventLoopGroup();
+		this.outboundEventExecutorThreadCount = DEFAULT_OUTBOUND_EVENT_EXECUTOR_THREAD_COUNT;
+	}
+	public SocketClient(SocketAddress bindAddress, IClientHandlerFactory clientHandlerFactory, int outboundEventExecutorThreadCount) {
+		this.bindAddress = bindAddress;
+		this.clientHandlerFactory = clientHandlerFactory;
+		this.bossGroup = new NioEventLoopGroup();
+		this.workerGroup = new NioEventLoopGroup();
+		this.outboundEventExecutorThreadCount = outboundEventExecutorThreadCount;
 	}
 
 	@Override
@@ -59,7 +69,7 @@ public class SocketClient extends AbstractService {
 		final ServerBootstrap bootstrap = new ServerBootstrap()
 				.group(bossGroup, workerGroup)
 				.channel(NioServerSocketChannel.class)
-				.childHandler(new OutboundChannelInitializer(clientHandlerFactory))
+				.childHandler(new OutboundChannelInitializer(clientHandlerFactory, outboundEventExecutorThreadCount))
 				.childOption(ChannelOption.TCP_NODELAY, true)
 				.childOption(ChannelOption.SO_KEEPALIVE, true);
 

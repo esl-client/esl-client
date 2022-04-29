@@ -23,10 +23,9 @@ class InboundChannelInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
+        pipeline.addLast("encoder", new StringEncoder());
         pipeline.addLast("decoder", new EslFrameDecoder(8192));
-
         // now the inbound client logic
         pipeline.addLast("clientHandler", handler);
-        pipeline.addLast("encoder", new StringEncoder());
     }
 }
